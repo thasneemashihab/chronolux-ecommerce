@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>ChronoLux - Timeless Elegance</title>
+</head>
+<body>
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<!-- Hero Section -->
+<section class="py-4" style="background:#0d0d0d;">
+  <div class="container">
+    <div class="hero-banner">
+      <img src="/images/cover.jpg" class="hero-banner-img" alt="Featured watch">
+
+      <div class="hero-overlay-content">
+        <h1 class="fw-bold text-white">Timeless Elegance,<br><span class="text-warning">Crafted for You.</span></h1>
+        <p class="text-light">Discover premium watches crafted for style and precision</p>
+        <a href="/shop" class="btn btn-warning fw-bold px-4">Shop Now</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Categories Section -->
+<section class="py-5 text-center" style="background:#0d0d0d; color:#fff;">
+<div class="container">
+    <h2 class="mb-4">Shop by Category</h2>
+    <div class="row g-3 justify-content-center">
+      <div class="col-6 col-md-3">
+         <div class="category-card">
+        <img src="/images/catrogy.jpg" class="img-fluid rounded mb-2" alt="Luxury">
+        <p>Luxury</p>
+          </div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="category-card">
+        <img src="/images/casual.jpg" class="img-fluid rounded mb-2" alt="Casual">
+        <p>Casual</p>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="category-card">
+        <img src="/images/sports.jpg" class="img-fluid rounded mb-2" alt="Sports">
+        <p>Sports</p>
+      </div>
+      </div>
+      <div class="col-6 col-md-3">
+         <div class="category-card">
+        <img src="/images/smart-watch.jpg" class="img-fluid rounded mb-2" alt="Smart watches">
+        <p>Smart watches</p>
+         </div>
+      </div>
+    </div>
+  </div> 
+</section>
+
+<!-- Featured Watches Section -->
+<section class="py-5 text-center" style="background:#0d0d0d;">
+  <div class="container">
+    <h2 class="mb-4 text-white">Featured Watches</h2>
+    <div class="row g-4 justify-content-center">
+      <div class="col-6 col-md-3">
+        <div class="watch-card">
+          <img src="/images/luxury.jpg" alt="Chronolux Heritage">
+          <div class="watch-card-body">
+            <h6>Chronolux Heritage</h6>
+            <p class="price">₹ 24,999</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="watch-card">
+          <img src="/images/sports-pro.jpg" alt="Chronolux Sport Pro">
+          <div class="watch-card-body">
+            <h6>Chronolux Sport Pro</h6>
+            <p class="price">₹ 15,999</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="watch-card">
+          <img src="/images/black-edition.jpg" alt="Chronolux Black Edition">
+          <div class="watch-card-body">
+            <h6>Chronolux Black Edition</h6>
+            <p class="price">₹ 28,999</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="watch-card">
+          <img src="/images/classic.jpg" alt="Chronolux Classic">
+          <div class="watch-card-body">
+            <h6>Chronolux Classic</h6>
+            <p class="price">₹ 18,999</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>My Profile - ChronoLux</title>
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'profile' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+        <h3 class="fw-bold">My Profile</h3>
+        <p class="text-secondary">Manage your personal information</p>
+
+        <form id="profileForm">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Full Name</label>
+              <input type="text" class="form-control" id="name" value="<%= user.name %>">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email Address</label>
+              <div class="d-flex gap-2">
+                <input type="email" class="form-control" id="email" value="<%= user.email %>" disabled>
+               <button type="button" class="btn btn-secondary btn-lg px-4" id="changeEmailBtn" style="white-space:nowrap;">Change Email</button>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="text" class="form-control" id="phone" value="<%= user.phone || '' %>">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label d-block">Gender</label>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="gender" id="genderFemale" value="Female" <%= user.gender === 'Female' ? 'checked' : '' %>>
+                <label class="form-check-label" for="genderFemale">Female</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="gender" id="genderMale" value="Male" <%= user.gender === 'Male' ? 'checked' : '' %>>
+                <label class="form-check-label" for="genderMale">Male</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-success d-none" id="profileSuccess"></div>
+          <button type="submit" class="btn btn-warning fw-bold px-4">Save changes</button>
+        </form>
+
+        <hr class="border-secondary my-4">
+
+        <h5 class="fw-bold text-warning">Change password</h5>
+        <form id="passwordForm">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-control" id="currentPassword" placeholder="Enter current password">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" id="newPassword" placeholder="Enter New Password">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirmNewPassword" placeholder="Confirm new password">
+            </div>
+          </div>
+          <div class="alert alert-danger d-none" id="passwordError"></div>
+          <div class="alert alert-success d-none" id="passwordSuccess"></div>
+          <button type="submit" class="btn btn-warning fw-bold px-4">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Email change OTP Modal -->
+<div class="modal-backdrop-custom d-none" id="emailModalBackdrop">
+  <div class="email-modal">
+    <button class="btn-close-modal" id="closeEmailModal">×</button>
+    <div class="otp-icon mx-auto"><i class="bi bi-envelope-fill"></i></div>
+    <h5 class="fw-bold text-center mt-2">Verify New Email</h5>
+
+    <div id="emailStep1">
+      <p class="text-secondary text-center small">Enter your new email address</p>
+      <input type="email" class="form-control mb-2" id="newEmailInput" placeholder="Enter new email">
+      <div class="text-danger small mb-2" id="newEmailError"></div>
+      <button class="btn btn-warning fw-bold w-100" id="sendEmailOtpBtn">Send OTP</button>
+    </div>
+
+    <div id="emailStep2" class="d-none">
+      <p class="text-secondary text-center small mb-1">We've sent a 6-digit OTP to your new email address</p>
+      <p class="text-warning text-center small fw-bold" id="pendingEmailDisplay"></p>
+
+      <label class="form-label">Enter OTP</label>
+      <div class="otp-boxes mb-2">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+        <input type="text" maxlength="1" class="otp-box email-otp-box">
+      </div>
+      <div class="text-danger small text-center mb-2" id="emailOtpError"></div>
+      <p class="text-secondary text-center small">Resend OTP in <span id="emailOtpTimer">00:45</span></p>
+
+      <div class="d-flex gap-2 mt-2">
+        <button class="btn btn-secondary w-50" id="cancelEmailChange">Cancel</button>
+        <button class="btn btn-warning fw-bold w-50" id="verifyEmailOtpBtn">Verify & Update</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/profile.js"></script>
+</body>
+</html>

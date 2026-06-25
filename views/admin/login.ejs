@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Admin Login - ChronoLux</title>
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<div class="d-flex align-items-center justify-content-center" style="min-height:100vh;">
+  <div class="card border-0 shadow-lg p-4" style="background:#111; max-width:450px; width:100%; border-radius:14px;">
+
+    <div class="text-center mb-4">
+      <img src="/images/logo.png" width="48" class="mb-2" alt="logo">
+      <h2 class="text-warning fw-bold">CHRONOLUX</h2>
+    </div>
+
+    <form id="adminLoginForm">
+      <input type="email" class="form-control mb-3" id="email" placeholder="Email Address">
+      <div class="position-relative mb-2">
+        <input type="password" class="form-control" id="password" placeholder="Password">
+        <span class="toggle-eye position-absolute top-50 end-0 translate-middle-y me-3" data-target="password">
+          <i class="bi bi-eye-fill"></i>
+        </span>
+      </div>
+
+      <div class="text-end mb-3">
+        <a href="#" class="text-danger fw-bold small text-decoration-none">Forget Password</a>
+      </div>
+
+      <div class="alert alert-danger d-none" id="adminLoginError"></div>
+
+      <button type="submit" class="btn btn-warning fw-bold w-100">Login</button>
+    </form>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/adminLogin.js"></script>
+</body>
+</html>

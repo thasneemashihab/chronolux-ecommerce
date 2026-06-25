@@ -1,0 +1,247 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.hero-banner {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 480px;
+}
+
+.hero-banner-img {
+  width: 100%;
+  height: 580px;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(13,13,13,0.75), rgba(13,13,13,0.2) 60%);
+  z-index: 1;
+}
+
+.hero-overlay-content {
+  position: absolute;
+  bottom: 40px;
+  left: 5%;
+  top: auto;
+  transform: none;
+  z-index: 2;
+  max-width: 480px;
+}
+
+.hero-overlay-content h1 {
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.hero-overlay-content p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.category-card img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.category-card p {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.watch-card {
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+  text-align: left;
+  height: 100%;
+}
+
+.watch-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+.watch-card-body {
+  padding: 12px 15px;
+}
+
+.watch-card-body h6 {
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.watch-card-body .price {
+  color: #f5b800;
+  font-weight: 700;
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .hero-banner {
+    min-height: 380px;
+  }
+  .hero-banner-img {
+    height: 380px;
+  }
+  .hero-overlay-content {
+    left: 5%;
+    right: 5%;
+    max-width: 90%;
+  }
+  .hero-overlay-content h1 {
+    font-size: 26px;
+  }
+  .hero-offer-card {
+    position: static;
+    margin: 15px auto 0;
+    width: 90%;
+  }
+  .hero-banner {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-overlay-content h1 {
+    font-size: 22px;
+  }
+  .hero-overlay-content p {
+    font-size: 14px;
+  }
+}
+
+.profile-sidebar {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 20px;
+  height: 100%;
+}
+
+.sidebar-link {
+  display: block;
+  color: #ccc;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.sidebar-link i {
+  margin-right: 8px;
+}
+
+.sidebar-link:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: #f5b800;
+  color: #111;
+  font-weight: 700;
+}
+
+.profile-panel {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 25px;
+}
+
+
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.email-modal {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 25px;
+  width: 90%;
+  max-width: 420px;
+  position: relative;
+  color: #fff;
+}
+
+.btn-close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #000;
+  color: #fff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.email-otp-box {
+  width: 42px !important;
+  height: 46px !important;
+  font-size: 18px !important;
+}
+#changeEmailBtn {
+  height: 48px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.admin-sidebar {
+  background: #1a1a1a;
+  width: 220px;
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.admin-sidebar .sidebar-link {
+  display: block;
+  color: #ccc;
+  text-decoration: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.admin-sidebar .sidebar-link:hover {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.admin-sidebar .sidebar-link.active {
+  background: #f5b800;
+  color: #111;
+  font-weight: 700;
+  border-radius: 6px;
+  margin: 0 10px 4px;
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #888;
+  font-size: 20px;
+}

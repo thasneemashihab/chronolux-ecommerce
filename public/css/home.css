@@ -1,0 +1,129 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background: #0d0d0d;
+  color: #fff;
+}
+
+.nav-left { display: flex; align-items: center; gap: 10px; }
+.nav-logo { width: 28px; height: 28px; }
+.nav-brand { font-weight: 700; font-size: 18px; }
+
+.nav-links { display: flex; gap: 25px; list-style: none; margin: 0; }
+.nav-links a { color: #fff; text-decoration: none; font-size: 14px; }
+
+.nav-right { display: flex; align-items: center; gap: 18px; font-size: 18px; }
+.btn-signup-nav { background: #f5b800; color: #111; padding: 6px 16px; border-radius: 6px; font-weight: 700; text-decoration: none; font-size: 14px; }
+.profile-icon { color: #fff; font-size: 22px; }
+
+.hero {
+  background: #0d0d0d;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 60px 40px;
+  flex-wrap: wrap;
+}
+.hero-text h1 { font-size: 38px; font-weight: 700; margin-bottom: 15px; }
+.hero-text p { color: #aaa; margin-bottom: 25px; max-width: 400px; }
+.hero-buttons { display: flex; gap: 15px; }
+.btn-gold { background: #f5b800; color: #111; padding: 12px 28px; border-radius: 6px; font-weight: 700; text-decoration: none; }
+.btn-outline { border: 1px solid #fff; color: #fff; padding: 12px 28px; border-radius: 6px; text-decoration: none; }
+.hero-image img { max-width: 900px; border-radius: 10px; max-height: 800px;}
+
+.categories { padding: 50px 40px; text-align: center; }
+.categories h2 { margin-bottom: 30px; }
+.category-grid { display: flex; justify-content: center; gap: 25px; flex-wrap: wrap; }
+.category-card img { width: 150px; height: 150px; object-fit: cover; border-radius: 10px; }
+.category-card p { margin-top: 10px; font-weight: 600; }
+
+.featured { padding: 50px 40px; text-align: center; background: #f8f8f8; }
+.featured h2 { margin-bottom: 30px; }
+.product-grid { display: flex; justify-content: center; gap: 25px; flex-wrap: wrap; }
+.product-card { width: 220px; text-align: left; }
+.product-card img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; }
+.product-card h4 { margin: 10px 0 5px; font-size: 15px; }
+.product-card .price { color: #f5b800; font-weight: 700; }
+
+.footer {
+  background: #0d0d0d;
+  color: #fff;
+  padding: 40px 40px 20px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.footer-col { flex: 1; min-width: 180px; }
+
+.footer-brand { max-width: 260px; }
+.footer-logo { width: 32px; height: 32px; margin-bottom: 8px; }
+.footer-brand h3 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.footer-tagline { color: #f5b800; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+.footer-brand p { color: #aaa; font-size: 13px; line-height: 1.5; }
+
+.footer-socials { display: flex; gap: 12px; margin-top: 15px; }
+.footer-socials a {
+  background: #1a1a1a;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 14px;
+}
+.footer-socials a:hover { background: #f5b800; color: #111; }
+
+.footer-col h4 { font-size: 15px; margin-bottom: 14px; font-weight: 700; }
+.footer-col p { margin: 0 0 10px; }
+.footer-col p a {
+  color: #ccc;
+  font-size: 13px;
+  text-decoration: none;
+}
+.footer-col p a:hover { color: #f5b800; }
+
+.footer-newsletter p { color: #aaa; font-size: 13px; margin-bottom: 14px; }
+.newsletter-form { display: flex; }
+.newsletter-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  background: #4b5263;
+  color: #fff;
+  font-size: 13px;
+}
+.newsletter-form input::placeholder { color: #ccc; }
+.newsletter-form button {
+  background: #f5b800;
+  color: #111;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 0 4px 4px 0;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.footer-bottom {
+  width: 100%;
+  text-align: center;
+  color: #777;
+  font-size: 13px;
+  margin-top: 25px;
+  border-top: 1px solid #222;
+  padding-top: 15px;
+}
+
+@media (max-width: 768px) {
+  .navbar, .hero, .footer { flex-direction: column; gap: 15px; text-align: center; }
+  .nav-links { flex-direction: column; gap: 10px; }
+}

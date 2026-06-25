@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Login - ChronoLux</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d;">
+
+<div class="container-fluid d-flex align-items-center justify-content-center" style="min-height:100vh;">
+  <div class="row auth-card-row shadow-lg rounded overflow-hidden" style="max-width:950px;">
+
+    <!-- LEFT: Brand panel -->
+    <div class="col-12 col-lg-5 auth-brand-panel text-center p-4">
+      <img src="/images/logo.png" class="logo mb-2" alt="ChronoLux logo">
+      <h1 class="fw-bold">CHRONOLUX</h1>
+      <div class="text-warning small mb-3">— TIMELESS ELEGANCE —</div>
+      <img src="/images/watch.jpg" class="img-fluid rounded mb-3" alt="Luxury watch">
+      <h5 class="text-white">Welcome Back!</h5>
+      <p class="text-secondary small">Login to continue your luxury shopping experience.</p>
+    </div>
+
+    <!-- RIGHT: Login form -->
+    <div class="col-12 col-lg-7 auth-form-panel p-4 p-lg-5">
+      <h2 class="fw-bold text-white">Welcome Back <span class="icon-badge">👋</span></h2>
+      <p class="text-secondary mb-4">Login to your account</p>
+
+      <form id="loginForm" novalidate>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter your email">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-white">Password</label>
+          <div class="position-relative">
+            <input type="password" class="form-control" id="password" placeholder="Enter your password">
+            <span class="toggle-eye position-absolute top-50 end-0 translate-middle-y me-3" data-target="password">
+              <i class="bi bi-eye-slash-fill"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="alert alert-danger d-none" id="loginError"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <label class="text-white small">
+            <input type="checkbox" id="rememberMe" class="form-check-input me-1"> Remember Me
+          </label>
+          <a href="/forgot-password" class="text-warning small fw-bold text-decoration-none">Forget Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-warning fw-bold w-100 mb-3">Login</button>
+
+        <p class="text-center text-white small">OR</p>
+
+        <button type="button" class="btn btn-secondary w-100 mb-3" id="googleLogin">
+          <img src="/images/google.png" width="18" alt="Google" class="me-2">Sign In with Google
+        </button>
+
+        <p class="text-center text-secondary">Don't have an account? <a href="/signup" class="text-warning fw-bold text-decoration-none">Sign Up</a></p>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/login.js"></script>
+</body>
+</html>

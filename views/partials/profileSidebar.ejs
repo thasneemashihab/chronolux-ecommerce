@@ -1,0 +1,28 @@
+<div class="profile-sidebar">
+  <div class="d-flex align-items-center mb-4">
+    <img src="<%= user.profileImage || '/images/profile.jpg' %>" class="rounded-circle" width="45" height="45" style="object-fit:cover;">
+    <div class="ms-2">
+      <p class="mb-0 fw-bold text-white">Hello, <%= user.name %></p>
+      <p class="mb-0 text-secondary small">Welcome back!</p>
+    </div>
+  </div>
+
+  <a href="/profile" class="sidebar-link <%= active === 'profile' ? 'active' : '' %>">
+    <i class="bi bi-person"></i> Profile info
+  </a>
+  <a href="/orders" class="sidebar-link <%= active === 'orders' ? 'active' : '' %>">
+    <i class="bi bi-bag"></i> Orders
+  </a>
+  <a href="/address" class="sidebar-link <%= active === 'address' ? 'active' : '' %>">
+    <i class="bi bi-geo-alt"></i> Address
+  </a>
+  <a href="/wallet" class="sidebar-link <%= active === 'wallet' ? 'active' : '' %>">
+    <i class="bi bi-wallet2"></i> Wallet
+  </a>
+  <a href="/coupons" class="sidebar-link <%= active === 'coupons' ? 'active' : '' %>">
+    <i class="bi bi-gift"></i> Coupons & Offers
+  </a>
+  <a href="#" id="sidebarLogout" class="sidebar-link">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </a>
+</div>

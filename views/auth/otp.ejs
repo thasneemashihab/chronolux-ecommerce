@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Verify OTP - ChronoLux</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-brand">
+      <img src="/images/logo.png" class="logo" alt="ChronoLux logo">
+      <h1>CHRONOLUX</h1>
+      <div class="tagline">— Timeless Elegance —</div>
+      <img src="/images/luxury.jpg" alt="Luxury watch">
+    </div>
+
+    <div class="auth-form otp-form">
+      <div class="otp-icon"><i class="bi bi-envelope-fill"></i></div>
+      <h2 class="otp-title">Verify OTP</h2>
+      <p class="subtitle text-center">Enter the 6-digit code sent to</p>
+      <p class="otp-email text-center" id="emailDisplay"></p>
+
+      <form id="otpForm">
+        <div class="otp-boxes">
+          <input type="text" maxlength="1" class="otp-box" data-index="0" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-box" data-index="1" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-box" data-index="2" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-box" data-index="3" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-box" data-index="4" inputmode="numeric">
+          <input type="text" maxlength="1" class="otp-box" data-index="5" inputmode="numeric">
+        </div>
+        <div class="field-error text-center" id="otpError"></div>
+
+        <p class="otp-timer text-center">
+          Resend OTP in <span id="timer">00:60</span>
+        </p>
+
+        <button type="submit" class="btn-signup">Verify OTP</button>
+
+        <p class="login-link text-center">
+          Didn't receive code? <a href="#" id="resendBtn" class="resend-disabled">Resend OTP</a>
+        </p>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script src="/js/otp.js"></script>
+</body>
+</html>

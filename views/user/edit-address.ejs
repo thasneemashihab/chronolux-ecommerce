@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Edit Address - ChronoLux</title>
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'address' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+        <h3 class="fw-bold mb-4">
+          <a href="/address" class="text-white text-decoration-none me-2"><i class="bi bi-arrow-left"></i></a>
+          Edit Address
+        </h3>
+
+        <form id="editAddressForm" data-address-id="<%= address._id %>">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="fullName" value="<%= address.fullName %>">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="phone" value="<%= address.phone %>">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Pincode <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="pincode" value="<%= address.pincode %>">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">State <span class="text-danger">*</span></label>
+              <select class="form-select" id="state">
+                <option value="">Select state</option>
+                <option value="Kerala" <%= address.state === 'Kerala' ? 'selected' : '' %>>Kerala</option>
+                <option value="Tamil Nadu" <%= address.state === 'Tamil Nadu' ? 'selected' : '' %>>Tamil Nadu</option>
+                <option value="Karnataka" <%= address.state === 'Karnataka' ? 'selected' : '' %>>Karnataka</option>
+                <option value="Maharashtra" <%= address.state === 'Maharashtra' ? 'selected' : '' %>>Maharashtra</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label">City <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="city" value="<%= address.city %>">
+            </div>
+            <div class="col-12 mb-3">
+              <label class="form-label">Full Address <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="fullAddress" rows="3"><%= address.fullAddress %></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Address Type <span class="text-danger">*</span></label>
+              <select class="form-select" id="label">
+                <option value="">Select address type</option>
+                <option value="Home" <%= address.label === 'Home' ? 'selected' : '' %>>Home</option>
+                <option value="Work" <%= address.label === 'Work' ? 'selected' : '' %>>Work</option>
+                <option value="Other" <%= address.label === 'Other' ? 'selected' : '' %>>Other</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isDefault" <%= address.isDefault ? 'checked' : '' %>>
+                <label class="form-check-label" for="isDefault">Yes, set as default</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-danger d-none" id="addressFormAlert"></div>
+
+          <div class="d-flex gap-2">
+            <a href="/address" class="btn btn-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-warning fw-bold px-4">Update Address</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/editAddress.js"></script>
+</body>
+</html>
