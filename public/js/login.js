@@ -40,6 +40,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     return;
   }
 
+// Check if redirected here because session expired
+  const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('sessionExpired')) {
+  showToast('Your session expired. Please log in again.', 'error');
+}
+if (urlParams.get('blocked')) {
+  showToast('Your account has been blocked by admin.', 'error');
+}
+
   // Step 3: Login succeeded — go to home page
   window.location.href = '/';
 });

@@ -1,7 +1,21 @@
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('sessionExpired')) {
+  showToast('Your session expired. Please log in again.', 'error');
+}
+
 document.querySelectorAll('.toggle-eye').forEach(btn => {
   btn.addEventListener('click', () => {
     const input = document.getElementById(btn.dataset.target);
-    input.type = input.type === 'password' ? 'text' : 'password';
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.classList.remove('bi-eye-fill');
+      icon.classList.add('bi-eye-slash-fill');
+    }else{
+      input.type = 'password';
+      icon.classList.remove('bi-eye-slash-fill');
+      icon.classList.add('bi-eye-fill');
+    }
   });
 });
 
