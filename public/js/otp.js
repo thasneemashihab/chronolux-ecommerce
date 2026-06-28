@@ -37,11 +37,11 @@ function getOtpValue() {
 // ---- Timer ----
 const timerEl = document.getElementById('timer');
 const resendBtn = document.getElementById('resendBtn');
-let seconds = 60;
+let seconds = 120;
 let countdown;
 
 function startTimer() {
-  seconds = 60;
+  seconds = 120;
   updateTimerDisplay();
   resendBtn.classList.remove('resend-active');
   resendBtn.classList.add('resend-disabled');
@@ -92,8 +92,8 @@ document.getElementById('otpForm').addEventListener('submit', async (e) => {
   }
 
   sessionStorage.removeItem('otpEmail');
-  alert('Account verified! Please login.');
-  window.location.href = '/login';
+  showToast('Account verified successfully!');
+  setTimeout(() => window.location.href = '/', 1000);
 });
 
 // ---- Resend ----
@@ -110,5 +110,6 @@ resendBtn.addEventListener('click', async (e) => {
     body: JSON.stringify({ email })
   });
 
+  showToast('A new OTP has been sent to your email');
   startTimer();
 });
