@@ -63,6 +63,15 @@ exports.verifyOtp = async (req, res) => {
     user.otpExpiry = undefined;
     await user.save();
 
+
+    // Auto-login: issue a token immediately, same as the login flow does
+    const token = generateToken(user._id);
+    res.cookie('token', token, {
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+
     res.json({ message: 'Account verified successfully' });
   } catch (err) {
     console.error(err);
@@ -235,4 +244,22 @@ exports.verifyResetOtp = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error, please try again' });
   }
+};
+
+
+
+// GET /api/auth/google/callback - handles Google's response
+exports.googleCallback = (req, res) => {
+    // Check if this user has been blocked by admin
+  if (req.user.isBlocked) {
+    return res.redirect('/login?blocked=true');
+  }
+  const token = generateToken(req.user._id);
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+
+  res.redirect('/');
 };
