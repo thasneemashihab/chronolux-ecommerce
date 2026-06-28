@@ -5,7 +5,7 @@ const adminAuth = async (req, res, next) => {
   const token = req.cookies.adminToken;
 
   if (!token) {
-    return res.redirect('/admin/login');
+    return res.redirect('/admin/login?sessionExpired=true');
   }
 
   try {
@@ -13,13 +13,15 @@ const adminAuth = async (req, res, next) => {
     const user = await User.findById(decoded.id);
 
     if (!user || !user.isAdmin) {
-      return res.redirect('/admin/login');
+      res.clearCookie('adminToken');
+      return res.redirect('/admin/login?sessionExpired=true');
     }
 
     req.adminId = user._id;
     next();
   } catch (err) {
-    return res.redirect('/admin/login');
+    res.clearCookie('adminToken');
+    return res.redirect('/admin/login?sessionExpired=true');
   }
 };
 

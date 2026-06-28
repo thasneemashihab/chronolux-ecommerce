@@ -6,7 +6,7 @@ const authMiddleware = (req, res, next) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.redirect('/login');
+    return res.redirect('/login?sessionExpired=true');
   }
 
   try {
@@ -14,7 +14,8 @@ const authMiddleware = (req, res, next) => {
     req.userId = decoded.id; // store the logged-in user's ID for later use
     next();
   } catch (err) {
-    return res.redirect('/login');
+    res.clearCookie('token');//clean up the invalid/expired cookie
+    return res.redirect('/login?sessionExpired=true');
   }
 };
 
