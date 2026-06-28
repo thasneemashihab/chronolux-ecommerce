@@ -39,14 +39,15 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
 
     if (!res.ok) {
       if (data.errors) data.errors.forEach(err => showError(err.path, err.msg));
-      else showAlert(data.message);
+      else showToast(data.message);
       return;
     }
 
-    sessionStorage.setItem('otpEmail', email);
-    window.location.href = '/otp';
+      sessionStorage.setItem('otpEmail', email);
+    showToast('OTP sent! Check your email.');
+    setTimeout(() => window.location.href = '/otp', 1000);
   } catch (err) {
-    showAlert('Something went wrong. Try again.');
+    showToast('Something went wrong. Try again.', 'error');
   }
 });
 
@@ -60,14 +61,14 @@ function showError(field, message) {
 function clearErrors() {
   document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
   document.querySelectorAll('input').forEach(el => el.classList.remove('is-invalid-input'));
-  document.getElementById('formAlert').classList.add('d-none');
+  //document.getElementById('formAlert').classList.add('d-none');
 }
 
-function showAlert(message) {
+/*function showAlert(message) {
   const alertEl = document.getElementById('formAlert');
   alertEl.textContent = message;
   alertEl.classList.remove('d-none');
-}
+}*/
 
 document.getElementById('googleSignup').addEventListener('click', () => {
   window.location.href = '/api/auth/google'; // not wired up yet

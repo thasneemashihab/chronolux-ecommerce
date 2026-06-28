@@ -2,17 +2,17 @@
 document.querySelectorAll('.delete-address-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
     const addressId = btn.dataset.id;
-    const confirmed = confirm('Are you sure you want to delete this address?');
+    const confirmed = await showConfirm('Are you sure you want to delete this address?');
     if (!confirmed) return;
 
     const res = await fetch(`/api/users/address/${addressId}`, { method: 'DELETE' });
     const data = await res.json();
 
     if (res.ok) {
-      // Remove the row from the table without reloading the page
       btn.closest('tr').remove();
+      showToast(data.message);
     } else {
-      alert(data.message);
+      showToast(data.message, 'error');
     }
   });
 });
