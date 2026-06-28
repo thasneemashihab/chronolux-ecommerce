@@ -1,3 +1,22 @@
+document.querySelectorAll('.toggle-eye').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById(btn.dataset.target);
+    const icon = btn.querySelector('i');
+
+    if (input.type === 'password') {
+      // Password is about to become VISIBLE → show the OPEN eye icon
+      input.type = 'text';
+      icon.classList.remove('bi-eye-slash-fill');
+      icon.classList.add('bi-eye-fill');
+    } else {
+      // Password is about to become HIDDEN again → show the SLASHED eye icon
+      input.type = 'password';
+      icon.classList.remove('bi-eye-fill');
+      icon.classList.add('bi-eye-slash-fill');
+    }
+  });
+});
+
 // ----- Save profile changes -----
 document.getElementById('profileForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -5,7 +24,19 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const gender = document.querySelector('input[name="gender"]:checked').value;
-  const successBox = document.getElementById('profileSuccess');
+
+  if (!name) {
+    showToast('Name is required', 'error');
+    return;
+  }
+  if (name.length < 2) {
+    showToast('Name must be at least 2 characters', 'error');
+    return;
+  }
+  if (phone && !/^\d{10}$/.test(phone)) {
+    showToast('Phone number must be exactly 10 digits', 'error');
+    return;
+  }
 
   const res = await fetch('/api/users/profile/me', {
     method: 'PUT',
@@ -14,9 +45,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
   });
   const data = await res.json();
 
-  successBox.textContent = data.message;
-  successBox.classList.remove('d-none');
-  setTimeout(() => successBox.classList.add('d-none'), 3000);
+  showToast(data.message, res.ok ? 'success' : 'error');
 });
 
 // ----- Change password -----
@@ -26,15 +55,17 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
   const currentPassword = document.getElementById('currentPassword').value;
   const newPassword = document.getElementById('newPassword').value;
   const confirmNewPassword = document.getElementById('confirmNewPassword').value;
-  const errorBox = document.getElementById('passwordError');
-  const successBox = document.getElementById('passwordSuccess');
 
-  errorBox.classList.add('d-none');
-  successBox.classList.add('d-none');
-
+  if (!currentPassword) {
+    showToast('Current password is required', 'error');
+    return;
+  }
+  if (newPassword.length < 6) {
+    showToast('New password must be at least 6 characters', 'error');
+    return;
+  }
   if (newPassword !== confirmNewPassword) {
-    errorBox.textContent = 'Passwords do not match';
-    errorBox.classList.remove('d-none');
+    showToast('Passwords do not match', 'error');
     return;
   }
 
@@ -45,15 +76,8 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
   });
   const data = await res.json();
 
-  if (!res.ok) {
-    errorBox.textContent = data.message;
-    errorBox.classList.remove('d-none');
-    return;
-  }
-
-  successBox.textContent = data.message;
-  successBox.classList.remove('d-none');
-  document.getElementById('passwordForm').reset();
+  showToast(data.message, res.ok ? 'success' : 'error');
+  if (res.ok) document.getElementById('passwordForm').reset();
 });
 
 // ----- Email change modal -----
@@ -93,7 +117,7 @@ document.getElementById('sendEmailOtpBtn').addEventListener('click', async () =>
   const data = await res.json();
 
   if (!res.ok) {
-    errorEl.textContent = data.message;
+    showToast(data.message, 'error');
     return;
   }
 
@@ -101,6 +125,7 @@ document.getElementById('sendEmailOtpBtn').addEventListener('click', async () =>
   document.getElementById('pendingEmailDisplay').textContent = newEmail;
   emailStep1.classList.add('d-none');
   emailStep2.classList.remove('d-none');
+  showToast('OTP sent to your new email');
 });
 
 document.getElementById('verifyEmailOtpBtn').addEventListener('click', async () => {
@@ -116,13 +141,13 @@ document.getElementById('verifyEmailOtpBtn').addEventListener('click', async () 
   const data = await res.json();
 
   if (!res.ok) {
-    errorEl.textContent = data.message;
+    showToast(data.message, 'error');
     return;
   }
 
   document.getElementById('email').value = data.email;
   emailModalBackdrop.classList.add('d-none');
-  alert('Email updated successfully!');
+  showToast('Email updated successfully!');
 });
 
 // Auto-advance email OTP boxes
