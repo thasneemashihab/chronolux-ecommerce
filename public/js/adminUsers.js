@@ -61,16 +61,17 @@ function renderPagination(totalPages, current) {
 }
 
 async function toggleBlock(userId) {
-  const confirmed = confirm('Are you sure you want to change this user\'s status?');
+  const confirmed = await showConfirm('Are you sure you want to change this user\'s status?');
   if (!confirmed) return;
-
+  
   const res = await fetch(`/api/admin/users/${userId}/toggle-block`, { method: 'PUT' });
   const data = await res.json();
 
   if (res.ok) {
+    showToast(data.message);
     loadUsers(); // refresh the table to show updated status
   } else {
-    alert(data.message);
+    showToast(data.message, 'error');
   }
 }
 

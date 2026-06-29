@@ -3,6 +3,7 @@
 <head>
   <%- include('../partials/head') %>
   <title>Admin Login - ChronoLux</title>
+   <link href="/css/auth.css" rel="stylesheet">
 </head>
 <body style="background:#0d0d0d; min-height:100vh;">
 
@@ -19,12 +20,12 @@
       <div class="position-relative mb-2">
         <input type="password" class="form-control" id="password" placeholder="Password">
         <span class="toggle-eye position-absolute top-50 end-0 translate-middle-y me-3" data-target="password">
-          <i class="bi bi-eye-fill"></i>
+          <i class="bi-eye-slash-fill"></i>
         </span>
       </div>
 
       <div class="text-end mb-3">
-        <a href="#" class="text-danger fw-bold small text-decoration-none">Forget Password</a>
+       <a href="/forgot-password" class="text-danger fw-bold small text-decoration-none">Forget Password</a>
       </div>
 
       <div class="alert alert-danger d-none" id="adminLoginError"></div>
@@ -36,5 +37,6 @@
 
 <%- include('../partials/scripts') %>
 <script src="/js/adminLogin.js"></script>
+<script src="/js/main.js"></script>
 </body>
 </html>

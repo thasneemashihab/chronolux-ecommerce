@@ -5,23 +5,23 @@
   <title>Verify OTP - ChronoLux</title>
   <link href="/css/auth.css" rel="stylesheet">
 </head>
-<body>
+<body style="background:#0d0d0d;">
 
 <div class="auth-wrapper">
-  <div class="auth-card">
+  <div class="row auth-card-row shadow-lg rounded overflow-hidden" style="max-width:950px;">
 
-    <div class="auth-brand">
-      <img src="/images/logo.png" class="logo" alt="ChronoLux logo">
-      <h1>CHRONOLUX</h1>
-      <div class="tagline">— Timeless Elegance —</div>
-      <img src="/images/luxury.jpg" alt="Luxury watch">
+    <div class="col-12 col-lg-5 auth-brand-panel text-center p-4">
+      <img src="/images/logo.png" class="logo mb-2" alt="ChronoLux logo">
+      <h1 class="fw-bold">CHRONOLUX</h1>
+      <div class="text-warning small mb-3">— TIMELESS ELEGANCE —</div>
+      <img src="/images/luxury.jpg" class="img-fluid rounded" alt="Luxury watch">
     </div>
 
-    <div class="auth-form otp-form">
-      <div class="otp-icon"><i class="bi bi-envelope-fill"></i></div>
+    <div class="col-12 col-lg-7 auth-form-panel otp-form p-4 p-lg-5">
+      <div class="otp-icon mx-auto"><i class="bi bi-envelope-fill"></i></div>
       <h2 class="otp-title">Verify OTP</h2>
-      <p class="subtitle text-center">Enter the 6-digit code sent to</p>
-      <p class="otp-email text-center" id="emailDisplay"></p>
+      <p class="text-secondary">Enter the 6-digit code sent to</p>
+      <p class="otp-email" id="emailDisplay"></p>
 
       <form id="otpForm">
         <div class="otp-boxes">
@@ -34,13 +34,11 @@
         </div>
         <div class="field-error text-center" id="otpError"></div>
 
-        <p class="otp-timer text-center">
-          Resend OTP in <span id="timer">00:60</span>
-        </p>
+        <p class="otp-timer text-center">Resend OTP in <span id="timer">02:00</span></p>
 
-        <button type="submit" class="btn-signup">Verify OTP</button>
+        <button type="submit" class="btn btn-warning fw-bold w-100">Verify OTP</button>
 
-        <p class="login-link text-center">
+        <p class="text-center text-secondary small mt-3">
           Didn't receive code? <a href="#" id="resendBtn" class="resend-disabled">Resend OTP</a>
         </p>
       </form>
@@ -49,6 +47,8 @@
   </div>
 </div>
 
+<%- include('../partials/scripts') %>
 <script src="/js/otp.js"></script>
+<script src="/js/main.js"></script>
 </body>
 </html>
