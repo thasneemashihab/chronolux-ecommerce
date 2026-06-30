@@ -32,6 +32,8 @@ app.use('/api/users/profile', require('./routes/user/profileRoutes'));
 app.use('/api/users/address', require('./routes/user/addressRoutes'));
 app.use('/api/admin', require('./routes/admin/adminAuthRoutes'));
 app.use('/api/admin/users', require('./routes/admin/adminUserRoutes'));
+app.use('/api/admin/categories', require('./routes/admin/categoryRoutes'));
+app.use('/api/admin/products', require('./routes/admin/productRoutes'));
 
 //404 fallback
 app.use((req,res)=>{

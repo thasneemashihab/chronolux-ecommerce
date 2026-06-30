@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Category - Admin Panel</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/coupons" class="sidebar-link"><i class="bi bi-ticket"></i> Coupon</a>
+    <a href="/admin/categories" class="sidebar-link active"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
+    <a href="/admin/offers" class="sidebar-link"><i class="bi bi-percent"></i> Offers</a>
+    <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="text-white fw-bold mb-0">Category</h3>
+      <button class="btn btn-warning fw-bold" id="openAddCategoryBtn">+ Add Category</button>
+    </div>
+
+    <div class="position-relative mb-3">
+      <input type="text" class="form-control" id="categorySearch" placeholder="Search here">
+      <span class="clear-search d-none" id="clearCategorySearch">&times;</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-dark align-middle">
+        <thead>
+          <tr>
+            <th>Category Name</th>
+            <th>Image</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="categoryTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <span class="text-secondary small" id="totalCategoriesLabel"></span>
+      <nav><ul class="pagination mb-0" id="categoryPagination"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Category Modal -->
+<div class="modal-backdrop-custom d-none" id="categoryModalBackdrop">
+  <div class="email-modal">
+    <button class="btn-close-modal" id="closeCategoryModal">×</button>
+    <h5 class="fw-bold mb-3" id="categoryModalTitle">Add Category</h5>
+
+    <form id="categoryForm">
+      <input type="hidden" id="categoryId">
+
+      <!-- Image preview area (shown when editing) -->
+      <div class="text-center mb-3 d-none" id="imagePreviewWrapper">
+        <div class="position-relative d-inline-block">
+          <img id="imagePreview" src="" class="rounded" style="width:120px; height:120px; object-fit:cover;">
+          <label for="categoryImage" class="image-upload-icon">
+            <i class="bi bi-camera-fill"></i>
+          </label>
+        </div>
+        <p class="text-secondary small mt-1">Click to upload image</p>
+      </div>
+
+      <!-- Upload box (shown when adding) -->
+      <div class="upload-box text-center mb-3" id="uploadBox">
+        <label for="categoryImage" style="cursor:pointer;">
+          <i class="bi bi-image fs-1 text-secondary"></i>
+          <p class="text-secondary small mb-0">Click to upload image</p>
+        </label>
+      </div>
+      <input type="file" id="categoryImage" accept="image/*" class="d-none">
+
+      <label class="form-label">Category Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control mb-3" id="categoryName" placeholder="Enter the category name">
+
+      <label class="form-label">Slug (URL) <span class="text-danger">*</span></label>
+      <input type="text" class="form-control mb-3" id="categorySlug" placeholder="Enter slug (eg: men-watches)">
+
+      <label class="form-label">Parent Category (Optional)</label>
+      <select class="form-select mb-3" id="parentCategorySelect">
+        <option value="">Select parent category</option>
+      </select>
+
+      <label class="form-label d-block">Status</label>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="categoryActive" checked>
+        <label class="form-check-label" for="categoryActive">Active</label>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary w-50" id="cancelCategoryBtn">Cancel</button>
+        <button type="submit" class="btn btn-warning fw-bold w-50" id="saveCategoryBtn">Add Category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/adminCategories.js"></script>
+</body>
+</html>

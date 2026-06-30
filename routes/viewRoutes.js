@@ -24,6 +24,8 @@ router.get('/address/edit/:addressId', authMiddleware, viewController.getEditAdd
 //admin pages
 router.get('/admin/login', viewController.getAdminLogin);
 router.get('/admin/users', adminAuth, viewController.getAdminUsers);
+router.get('/admin/categories', adminAuth, viewController.getAdminCategories);
+router.get('/admin/products', adminAuth, viewController.getAdminProducts);
 
 
 module.exports = router;

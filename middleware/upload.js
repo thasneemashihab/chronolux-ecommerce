@@ -1,28 +1,25 @@
-/*const jwt=require("jsonwebtoken");
-const User=require("../../models/user.model");
+const multer = require('multer');
+const path = require('path');
 
-exports.protect=async (req,res,next)=>{
-    try{
-        const authHeader=req.headers.authorization;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Route to different folders depending on what's being uploaded
+    const folder = req.baseUrl.includes('products') ? 'products' : 'categories';
+    cb(null, path.join(__dirname, `../public/uploads/${folder}`));
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
 
-        if(!authHeader || !authHeader.startsWith("Bearer ")){
-            return res.status(401).json({message:"No token provided"});
-        }
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files are allowed'));
+  }
+});
 
-        const token=authHeader.split(" ")[1];
-
-        const decoded=jwt.verify(token,process.env.JWT_SECRET);
-
-        const user= await User.findById(decoded.id).select("-password");
-
-        if (!user) {
-            return res.status(401).json({ message: "User not found" });
-        }
-
-        req.user=user;
-
-        next();
-    }catch(error){
-        res.status(401).json({message:"Invalid token"});
-    }
-};*/
+module.exports = upload;

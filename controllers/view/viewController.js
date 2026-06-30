@@ -47,3 +47,5 @@ exports.getEditAddressPage = async (req, res) => {
 
 exports.getAdminLogin = (req, res) => res.render('admin/login');
 exports.getAdminUsers = (req, res) => res.render('admin/users');
+exports.getAdminCategories = (req, res) => res.render('admin/categories');
+exports.getAdminProducts = (req, res) => res.render('admin/products');

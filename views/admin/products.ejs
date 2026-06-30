@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Products - Admin Panel</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link active"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
+    <a href="/admin/coupons" class="sidebar-link"><i class="bi bi-ticket"></i> Coupon</a>
+    <a href="/admin/offers" class="sidebar-link"><i class="bi bi-percent"></i> Offers</a>
+    <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="text-white fw-bold mb-0">Products Management</h3>
+      <button class="btn btn-warning fw-bold" id="openAddProductBtn">+ Add Product</button>
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+      <div class="position-relative" style="max-width:350px; width:100%;">
+        <input type="text" class="form-control" id="productSearch" placeholder="Search here">
+        <span class="clear-search d-none" id="clearProductSearch">&times;</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-dark align-middle">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Brand</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <span class="text-secondary small" id="totalProductsLabel"></span>
+      <nav><ul class="pagination mb-0" id="productPagination"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal-backdrop-custom d-none" id="productModalBackdrop">
+  <div class="email-modal" style="max-width:700px;">
+    <button class="btn-close-modal" id="closeProductModal">×</button>
+    <h5 class="fw-bold mb-3" id="productModalTitle">Add Product</h5>
+
+    <form id="productForm">
+      <input type="hidden" id="productId">
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label">Product Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control mb-3" id="productName" placeholder="Enter product name">
+
+          <label class="form-label">Brand <span class="text-danger">*</span></label>
+          <select class="form-select mb-3" id="productBrand">
+            <option value="">Select brand</option>
+          </select>
+
+          <label class="form-label">Category <span class="text-danger">*</span></label>
+          <select class="form-select mb-3" id="productCategory">
+            <option value="">Select category</option>
+          </select>
+
+          <label class="form-label">Price <span class="text-danger">*</span></label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control" id="productPrice" placeholder="Enter price">
+          </div>
+
+          <label class="form-label">Stock <span class="text-danger">*</span></label>
+          <input type="number" class="form-control mb-3" id="productStock" placeholder="Enter stock quantity">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
+          <div class="upload-box text-center mb-2" id="productUploadBox">
+            <label for="productImages" style="cursor:pointer;">
+              <i class="bi bi-image fs-1 text-secondary"></i>
+              <p class="text-secondary small mb-0">Click to upload images</p>
+            </label>
+          </div>
+          <input type="file" id="productImages" accept="image/*" multiple class="d-none">
+          <div class="d-flex flex-wrap gap-2 mb-3" id="imageThumbnails"></div>
+
+          <label class="form-label">Description <span class="text-danger">*</span></label>
+          <textarea class="form-control mb-3" id="productDescription" rows="5" placeholder="Enter product description"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary w-50" id="cancelProductBtn">Cancel</button>
+        <button type="submit" class="btn btn-warning fw-bold w-50" id="saveProductBtn">Add Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div class="modal-backdrop-custom d-none" id="cropModalBackdrop">
+  <div class="email-modal" style="max-width:500px;">
+    <h5 class="fw-bold mb-3">Crop Image</h5>
+    <div style="max-height:350px;">
+      <img id="cropImage" style="max-width:100%;">
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button type="button" class="btn btn-secondary w-50" id="cancelCropBtn">Cancel</button>
+      <button type="button" class="btn btn-warning fw-bold w-50" id="confirmCropBtn">Crop & Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/adminProducts.js"></script>
+</body>
+</html>
