@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Product Details - ChronoLux</title>
+  <link href="/css/shop.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/" class="text-warning text-decoration-none">Home</a></li>
+      <li class="breadcrumb-item"><a href="/shop" class="text-warning text-decoration-none">Shop</a></li>
+      <li class="breadcrumb-item active text-secondary" id="breadcrumbProductName">Loading...</li>
+    </ol>
+  </nav>
+
+  <!-- Main Product Section -->
+  <div class="row g-4" id="productSection">
+    <!-- Left: Images -->
+<div class="col-12 col-lg-6">
+  <div class="position-relative">
+    <span class="discount-badge d-none" id="discountBadge"></span>
+    <div class="product-image-zoom-wrapper">
+      <img id="mainImage" src="" class="product-main-image" alt="Product Image">
+    </div>
+    <button class="wishlist-btn" id="wishlistBtn"><i class="bi bi-heart"></i></button>
+  </div>
+  <div class="d-flex gap-2 mt-2 overflow-auto" id="thumbnailStrip"></div>
+</div>
+
+    <!-- Right: Product Info -->
+    <div class="col-12 col-lg-6">
+      <h2 class="fw-bold" id="productName"></h2>
+
+      <div class="d-flex align-items-center gap-3 mb-2">
+        <div class="stars" id="starsDisplay"></div>
+        <span class="text-secondary small" id="reviewCount"></span>
+        <span class="text-secondary small" id="brandDisplay"></span>
+      </div>
+
+      <div class="mb-3">
+        <span class="product-price" id="productPrice"></span>
+        <span class="product-original-price ms-2 d-none" id="originalPrice"></span>
+        <span class="badge bg-success ms-2 d-none" id="discountPercent"></span>
+      </div>
+
+      <div class="mb-3 d-none" id="colorsSection">
+        <p class="fw-bold mb-2">Color</p>
+        <div class="d-flex gap-2" id="colorOptions"></div>
+      </div>
+
+      <div class="mb-3 d-none" id="variantsSection">
+        <p class="fw-bold mb-2">Style</p>
+        <div class="d-flex gap-2 flex-wrap" id="variantOptions"></div>
+      </div>
+
+      <div class="mb-3">
+        <p class="fw-bold mb-2">Quantity</p>
+        <div class="d-flex align-items-center gap-3">
+          <button class="qty-btn" id="qtyMinus">-</button>
+          <span class="qty-display" id="qtyDisplay">1</span>
+          <button class="qty-btn" id="qtyPlus">+</button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <span class="fw-bold">Stock status: </span>
+        <span id="stockStatus"></span>
+        <p class="text-danger small mt-1 d-none" id="lowStockWarning"></p>
+      </div>
+
+      <div class="d-flex gap-3">
+        <button class="btn btn-warning fw-bold px-4" id="addToCartBtn">Add to Cart</button>
+        <button class="btn btn-primary fw-bold px-4" id="buyNowBtn">Buy Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Section -->
+  <div class="mt-5">
+    <ul class="nav nav-tabs border-secondary" id="productTabs">
+      <li class="nav-item">
+        <button class="nav-link active text-white" data-bs-toggle="tab" data-bs-target="#descTab">Description</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link text-secondary" data-bs-toggle="tab" data-bs-target="#specTab">Specifications</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link text-secondary" data-bs-toggle="tab" data-bs-target="#reviewTab">Reviews & Rating</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link text-secondary" data-bs-toggle="tab" data-bs-target="#shippingTab">Shipping and Returns</button>
+      </li>
+    </ul>
+    <div class="tab-content py-4">
+      <div class="tab-pane fade show active" id="descTab">
+        <p id="productDescription" class="text-secondary"></p>
+      </div>
+      <div class="tab-pane fade" id="specTab">
+        <p id="productSpecifications" class="text-secondary"></p>
+      </div>
+      <div class="tab-pane fade" id="reviewTab">
+        <div id="reviewsList" class="mb-4"></div>
+        <% if (user) { %>
+        <h6 class="fw-bold">Write a Review</h6>
+        <div class="mb-2" id="reviewStarInput">
+          <i class="bi bi-star review-star" data-val="1"></i>
+          <i class="bi bi-star review-star" data-val="2"></i>
+          <i class="bi bi-star review-star" data-val="3"></i>
+          <i class="bi bi-star review-star" data-val="4"></i>
+          <i class="bi bi-star review-star" data-val="5"></i>
+        </div>
+        <textarea class="form-control mb-2" id="reviewComment" rows="3" placeholder="Write your review..."></textarea>
+        <button class="btn btn-warning fw-bold" id="submitReviewBtn">Submit Review</button>
+        <% } else { %>
+        <p class="text-secondary">Please <a href="/login" class="text-warning">log in</a> to write a review.</p>
+        <% } %>
+      </div>
+      <div class="tab-pane fade" id="shippingTab">
+        <p class="text-secondary">Free shipping on orders above ₹999. Returns accepted within 7 days of delivery. Contact our support team for exchanges.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  <div class="mt-5">
+    <h4 class="fw-bold mb-3">You may also like</h4>
+    <div class="row g-3" id="relatedProducts"></div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/productDetails.js"></script>
+</body>
+</html>

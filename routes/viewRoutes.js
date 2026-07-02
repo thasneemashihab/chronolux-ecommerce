@@ -7,12 +7,14 @@ const adminAuth = require('../middleware/adminAuth');
 
 //public pages
 router.get('/', checkAuth, viewController.getHome);
+router.get('/shop', checkAuth, viewController.getShopPage);
 router.get('/signup', viewController.getSignup);
 router.get('/otp', viewController.getOtp);
 router.get('/login', viewController.getLogin);
 router.get('/forgot-password', viewController.getForgotPassword);
 router.get('/verify-reset-otp', viewController.getVerifyResetOtp);
 router.get('/reset-password', viewController.getResetPassword);
+router.get('/product/:id', checkAuth, viewController.getProductDetailsPage);
 
 //protected pages(require login)
 router.get('/profile', authMiddleware, viewController.getProfilePage);

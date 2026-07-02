@@ -51,7 +51,8 @@ exports.getProductDropdowns = async (req, res) => {
 // POST /api/admin/products - add new product
 exports.addProduct = async (req, res) => {
   try {
-    const { name, brand, category, description, price, stock } = req.body;
+    const { name, brand, category, description, specifications,
+            price, originalPrice, discount, stock, isActive, colors, variants } = req.body;
 
     if (!req.files || req.files.length < 3) {
       return res.status(400).json({ message: 'Please upload at least 3 product images' });
@@ -61,9 +62,15 @@ exports.addProduct = async (req, res) => {
 
     await Product.create({
       name, brand, category, description,
+      specifications: specifications || '',
       price: Number(price),
+      originalPrice: Number(originalPrice) || Number(price),
+      discount: Number(discount) || 0,
       stock: Number(stock),
-      images: imagePaths
+      images: imagePaths,
+      isActive: isActive === 'true',
+      colors: colors ? JSON.parse(colors) : [],
+      variants: variants ? JSON.parse(variants) : []
     });
 
     res.status(201).json({ message: 'Product added successfully' });
@@ -76,7 +83,9 @@ exports.addProduct = async (req, res) => {
 // PUT /api/admin/products/:id - edit product
 exports.updateProduct = async (req, res) => {
   try {
-    const { name, brand, category, description, price, stock } = req.body;
+    const { name, brand, category, description, specifications,
+            price, originalPrice, discount, stock, isActive, colors, variants } = req.body;
+
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
@@ -84,8 +93,14 @@ exports.updateProduct = async (req, res) => {
     product.brand = brand;
     product.category = category;
     product.description = description;
+    product.specifications = specifications || '';
     product.price = Number(price);
+    product.originalPrice = Number(originalPrice) || Number(price);
+    product.discount = Number(discount) || 0;
     product.stock = Number(stock);
+    product.isActive = isActive === 'true';
+    product.colors = colors ? JSON.parse(colors) : [];
+    product.variants = variants ? JSON.parse(variants) : [];
 
     if (req.files && req.files.length > 0) {
       if (req.files.length < 3) {

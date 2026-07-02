@@ -113,12 +113,17 @@ async function openEditModal(product) {
   document.getElementById('productId').value = product._id;
   document.getElementById('productName').value = product.name;
   document.getElementById('productPrice').value = product.price;
+  document.getElementById('productOriginalPrice').value = product.originalPrice || '';
+  document.getElementById('productDiscount').value = product.discount || '';
   document.getElementById('productStock').value = product.stock;
   document.getElementById('productDescription').value = product.description;
+  document.getElementById('productSpecifications').value = product.specifications || '';
+  document.getElementById('productColors').value = product.colors ? product.colors.join(', ') : '';
+  document.getElementById('productVariants').value = product.variants ? product.variants.join(', ') : '';
+  document.getElementById('productStatus').value = product.isActive ? 'true' : 'false';
 
   croppedImages = [];
   imageThumbnails.innerHTML = '';
-  // Show existing images as thumbnails (won't be re-uploaded unless replaced)
   product.images.forEach(imgPath => {
     const thumb = document.createElement('div');
     thumb.className = 'image-thumb';
@@ -194,8 +199,18 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   const brand = document.getElementById('productBrand').value;
   const category = document.getElementById('productCategory').value;
   const price = document.getElementById('productPrice').value;
+  const originalPrice = document.getElementById('productOriginalPrice').value;
+  const discount = document.getElementById('productDiscount').value;
   const stock = document.getElementById('productStock').value;
   const description = document.getElementById('productDescription').value.trim();
+  const specifications = document.getElementById('productSpecifications').value.trim();
+  const colorsRaw = document.getElementById('productColors').value.trim();
+  const variantsRaw = document.getElementById('productVariants').value.trim();
+  const isActive = document.getElementById('productStatus').value === 'true';
+
+  // Convert comma-separated strings into arrays
+  const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(c => c) : [];
+  const variants = variantsRaw ? variantsRaw.split(',').map(v => v.trim()).filter(v => v) : [];
 
   if (!name || !brand || !category || !price || !stock || !description) {
     showToast('Please fill all required fields', 'error');
@@ -211,8 +226,16 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   formData.append('brand', brand);
   formData.append('category', category);
   formData.append('price', price);
+  formData.append('originalPrice', originalPrice || price);
+  formData.append('discount', discount || 0);
   formData.append('stock', stock);
   formData.append('description', description);
+  formData.append('specifications', specifications);
+  formData.append('isActive', isActive);
+
+  // Send colors and variants as JSON strings
+  formData.append('colors', JSON.stringify(colors));
+  formData.append('variants', JSON.stringify(variants));
 
   croppedImages.forEach((blob, i) => {
     formData.append('images', blob, `image-${i}.jpg`);

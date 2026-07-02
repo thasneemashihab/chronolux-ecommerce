@@ -69,56 +69,78 @@
     <button class="btn-close-modal" id="closeProductModal">×</button>
     <h5 class="fw-bold mb-3" id="productModalTitle">Add Product</h5>
 
-    <form id="productForm">
-      <input type="hidden" id="productId">
-      <div class="row">
-        <div class="col-md-6">
-          <label class="form-label">Product Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control mb-3" id="productName" placeholder="Enter product name">
+<form id="productForm">
+  <input type="hidden" id="productId">
+  <div class="row">
+    <div class="col-md-6">
+      <label class="form-label">Product Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control mb-3" id="productName" placeholder="Enter product name">
 
-          <label class="form-label">Brand <span class="text-danger">*</span></label>
-          <select class="form-select mb-3" id="productBrand">
-            <option value="">Select brand</option>
-          </select>
+      <label class="form-label">Brand <span class="text-danger">*</span></label>
+      <select class="form-select mb-3" id="productBrand">
+        <option value="">Select brand</option>
+      </select>
 
-          <label class="form-label">Category <span class="text-danger">*</span></label>
-          <select class="form-select mb-3" id="productCategory">
-            <option value="">Select category</option>
-          </select>
+      <label class="form-label">Category <span class="text-danger">*</span></label>
+      <select class="form-select mb-3" id="productCategory">
+        <option value="">Select category</option>
+      </select>
 
-          <label class="form-label">Price <span class="text-danger">*</span></label>
-          <div class="input-group mb-3">
-            <span class="input-group-text">$</span>
-            <input type="number" class="form-control" id="productPrice" placeholder="Enter price">
-          </div>
-
-          <label class="form-label">Stock <span class="text-danger">*</span></label>
-          <input type="number" class="form-control mb-3" id="productStock" placeholder="Enter stock quantity">
-        </div>
-
-        <div class="col-md-6">
-          <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
-          <div class="upload-box text-center mb-2" id="productUploadBox">
-            <label for="productImages" style="cursor:pointer;">
-              <i class="bi bi-image fs-1 text-secondary"></i>
-              <p class="text-secondary small mb-0">Click to upload images</p>
-            </label>
-          </div>
-          <input type="file" id="productImages" accept="image/*" multiple class="d-none">
-          <div class="d-flex flex-wrap gap-2 mb-3" id="imageThumbnails"></div>
-
-          <label class="form-label">Description <span class="text-danger">*</span></label>
-          <textarea class="form-control mb-3" id="productDescription" rows="5" placeholder="Enter product description"></textarea>
-        </div>
+      <label class="form-label">Price (₹) <span class="text-danger">*</span></label>
+      <div class="input-group mb-3">
+        <span class="input-group-text">₹</span>
+        <input type="number" class="form-control" id="productPrice" placeholder="Enter price">
       </div>
 
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary w-50" id="cancelProductBtn">Cancel</button>
-        <button type="submit" class="btn btn-warning fw-bold w-50" id="saveProductBtn">Add Product</button>
+      <label class="form-label">Original Price (₹) <span class="text-danger">*</span></label>
+      <div class="input-group mb-3">
+        <span class="input-group-text">₹</span>
+        <input type="number" class="form-control" id="productOriginalPrice" placeholder="Price before discount">
       </div>
-    </form>
+
+      <label class="form-label">Discount (%)</label>
+      <input type="number" class="form-control mb-3" id="productDiscount" placeholder="e.g. 15" min="0" max="100">
+
+      <label class="form-label">Stock <span class="text-danger">*</span></label>
+      <input type="number" class="form-control mb-3" id="productStock" placeholder="Enter stock quantity">
+
+      <label class="form-label">Colors <span class="text-secondary small">(comma separated)</span></label>
+      <input type="text" class="form-control mb-3" id="productColors" placeholder="e.g. black, white, blue">
+
+      <label class="form-label">Variants <span class="text-secondary small">(comma separated)</span></label>
+      <input type="text" class="form-control mb-3" id="productVariants" placeholder="e.g. oyster, jubilee">
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
+      <div class="upload-box text-center mb-2" id="productUploadBox">
+        <label for="productImages" style="cursor:pointer;">
+          <i class="bi bi-image fs-1 text-secondary"></i>
+          <p class="text-secondary small mb-0">Click to upload images</p>
+        </label>
+      </div>
+      <input type="file" id="productImages" accept="image/*" multiple class="d-none">
+      <div class="d-flex flex-wrap gap-2 mb-3" id="imageThumbnails"></div>
+
+      <label class="form-label">Description <span class="text-danger">*</span></label>
+      <textarea class="form-control mb-3" id="productDescription" rows="4" placeholder="Enter product description"></textarea>
+
+      <label class="form-label">Specifications</label>
+      <textarea class="form-control mb-3" id="productSpecifications" rows="4" placeholder="e.g. Case Size: 41mm&#10;Material: Oyster Steel&#10;Water Resistance: 300m"></textarea>
+
+      <label class="form-label">Status</label>
+      <select class="form-select mb-3" id="productStatus">
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
+      </select>
+    </div>
   </div>
-</div>
+
+  <div class="d-flex gap-2 mt-2">
+    <button type="button" class="btn btn-secondary w-50" id="cancelProductBtn">Cancel</button>
+    <button type="submit" class="btn btn-warning fw-bold w-50" id="saveProductBtn">Add Product</button>
+  </div>
+</form>
 
 <!-- Image Crop Modal -->
 <div class="modal-backdrop-custom d-none" id="cropModalBackdrop">

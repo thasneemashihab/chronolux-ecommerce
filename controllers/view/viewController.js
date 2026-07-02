@@ -49,3 +49,13 @@ exports.getAdminLogin = (req, res) => res.render('admin/login');
 exports.getAdminUsers = (req, res) => res.render('admin/users');
 exports.getAdminCategories = (req, res) => res.render('admin/categories');
 exports.getAdminProducts = (req, res) => res.render('admin/products');
+
+exports.getShopPage = async (req, res) => {
+  const user = req.user ? await User.findById(req.user.id).select('name email profileImage') : null;
+  res.render('user/shop', { user });
+};
+
+exports.getProductDetailsPage = async (req, res) => {
+  const user = req.user ? await User.findById(req.user.id).select('name email profileImage') : null;
+  res.render('user/product-details', { user, productId: req.params.id });
+};

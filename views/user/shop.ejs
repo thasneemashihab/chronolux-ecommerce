@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Shop - ChronoLux</title>
+  <link href="/css/shop.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container-fluid py-4">
+  <div class="row g-4">
+
+    <!-- LEFT: Filter Sidebar -->
+    <div class="col-12 col-lg-3">
+      <div class="filter-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Filter</h5>
+          <a href="#" class="text-warning small" id="clearAllFilters">Clear All</a>
+        </div>
+
+        <!-- Categories -->
+        <h6 class="filter-heading">Categories</h6>
+        <div id="categoryFilters" class="mb-3">
+          <label class="filter-option active-filter">
+            <input type="radio" name="category" value="" checked>
+            <span>All Watches</span>
+            <span class="filter-count" id="totalCount">0</span>
+          </label>
+        </div>
+
+        <!-- Brands -->
+        <h6 class="filter-heading">Brands</h6>
+        <div id="brandFilters" class="mb-3">
+          <label class="filter-option active-filter">
+            <input type="radio" name="brand" value="" checked>
+            <span>All Brands</span>
+          </label>
+        </div>
+
+        <!-- Price Range -->
+        <h6 class="filter-heading">Price Range</h6>
+        <div class="mb-3">
+          <input type="range" class="form-range" id="maxPriceRange" min="0" max="500000" step="1000" value="500000">
+          <div class="d-flex justify-content-between">
+            <span class="small">₹0</span>
+            <span class="small text-warning" id="priceDisplay">₹500,000</span>
+          </div>
+        </div>
+
+        <button class="btn btn-dark w-100 fw-bold" id="applyFiltersBtn">Apply Filter</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Product Grid -->
+    <div class="col-12 col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="position-relative" style="flex:1; max-width:500px;">
+          <i class="bi bi-search position-absolute" style="left:14px; top:50%; transform:translateY(-50%); color:#888;"></i>
+          <input type="text" class="form-control ps-5" id="productSearch" placeholder="Search for watches...">
+        </div>
+        <select class="form-select" id="sortSelect" style="width:200px;">
+          <option value="newest">Sort by: Newest</option>
+          <option value="priceLow">Price: Low to High</option>
+          <option value="priceHigh">Price: High to Low</option>
+          <option value="nameAZ">Name: A-Z</option>
+          <option value="nameZA">Name: Z-A</option>
+        </select>
+      </div>
+
+      <p class="text-secondary mb-3" id="productsFoundLabel">Loading...</p>
+
+      <div class="row g-3" id="productGrid"></div>
+
+      <div class="d-flex justify-content-center mt-4">
+        <nav><ul class="pagination" id="shopPagination"></ul></nav>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/shop.js"></script>
+</body>
+</html>
