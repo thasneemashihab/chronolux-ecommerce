@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>My Wishlist - ChronoLux</title>
+  <link href="/css/shop.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h3 class="fw-bold mb-0">My Wishlist</h3>
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary fw-bold" id="moveAllToCartBtn">
+        <i class="bi bi-cart me-1"></i> Move All to Cart
+      </button>
+      <button class="btn btn-secondary fw-bold" id="clearWishlistBtn">
+        <i class="bi bi-trash me-1"></i> Clear Wishlist
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3" id="wishlistGrid"></div>
+
+  <div class="text-center py-5 d-none" id="emptyWishlist">
+    <i class="bi bi-heart" style="font-size:60px; color:#444;"></i>
+    <h5 class="mt-3 text-secondary">Your wishlist is empty</h5>
+    <a href="/shop" class="btn btn-warning fw-bold mt-3">Browse Products</a>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/wishlist.js"></script>
+</body>
+</html>

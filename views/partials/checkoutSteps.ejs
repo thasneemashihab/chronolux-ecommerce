@@ -1,0 +1,30 @@
+<div class="checkout-steps">
+  <div class="container">
+    <div class="steps-wrapper">
+      <div class="step-item <%= step >= 1 ? 'completed' : '' %> <%= step === 1 ? 'active' : '' %>">
+        <div class="step-circle">
+          <% if (step > 1) { %>
+            <i class="bi bi-check-lg"></i>
+          <% } else { %>
+            1
+          <% } %>
+        </div>
+        <span class="step-label">Cart</span>
+      </div>
+
+      <div class="step-line <%= step >= 2 ? 'active' : '' %>"></div>
+
+      <div class="step-item <%= step >= 2 ? 'active' : '' %>">
+        <div class="step-circle">2</div>
+        <span class="step-label">Address</span>
+      </div>
+
+      <div class="step-line <%= step >= 3 ? 'active' : '' %>"></div>
+
+      <div class="step-item <%= step >= 3 ? 'active' : '' %>">
+        <div class="step-circle">3</div>
+        <span class="step-label">Payment</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,115 +1,219 @@
-const productId = window.location.pathname.split('/').pop();
-let selectedRating = 0;
+const pathParts = window.location.pathname.split('/').filter(p => p !== '');
+const productId = pathParts[pathParts.length - 1];
+
 let quantity = 1;
 let maxStock = 0;
+let selectedRating = 0;
 
 async function loadProductDetails() {
-  const res = await fetch(`/api/users/products/${productId}`);
+  try {
+    const res = await fetch(`/api/users/products/${productId}`);
 
-  // If product not found or unavailable, redirect to shop
-  if (!res.ok) {
-    showToast('Product not available', 'error');
-    setTimeout(() => window.location.href = '/shop', 1500);
-    return;
+    if (!res.ok) {
+      // Non-existent or unavailable product → show 404 page
+      window.location.href = '/not-found';
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data || !data.product) {
+      window.location.href = '/not-found';
+      return;
+    }
+
+    renderProduct(data.product);
+    renderRelated(data.relatedProducts || []);
+
+    // Only check wishlist if user is logged in (button exists on page)
+    if (document.getElementById('wishlistBtn')) {
+      checkWishlistStatus();
+    }
+
+  } catch (err) {
+    console.error('loadProductDetails error:', err);
+    window.location.href = '/not-found';
   }
-
-  const data = await res.json();
-  renderProduct(data.product);
-  renderRelated(data.relatedProducts);
 }
 
 function renderProduct(p) {
-  document.title = `${p.name} - ChronoLux`;
-  document.getElementById('breadcrumbProductName').textContent = p.name;
-  document.getElementById('productName').textContent = p.name;
-  document.getElementById('brandDisplay').textContent = `Brand: ${p.brand?.name || ''}`;
-  document.getElementById('productDescription').textContent = p.description;
-  document.getElementById('productSpecifications').textContent = p.specifications || 'No specifications available.';
+  try {
+    // Breadcrumb
+    const breadcrumb = document.getElementById('breadcrumbProductName');
+    if (breadcrumb) breadcrumb.textContent = p.name || '';
 
-  // Price
-  document.getElementById('productPrice').textContent = `₹${p.price.toLocaleString()}`;
-  if (p.discount > 0) {
-    document.getElementById('originalPrice').textContent = `₹${p.originalPrice.toLocaleString()}`;
-    document.getElementById('originalPrice').classList.remove('d-none');
-    document.getElementById('discountPercent').textContent = `${p.discount}% off`;
-    document.getElementById('discountPercent').classList.remove('d-none');
-    document.getElementById('discountBadge').textContent = `${p.discount}% off`;
-    document.getElementById('discountBadge').classList.remove('d-none');
-  }
+    // Title
+    document.title = `${p.name || 'Product'} - ChronoLux`;
+    const nameEl = document.getElementById('productName');
+    if (nameEl) nameEl.textContent = p.name || '';
 
-  // Images
-  maxStock = p.stock;
-  const mainImg = document.getElementById('mainImage');
-  if (p.images.length > 0) mainImg.src = p.images[0];
+    // Brand
+    const brandEl = document.getElementById('brandDisplay');
+    if (brandEl) brandEl.textContent = `Brand: ${p.brand?.name || ''}`;
 
-  const strip = document.getElementById('thumbnailStrip');
-  p.images.forEach((img, i) => {
-    const thumb = document.createElement('img');
-    thumb.src = img;
-    thumb.className = `thumbnail-img ${i === 0 ? 'active' : ''}`;
-    thumb.addEventListener('click', () => {
-      mainImg.src = img;
-      document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-      thumb.classList.add('active');
-    });
-    strip.appendChild(thumb);
-  });
+    // Description
+    const descEl = document.getElementById('productDescription');
+    if (descEl) descEl.textContent = p.description || '';
 
-  // Rating
-  const avgRating = p.reviews?.length > 0
-    ? (p.reviews.reduce((s, r) => s + r.rating, 0) / p.reviews.length).toFixed(1) : 0;
-  document.getElementById('starsDisplay').innerHTML = getStarsHTML(avgRating);
-  document.getElementById('reviewCount').textContent = `${p.reviews?.length || 0} reviews`;
+    // Specifications
+    const specEl = document.getElementById('productSpecifications');
+    if (specEl) specEl.textContent = p.specifications || 'No specifications available.';
 
-  // Colors
-  if (p.colors && p.colors.length > 0) {
-    document.getElementById('colorsSection').classList.remove('d-none');
-    const colorContainer = document.getElementById('colorOptions');
-    p.colors.forEach((color, i) => {
-      const swatch = document.createElement('div');
-      swatch.className = `color-swatch ${i === 0 ? 'active' : ''}`;
-      swatch.style.background = color;
-      swatch.addEventListener('click', () => {
-        document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-        swatch.classList.add('active');
-      });
-      colorContainer.appendChild(swatch);
-    });
-  }
+    // Price
+    const priceEl = document.getElementById('productPrice');
+    if (priceEl) priceEl.textContent = `₹${(p.price || 0).toLocaleString()}`;
 
-  // Variants
-  if (p.variants && p.variants.length > 0) {
-    document.getElementById('variantsSection').classList.remove('d-none');
-    const variantContainer = document.getElementById('variantOptions');
-    p.variants.forEach((variant, i) => {
-      const btn = document.createElement('button');
-      btn.className = `variant-btn ${i === 0 ? 'active' : ''}`;
-      btn.textContent = variant;
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
-      variantContainer.appendChild(btn);
-    });
-  }
+    if (p.discount > 0 && p.originalPrice > p.price) {
+      const origEl = document.getElementById('originalPrice');
+      const discEl = document.getElementById('discountPercent');
+      const badgeEl = document.getElementById('discountBadge');
 
-  // Stock status
-  const stockEl = document.getElementById('stockStatus');
-  const lowStock = document.getElementById('lowStockWarning');
-  if (p.stock <= 0) {
-    stockEl.innerHTML = '<span class="text-danger fw-bold">Out of Stock</span>';
-    document.getElementById('addToCartBtn').disabled = true;
-    document.getElementById('buyNowBtn').disabled = true;
-  } else {
-    stockEl.innerHTML = '<span class="text-success fw-bold">In Stock</span>';
-    if (p.stock <= 5) {
-      lowStock.textContent = `Only ${p.stock} left in stock`;
-      lowStock.classList.remove('d-none');
+      if (origEl) { origEl.textContent = `₹${p.originalPrice.toLocaleString()}`; origEl.classList.remove('d-none'); }
+      if (discEl) { discEl.textContent = `${p.discount}% off`; discEl.classList.remove('d-none'); }
+      if (badgeEl) { badgeEl.textContent = `${p.discount}% off`; badgeEl.classList.remove('d-none'); }
     }
-  }
 
-  // Reviews
-  renderReviews(p.reviews);
+    // Images
+    maxStock = p.stock || 0;
+    const mainImg = document.getElementById('mainImage');
+    const strip = document.getElementById('thumbnailStrip');
+
+    if (mainImg && strip && p.images && p.images.length > 0) {
+      mainImg.src = p.images[0];
+      strip.innerHTML = '';
+
+      p.images.forEach((img, i) => {
+        const thumb = document.createElement('img');
+        thumb.src = img;
+        thumb.className = `thumbnail-img ${i === 0 ? 'active' : ''}`;
+        thumb.addEventListener('click', () => {
+          mainImg.src = img;
+          document.querySelectorAll('.thumbnail-img').forEach((t, idx) => {
+            t.classList.toggle('active', idx === i);
+          });
+        });
+        strip.appendChild(thumb);
+      });
+    }
+
+    // Rating
+    const reviews = p.reviews || [];
+    const avgRating = reviews.length > 0
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 0;
+
+    const starsEl = document.getElementById('starsDisplay');
+    if (starsEl) starsEl.innerHTML = getStarsHTML(avgRating);
+
+    const reviewCountEl = document.getElementById('reviewCount');
+    if (reviewCountEl) reviewCountEl.textContent = `${reviews.length} reviews`;
+
+     // Colors — clicking changes the main image
+const colorsSection = document.getElementById('colorsSection');
+const colorContainer = document.getElementById('colorOptions');
+
+// Colors — show 3 images per color in thumbnail strip
+if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
+  colorsSection.classList.remove('d-none');
+  colorContainer.innerHTML = '';
+
+  p.colors.forEach((color, i) => {
+    const swatch = document.createElement('div');
+    swatch.className = `color-swatch ${i === 0 ? 'active' : ''}`;
+    swatch.style.background = color;
+    swatch.title = color;
+
+    swatch.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      swatch.classList.add('active');
+
+      // Find this color's images from colorImages array
+      const colorData = p.colorImages?.find(c => c.color === color);
+
+      if (colorData && colorData.images.length > 0) {
+        // Show first image of this color as main
+        mainImg.src = colorData.images[0];
+
+        // Update thumbnails to show THIS color's 3 images
+        strip.innerHTML = '';
+        colorData.images.forEach((img, idx) => {
+          const thumb = document.createElement('img');
+          thumb.src = img;
+          thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
+          thumb.addEventListener('click', () => {
+            mainImg.src = img;
+            document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+          });
+          strip.appendChild(thumb);
+        });
+      } else {
+        // Fallback: use base images
+        if (p.images[i]) mainImg.src = p.images[i];
+      }
+    });
+
+    colorContainer.appendChild(swatch);
+  });
+}
+
+// Variants — clicking changes the main image
+const variantsSection = document.getElementById('variantsSection');
+const variantContainer = document.getElementById('variantOptions');
+
+// Variants — show variant's image as main
+if (variantsSection && variantContainer && p.variants && p.variants.length > 0) {
+  variantsSection.classList.remove('d-none');
+  variantContainer.innerHTML = '';
+
+  p.variants.forEach((variant, i) => {
+    const btn = document.createElement('button');
+    btn.className = `variant-btn ${i === 0 ? 'active' : ''}`;
+    btn.textContent = variant;
+
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Find this variant's image
+      const variantData = p.variantImages?.find(v => v.variant === variant);
+      if (variantData && variantData.image) {
+        mainImg.src = variantData.image;
+        // Keep current color thumbnails in strip, just change main image
+      }
+    });
+
+    variantContainer.appendChild(btn);
+  });
+}
+
+
+    // Stock status
+    const stockEl = document.getElementById('stockStatus');
+    const lowStock = document.getElementById('lowStockWarning');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const buyNowBtn = document.getElementById('buyNowBtn');
+
+    if (stockEl) {
+      if (p.stock <= 0) {
+        stockEl.innerHTML = '<span class="text-danger fw-bold">Out of Stock</span>';
+        if (addToCartBtn) addToCartBtn.disabled = true;
+        if (buyNowBtn) buyNowBtn.disabled = true;
+      } else {
+        stockEl.innerHTML = '<span class="text-success fw-bold">In Stock</span>';
+        if (p.stock <= 5 && lowStock) {
+          lowStock.textContent = `Only ${p.stock} left in stock`;
+          lowStock.classList.remove('d-none');
+        }
+      }
+    }
+
+    // Reviews
+    renderReviews(reviews);
+
+  } catch (err) {
+    console.error('renderProduct error:', err);
+  }
 }
 
 function getStarsHTML(rating) {
@@ -122,61 +226,94 @@ function getStarsHTML(rating) {
 
 function renderReviews(reviews) {
   const list = document.getElementById('reviewsList');
+  if (!list) return;
+
   if (!reviews || reviews.length === 0) {
-    list.innerHTML = '<p class="text-secondary">No reviews yet.</p>';
+    list.innerHTML = '<p class="text-secondary">No reviews yet. Be the first to review!</p>';
     return;
   }
+
   list.innerHTML = reviews.map(r => `
     <div class="border-bottom border-secondary py-3">
-      <strong>${r.name}</strong>
+      <strong>${r.name || 'Anonymous'}</strong>
       <span class="ms-2">${getStarsHTML(r.rating)}</span>
-      <p class="text-secondary small mt-1">${r.comment}</p>
+      <p class="text-secondary small mt-1 mb-0">${r.comment || ''}</p>
     </div>`).join('');
 }
 
 function renderRelated(products) {
   const container = document.getElementById('relatedProducts');
+  if (!container) return;
+
   if (!products || products.length === 0) {
-    container.innerHTML = '<p class="text-secondary">No related products found.</p>';
+    container.innerHTML = '<p class="text-secondary col-12">No related products found.</p>';
     return;
   }
+
   container.innerHTML = products.map(p => `
     <div class="col-6 col-md-3">
       <div class="product-card" onclick="window.location.href='/product/${p._id}'">
         <div class="position-relative">
-          <img src="${p.images[0]}" class="product-card-img" alt="${p.name}">
+          <img src="${p.images?.[0] || ''}" class="product-card-img" alt="${p.name || ''}">
           <span class="product-card-brand">${p.brand?.name || ''}</span>
         </div>
         <div class="product-card-body">
-          <p class="product-card-name">${p.name}</p>
-          <p class="product-card-price">₹${p.price.toLocaleString()}</p>
-          ${p.originalPrice > p.price
-            ? `<small class="text-secondary text-decoration-line-through">₹${p.originalPrice.toLocaleString()}</small>`
-            : ''}
-          <div>${getStarsHTML(p.avgRating || 0)}</div>
+          <p class="product-card-name">${p.name || ''}</p>
+          <p class="product-card-price">₹${(p.price || 0).toLocaleString()}</p>
         </div>
       </div>
     </div>`).join('');
 }
 
 // Quantity controls
-document.getElementById('qtyMinus').addEventListener('click', () => {
-  if (quantity > 1) {
-    quantity--;
-    document.getElementById('qtyDisplay').textContent = quantity;
-  }
-});
+const qtyMinus = document.getElementById('qtyMinus');
+const qtyPlus = document.getElementById('qtyPlus');
+const qtyDisplay = document.getElementById('qtyDisplay');
 
-document.getElementById('qtyPlus').addEventListener('click', () => {
-  if (quantity < maxStock && quantity < 5) {
-    quantity++;
-    document.getElementById('qtyDisplay').textContent = quantity;
-  } else if (quantity >= 5) {
-    showToast('Maximum 5 items per order', 'error');
-  } else {
-    showToast('Not enough stock', 'error');
-  }
-});
+if (qtyMinus) {
+  qtyMinus.addEventListener('click', () => {
+    if (quantity > 1) {
+      quantity--;
+      if (qtyDisplay) qtyDisplay.textContent = quantity;
+    }
+  });
+}
+
+if (qtyPlus) {
+  qtyPlus.addEventListener('click', () => {
+    if (quantity < maxStock && quantity < 5) {
+      quantity++;
+      if (qtyDisplay) qtyDisplay.textContent = quantity;
+    } else if (quantity >= 5) {
+      showToast('Maximum 5 items per order', 'error');
+    } else {
+      showToast('Not enough stock available', 'error');
+    }
+  });
+}
+
+// Add to cart
+const addToCartBtn = document.getElementById('addToCartBtn');
+if (addToCartBtn) {
+  addToCartBtn.addEventListener('click', async () => {
+    const res = await fetch('/api/users/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, quantity })
+    });
+    const data = await res.json();
+    showToast(data.message, res.ok ? 'success' : 'error');
+    if (res.ok) updateCartCount();
+  });
+}
+
+// Buy now
+const buyNowBtn = document.getElementById('buyNowBtn');
+if (buyNowBtn) {
+  buyNowBtn.addEventListener('click', () => {
+    showToast('Checkout coming soon!');
+  });
+}
 
 // Review stars
 document.querySelectorAll('.review-star').forEach(star => {
@@ -189,10 +326,10 @@ document.querySelectorAll('.review-star').forEach(star => {
 });
 
 // Submit review
-const submitBtn = document.getElementById('submitReviewBtn');
-if (submitBtn) {
-  submitBtn.addEventListener('click', async () => {
-    const comment = document.getElementById('reviewComment').value.trim();
+const submitReviewBtn = document.getElementById('submitReviewBtn');
+if (submitReviewBtn) {
+  submitReviewBtn.addEventListener('click', async () => {
+    const comment = document.getElementById('reviewComment')?.value.trim();
     if (!selectedRating) { showToast('Please select a rating', 'error'); return; }
     if (!comment) { showToast('Please write a comment', 'error'); return; }
 
@@ -207,9 +344,42 @@ if (submitBtn) {
   });
 }
 
-// Add to cart (placeholder — will wire up when cart is built)
-document.getElementById('addToCartBtn').addEventListener('click', () => {
-  showToast('Cart feature coming soon!');
-});
+// Wishlist
+async function checkWishlistStatus() {
+  try {
+    const res = await fetch('/api/users/wishlist');
+    if (!res.ok) return;
+    const data = await res.json();
+    const isWishlisted = data.products?.some(p => p._id === productId);
+    const btn = document.getElementById('wishlistBtn');
+    if (btn && isWishlisted) {
+      btn.classList.add('active');
+      btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
+    }
+  } catch (err) {
+    // Not logged in — ignore silently
+  }
+}
 
+const wishlistBtn = document.getElementById('wishlistBtn');
+if (wishlistBtn) {
+  wishlistBtn.addEventListener('click', async () => {
+    const isActive = wishlistBtn.classList.contains('active');
+    const method = isActive ? 'DELETE' : 'POST';
+
+    const res = await fetch(`/api/users/wishlist/${productId}`, { method });
+    const data = await res.json();
+    showToast(data.message, res.ok ? 'success' : 'error');
+
+    if (res.ok) {
+      wishlistBtn.classList.toggle('active', !isActive);
+      wishlistBtn.innerHTML = isActive
+        ? '<i class="bi bi-heart"></i>'
+        : '<i class="bi bi-heart-fill"></i>';
+    }
+  });
+}
+
+// Start
 loadProductDetails();
+updateCartCount();

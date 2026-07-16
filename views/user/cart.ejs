@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>My Cart - ChronoLux</title>
+  <link href="/css/cart.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <h3 class="fw-bold mb-4">My Cart</h3>
+
+  <div class="row g-4" id="cartContent">
+    <!-- Left: Cart Items -->
+    <div class="col-12 col-lg-7" id="cartItemsContainer">
+      <div id="cartItems"></div>
+      <a href="/shop" class="btn btn-secondary mt-3">Continue shopping</a>
+    </div>
+
+    <!-- Right: Order Summary -->
+    <div class="col-12 col-lg-5">
+      <div class="order-summary">
+        <h5 class="fw-bold mb-4">Order summary</h5>
+
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-secondary" id="subtotalLabel">Subtotal (0 items)</span>
+          <span class="fw-bold" id="subtotalAmount">₹0</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-secondary">Discount</span>
+          <span class="text-success fw-bold" id="discountAmount">₹0</span>
+        </div>
+
+        <div class="d-flex justify-content-between mb-3">
+          <span class="text-secondary">Shipping</span>
+          <span class="text-success fw-bold">Free</span>
+        </div>
+
+        <hr class="border-secondary">
+
+        <div class="d-flex justify-content-between mb-2">
+          <span class="fw-bold fs-5">Total Amount</span>
+          <span class="fw-bold fs-5" id="totalAmount">₹0</span>
+        </div>
+
+        <p class="text-success small mb-4" id="savedAmount"></p>
+
+        <button class="btn btn-warning fw-bold w-100 mb-2" id="proceedToCheckoutBtn">
+          Proceed to Checkout
+        </button>
+        <button class="btn btn-dark fw-bold w-100" id="buyNowBtn">
+          Buy Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty cart state -->
+  <div class="text-center py-5 d-none" id="emptyCart">
+    <i class="bi bi-cart-x" style="font-size:60px; color:#444;"></i>
+    <h5 class="mt-3 text-secondary">Your cart is empty</h5>
+    <a href="/shop" class="btn btn-warning fw-bold mt-3">Shop Now</a>
+  </div>
+</div>
+
+<!-- Custom Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">Cancel</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/cart.js"></script>
+</body>
+</html>

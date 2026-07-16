@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Checkout - Payment | ChronoLux</title>
+  <link href="/css/checkout.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+<%- include('../partials/checkoutSteps', { step: 3 }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- LEFT: Payment Method + Coupon -->
+    <div class="col-12 col-lg-6">
+      <div class="checkout-panel mb-4">
+        <h5 class="fw-bold mb-4">Payment Method</h5>
+
+        <div class="payment-option selected" data-method="COD" id="codOption">
+          <div class="d-flex align-items-center gap-3">
+            <div class="payment-radio selected" id="codRadio"></div>
+            <div>
+              <p class="fw-bold mb-0">Cash on Delivery (COD)</p>
+              <p class="text-secondary small mb-0">Pay in cash when your order is delivered</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-option mt-2" data-method="Online" id="onlineOption">
+          <div class="d-flex align-items-center gap-3">
+            <div class="payment-radio" id="onlineRadio"></div>
+            <div>
+              <p class="fw-bold mb-0">Online Payment</p>
+              <p class="text-secondary small mb-0">Pay securely using UPI, cards, Net Banking, etc</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-option mt-2" data-method="Wallet" id="walletOption">
+          <div class="d-flex align-items-center gap-3">
+            <div class="payment-radio" id="walletRadio"></div>
+            <div class="flex-grow-1">
+              <p class="fw-bold mb-0">Wallet</p>
+              <p class="text-secondary small mb-0">Pay using your ChronoLux wallet balance</p>
+            </div>
+            <span class="text-success small fw-bold">Available balance: ₹0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-panel mb-4">
+        <h6 class="fw-bold mb-3">Apply Coupon</h6>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
+          <button class="btn btn-warning fw-bold px-4" id="applyCouponBtn">Apply</button>
+        </div>
+        <div class="mt-2 d-none" id="couponSuccess">
+          <span class="text-success small" id="couponSuccessMsg"></span>
+          <button class="btn btn-link text-danger p-0 ms-2 small" id="removeCouponBtn">Remove</button>
+        </div>
+        <div class="text-danger small mt-1 d-none" id="couponError"></div>
+      </div>
+
+      <div class="d-flex gap-3">
+        <a href="/checkout/address" class="btn btn-secondary px-4">
+          <i class="bi bi-arrow-left me-2"></i> Back to Address
+        </a>
+        <button class="btn btn-warning fw-bold px-4 flex-grow-1" id="placeOrderBtn">
+          Place Order
+        </button>
+      </div>
+      <p class="text-secondary small text-center mt-2">
+        You won't be charged until order is confirmed
+      </p>
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <div class="col-12 col-lg-6">
+      <div class="checkout-panel">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0">Order Summary</h5>
+          <a href="/cart" class="text-warning small text-decoration-none">Edit Cart</a>
+        </div>
+
+        <div id="orderSummaryItems"></div>
+
+        <hr class="border-secondary mt-3">
+
+        <div class="summary-row mt-3">
+          <span class="text-secondary" id="subtotalLabel">Subtotal</span>
+          <span id="summarySubtotal">₹0</span>
+        </div>
+        <div class="summary-row">
+          <span class="text-secondary">Discount</span>
+          <span class="text-success" id="summaryDiscount">-₹0</span>
+        </div>
+        <div class="summary-row d-none" id="couponRow">
+          <span class="text-secondary" id="couponLabel">Coupon Discount</span>
+          <span class="text-success" id="summaryCoupon">-₹0</span>
+        </div>
+        <div class="summary-row">
+          <span class="text-secondary">Shipping</span>
+          <span id="summaryShipping">Free</span>
+        </div>
+        <div class="summary-row">
+          <span class="text-secondary">Tax (5% GST)</span>
+          <span id="summaryTax">₹0</span>
+        </div>
+
+        <hr class="border-secondary">
+
+        <div class="summary-row summary-total">
+          <span>Total Amount</span>
+          <span class="text-warning" id="summaryTotal">₹0</span>
+        </div>
+
+        <p class="text-success small mt-2" id="summarySaved"></p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/checkoutPayment.js"></script>
+</body>
+</html>

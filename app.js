@@ -35,11 +35,37 @@ app.use('/api/admin/users', require('./routes/admin/adminUserRoutes'));
 app.use('/api/admin/categories', require('./routes/admin/categoryRoutes'));
 app.use('/api/admin/products', require('./routes/admin/productRoutes'));
 app.use('/api/users/products', require('./routes/user/productRoutes'));
+app.use('/api/users/cart', require('./routes/user/cartRoutes'));
+app.use('/api/users/wishlist', require('./routes/user/wishlistRoutes'));
+app.use('/api/users/orders', require('./routes/user/orderRoutes'));
 
-//404 fallback
-app.use((req,res)=>{
-    res.status(404).send("page not found");
-})
+// Add BEFORE the 404 handler
+app.get('/not-found', (req, res) => {
+  res.status(404).render('error', {
+    statusCode: 404,
+    title: 'Product Not Found',
+    message: 'This product is no longer available or does not exist.'
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).render('error', {
+    statusCode: 404,
+    title: 'Page Not Found',
+    message: "Oops! The page you are looking for doesn't exist or has been moved."
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).render('error', {
+    statusCode: err.status || 500,
+    title: 'Something went wrong',
+    message: err.message || 'An unexpected error occurred. Please try again.'
+  });
+});
 
 
 

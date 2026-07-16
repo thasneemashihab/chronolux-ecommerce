@@ -47,14 +47,24 @@ exports.addCategory = async (req, res) => {
   try {
     const { name, slug, parentCategory } = req.body;
 
+     if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Category name is required' });
+    }
+    if (!slug || slug.trim() === '') {
+      return res.status(400).json({ message: 'Slug (URL) is required' });
+    }
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      return res.status(400).json({ message: 'Slug can only contain lowercase letters, numbers and hyphens (e.g. men-watches)' });
+    }
+
     const existing = await Category.findOne({ name, isDeleted: false });
     if (existing) {
-      return res.status(400).json({ message: 'Category name already exists' });
+      return res.status(400).json({ message: `A category named "${name}" already exists`});
     }
 
     const existingSlug = await Category.findOne({ slug, isDeleted: false });
     if (existingSlug) {
-      return res.status(400).json({ message: 'Slug already in use' });
+      return res.status(400).json({ message:  `The slug "${slug}" is already in use by another category`});
     }
 
     const imagePath = req.file ? `/uploads/categories/${req.file.filename}` : '';
@@ -69,7 +79,7 @@ exports.addCategory = async (req, res) => {
     res.status(201).json({ message: 'Category added successfully' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Failed to add category. Please try again.' });
   }
 };
 
@@ -77,8 +87,39 @@ exports.addCategory = async (req, res) => {
 exports.updateCategory = async (req, res) => {
   try {
     const { name, slug, parentCategory } = req.body;
+
+     if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Category name is required' });
+    }
+    if (!slug || slug.trim() === '') {
+      return res.status(400).json({ message: 'Slug (URL) is required' });
+    }
+    if (!/^[a-z0-9-]+$/.test(slug)) {
+      return res.status(400).json({ message: 'Slug can only contain lowercase letters, numbers and hyphens' });
+    }
+
+
     const category = await Category.findById(req.params.id);
     if (!category) return res.status(404).json({ message: 'Category not found' });
+
+     // Check name conflict with OTHER categories (not this one)
+    const nameConflict = await Category.findOne({
+      name: name.trim(),
+      isDeleted: false,
+      _id: { $ne: req.params.id }
+    });
+    if (nameConflict) {
+      return res.status(400).json({ message: `A category named "${name}" already exists` });
+    }
+
+    const slugConflict = await Category.findOne({
+      slug: slug.trim(),
+      isDeleted: false,
+      _id: { $ne: req.params.id }
+    });
+    if (slugConflict) {
+      return res.status(400).json({ message: `The slug "${slug}" is already used by another category` });
+    }
 
     category.name = name;
     category.slug = slug;
@@ -93,7 +134,7 @@ exports.updateCategory = async (req, res) => {
     res.status(200).json({ message: 'Category updated successfully' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Failed to update category. Please try again.' });
   }
 };
 

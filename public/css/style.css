@@ -319,3 +319,125 @@ body {
   background: #f5b800;
   border-radius: 3px;
 }
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #f5b800;
+  color: #111;
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Admin Product Image Replace ===== */
+.existing-img-wrapper {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.existing-img-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #444;
+  display: block;
+}
+
+.existing-img-overlay {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.replace-img-btn {
+  background: #f5b800;
+  color: #111;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  margin: 0;
+}
+
+.replace-img-btn:hover { background: #e0a800; }
+
+.replaced-badge {
+  background: #28a745;
+  color: #fff;
+  font-size: 8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.upload-slot-empty {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 20px;
+}
+
+.upload-slot-empty:hover {
+  border-color: #f5b800;
+  color: #f5b800;
+}
+
+.upload-slot-filled {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.upload-slot-filled img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #f5b800;
+}
+
+.slot-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #dc3545;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.color-img-slot {
+  display: inline-block;
+}

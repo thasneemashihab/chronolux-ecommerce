@@ -22,8 +22,13 @@
 
       <div class="d-flex align-items-center justify-content-center gap-3 mt-2 mt-lg-0">
         <i class="bi bi-search text-white"></i>
-        <i class="bi bi-heart-fill text-danger"></i>
-        <a href="/cart" class="text-white"><i class="bi bi-bag"></i></a>
+        <a href="/wishlist" class="text-white position-relative">
+  <i class="bi bi-heart-fill nav-icon wishlist-icon"></i>
+</a>
+        <a href="/cart" class="position-relative text-white">
+  <i class="bi bi-bag nav-icon"></i>
+  <span class="cart-badge d-none" id="cartCountBadge">0</span>
+</a>
 
         <% if (user) { %>
           <a href="/profile" class="text-white"><i class="bi bi-person-fill"></i></a>

@@ -59,3 +59,33 @@ exports.getProductDetailsPage = async (req, res) => {
   const user = req.user ? await User.findById(req.user.id).select('name email profileImage') : null;
   res.render('user/product-details', { user, productId: req.params.id });
 };
+
+exports.getCartPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage');
+  res.render('user/cart', { user });
+};
+
+exports.getWishlistPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage');
+  res.render('user/wishlist', { user });
+};
+
+exports.getCheckoutAddressPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email addresses');
+  res.render('user/checkout-address', { user });
+};
+
+exports.getCheckoutPaymentPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email');
+  res.render('user/checkout-payment', { user });
+};
+
+exports.getOrderSuccessPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email');
+  res.render('user/order-success', { user });
+};
+
+exports.getPaymentFailedPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email');
+  res.render('user/payment-failed', { user });
+};

@@ -112,29 +112,66 @@
     </div>
 
     <div class="col-md-6">
-      <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
-      <div class="upload-box text-center mb-2" id="productUploadBox">
-        <label for="productImages" style="cursor:pointer;">
-          <i class="bi bi-image fs-1 text-secondary"></i>
-          <p class="text-secondary small mb-0">Click to upload images</p>
-        </label>
-      </div>
-      <input type="file" id="productImages" accept="image/*" multiple class="d-none">
-      <div class="d-flex flex-wrap gap-2 mb-3" id="imageThumbnails"></div>
+  <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
 
-      <label class="form-label">Description <span class="text-danger">*</span></label>
-      <textarea class="form-control mb-3" id="productDescription" rows="4" placeholder="Enter product description"></textarea>
-
-      <label class="form-label">Specifications</label>
-      <textarea class="form-control mb-3" id="productSpecifications" rows="4" placeholder="e.g. Case Size: 41mm&#10;Material: Oyster Steel&#10;Water Resistance: 300m"></textarea>
-
-      <label class="form-label">Status</label>
-      <select class="form-select mb-3" id="productStatus">
-        <option value="true">Active</option>
-        <option value="false">Inactive</option>
-      </select>
-    </div>
+  <!-- Shown when ADDING new product -->
+  <div class="upload-box text-center mb-2" id="productUploadBox">
+    <label for="productImages" style="cursor:pointer;">
+      <i class="bi bi-image fs-1 text-secondary"></i>
+      <p class="text-secondary small mb-0">Click to upload images (min 3)</p>
+    </label>
   </div>
+  <input type="file" id="productImages" accept="image/*" multiple class="d-none">
+  <div class="d-flex flex-wrap gap-2 mb-3" id="imageThumbnails"></div>
+
+  <!-- Shown when EDITING existing product -->
+  <div class="d-none mb-3" id="existingImagesSection">
+    <p class="text-secondary small mb-2">Click the <i class="bi bi-arrow-repeat"></i> icon on any image to replace it individually</p>
+    <div class="d-flex flex-wrap gap-2" id="existingImagesGrid"></div>
+  </div>
+
+  <!-- Dynamic color image upload section -->
+<div id="colorImagesSection" class="d-none mb-3">
+  <label class="form-label fw-bold text-warning">Color Images</label>
+  <p class="text-secondary small">Upload 3 images for each color</p>
+  <div id="colorImageInputs"></div>
+</div>
+
+<!-- Dynamic variant image upload section -->
+<div id="variantImagesSection" class="d-none mb-3">
+  <label class="form-label fw-bold text-warning">Variant Images</label>
+  <p class="text-secondary small">Upload 1 image for each variant</p>
+  <div id="variantImageInputs"></div>
+</div>
+
+<!-- Color image upload slots — generated dynamically by JS -->
+<div id="colorImagesSection" class="d-none mb-3">
+  <label class="form-label fw-bold text-warning">
+    Color Images <span class="text-secondary small">(3 images per color)</span>
+  </label>
+  <div id="colorImageInputs"></div>
+</div>
+
+<!-- Variant image upload slots -->
+<div id="variantImagesSection" class="d-none mb-3">
+  <label class="form-label fw-bold text-warning">
+    Variant Images <span class="text-secondary small">(1 image per variant)</span>
+  </label>
+  <div id="variantImageInputs"></div>
+</div>
+
+  <label class="form-label">Description <span class="text-danger">*</span></label>
+  <textarea class="form-control mb-3" id="productDescription" rows="4" placeholder="Enter product description"></textarea>
+
+  <label class="form-label">Specifications</label>
+  <textarea class="form-control mb-3" id="productSpecifications" rows="4" placeholder="e.g. Case Size: 41mm&#10;Material: Oyster Steel&#10;Water Resistance: 300m"></textarea>
+
+  <label class="form-label">Status</label>
+  <select class="form-select mb-3" id="productStatus">
+    <option value="true">Active</option>
+    <option value="false">Inactive</option>
+  </select>
+</div>
 
   <div class="d-flex gap-2 mt-2">
     <button type="button" class="btn btn-secondary w-50" id="cancelProductBtn">Cancel</button>
@@ -142,16 +179,17 @@
   </div>
 </form>
 
-<!-- Image Crop Modal -->
+  <!-- Image Crop Modal -->
 <div class="modal-backdrop-custom d-none" id="cropModalBackdrop">
   <div class="email-modal" style="max-width:500px;">
-    <h5 class="fw-bold mb-3">Crop Image</h5>
-    <div style="max-height:350px;">
+    <h5 class="fw-bold mb-1" id="cropModalTitle">Crop Image</h5>
+    <p class="text-secondary small mb-3" id="cropModalSubtitle">Crop and add to product images</p>
+    <div style="max-height:350px; overflow:hidden;">
       <img id="cropImage" style="max-width:100%;">
     </div>
     <div class="d-flex gap-2 mt-3">
       <button type="button" class="btn btn-secondary w-50" id="cancelCropBtn">Cancel</button>
-      <button type="button" class="btn btn-warning fw-bold w-50" id="confirmCropBtn">Crop & Add</button>
+      <button type="button" class="btn btn-warning fw-bold w-50" id="confirmCropBtn">Crop & Save</button>
     </div>
   </div>
 </div>

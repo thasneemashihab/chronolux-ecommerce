@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Payment Failed | ChronoLux</title>
+  <link href="/css/checkout.css" rel="stylesheet">
+</head>
+<body style="background:#1a1a2e; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-5">
+  <div class="success-wrapper text-center">
+
+    <div class="failed-circle">
+      <i class="bi bi-x-lg"></i>
+    </div>
+
+    <h2 class="fw-bold mt-4 mb-2">Payment Failed!</h2>
+    <p class="text-secondary mb-4">You couldn't complete your payment. Please try again.</p>
+
+    <div class="d-flex flex-column gap-3 mx-auto" style="max-width:400px;">
+      <a href="/checkout/payment" class="btn btn-warning fw-bold py-3">
+        Retry Payment
+      </a>
+      <a href="/checkout/payment" class="btn btn-secondary fw-bold py-3">
+        Change Payment Method
+      </a>
+      <a href="/checkout/address" class="text-secondary text-decoration-none">
+        <i class="bi bi-arrow-left me-2"></i> Back to Checkout
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('./partials/head') %>
+  <title>404 - Page Not Found | ChronoLux</title>
+  <link href="/css/error.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('./partials/navbar', { user: null }) %>
+
+<div class="error-hero">
+  <div class="error-content">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">Page Not Found</h2>
+    <p class="error-message">Oops! The page you are looking for doesn't exist or has been moved.</p>
+    <div class="d-flex gap-3 mt-4">
+      <a href="/" class="btn-error-primary">
+        <i class="bi bi-house-fill me-2"></i> Back to Home
+      </a>
+      <a href="/shop" class="btn-error-outline">Explore Collection</a>
+    </div>
+  </div>
+  <div class="error-image">
+    <img src="/images/cover.jpg" alt="ChronoLux Watch" class="error-watch-img">
+  </div>
+</div>
+
+<div class="error-support">
+  <div class="container">
+    <div class="support-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="support-icon">
+          <i class="bi bi-headset"></i>
+        </div>
+        <div>
+          <h6 class="fw-bold mb-1">Need Help?</h6>
+          <p class="text-secondary small mb-0">If you think this is a mistake, please contact our support team.</p>
+        </div>
+      </div>
+      <a href="/contact" class="btn-support">Contact Support →</a>
+    </div>
+  </div>
+</div>
+
+<%- include('./partials/footer') %>
+<%- include('./partials/scripts') %>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Order Placed Successfully! | ChronoLux</title>
+  <link href="/css/checkout.css" rel="stylesheet">
+</head>
+<body style="background:#1a1a2e; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-5">
+  <div class="success-wrapper text-center">
+
+    <div class="success-animation">
+      <div class="success-circle">
+        <i class="bi bi-check-lg"></i>
+      </div>
+    </div>
+
+    <h2 class="fw-bold mt-4 mb-2">Thank You for Your Order!</h2>
+    <p class="text-secondary mb-1">Your order has been placed successfully</p>
+    <p class="text-secondary mb-4">You'll receive a confirmation shortly</p>
+
+    <div class="order-id-card mb-4">
+      <p class="text-secondary small mb-1">Order ID</p>
+      <h4 class="fw-bold text-warning mb-0" id="successOrderId">—</h4>
+    </div>
+
+    <div class="success-info-grid mb-5" id="successInfoGrid"></div>
+
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="/orders" class="btn-success-secondary">
+        <i class="bi bi-bag me-2"></i> View Orders
+      </a>
+      <a href="/shop" class="btn-success-primary">
+        Continue Shopping <i class="bi bi-arrow-right ms-2"></i>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/orderSuccess.js"></script>
+</body>
+</html>

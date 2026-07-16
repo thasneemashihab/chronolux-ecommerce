@@ -6,8 +6,16 @@ let maxPrice = 500000;
 let sortBy = 'newest';
 let debounceTimer;
 
+// At the very top of shop.js, before loadProducts()
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('unavailable')) {
+  showToast('This product is no longer available', 'error');
+  // Clean the URL so the toast doesn't show again on refresh
+  window.history.replaceState({}, '', '/shop');
+}
+
 async function loadProducts() {
-  const url = `/api/users/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=8&sort=${sortBy}&category=${selectedCategory}&brand=${selectedBrand}&maxPrice=${maxPrice}`;
+  const url = `/api/users/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=12&sort=${sortBy}&category=${selectedCategory}&brand=${selectedBrand}&maxPrice=${maxPrice}`;
   const res = await fetch(url);
   const data = await res.json();
 
@@ -31,16 +39,15 @@ function renderProducts(products) {
     const avgRating = p.reviews?.length > 0
       ? (p.reviews.reduce((sum, r) => sum + r.rating, 0) / p.reviews.length).toFixed(1)
       : 0;
-
     const stars = getStarsHTML(avgRating);
     const discountBadge = p.discount > 0
       ? `<span class="product-card-discount">${p.discount}% off</span>` : '';
 
     const col = document.createElement('div');
-    col.className = 'col-6 col-md-4 col-lg-3';
+    col.className = 'col-6 col-md-3 col-lg-2';
     col.innerHTML = `
-      <div class="product-card" onclick="window.location.href='/product/${p._id}'">
-        <div class="position-relative">
+      <div class="product-card">
+        <div class="position-relative" onclick="window.location.href='/product/${p._id}'">
           <img src="${p.images[0]}" class="product-card-img" alt="${p.name}">
           <span class="product-card-brand">${p.brand?.name || ''}</span>
           ${discountBadge}
@@ -48,11 +55,81 @@ function renderProducts(products) {
         <div class="product-card-body">
           <p class="product-card-name">${p.name}</p>
           <p class="product-card-price">₹${p.price.toLocaleString()}</p>
-          <div>${stars}</div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>${stars}</div>
+            <button class="card-wishlist-btn" data-id="${p._id}" title="Add to Wishlist">
+              <i class="bi bi-heart"></i>
+            </button>
+          </div>
         </div>
       </div>`;
     grid.appendChild(col);
   });
+
+  // Attach wishlist listeners
+  document.querySelectorAll('.card-wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation(); // prevent navigating to product page
+      toggleWishlistFromCard(btn, btn.dataset.id);
+    });
+  });
+
+  // Check which products are already wishlisted
+  checkWishlistStatus();
+}
+
+let wishlistedIds = new Set();
+
+async function checkWishlistStatus() {
+  try {
+    const res = await fetch('/api/users/wishlist');
+    if (!res.ok) return; // not logged in
+    const data = await res.json();
+
+    wishlistedIds = new Set(data.products?.map(p => p._id) || []);
+
+    // Update all heart buttons to reflect wishlist status
+    document.querySelectorAll('.card-wishlist-btn').forEach(btn => {
+      const isWishlisted = wishlistedIds.has(btn.dataset.id);
+      btn.innerHTML = isWishlisted
+        ? '<i class="bi bi-heart-fill text-danger"></i>'
+        : '<i class="bi bi-heart"></i>';
+    });
+  } catch (err) {
+    // Not logged in — hearts stay empty, clicking prompts login
+  }
+}
+
+async function toggleWishlistFromCard(btn, productId) {
+  const isWishlisted = wishlistedIds.has(productId);
+
+  if (!isWishlisted) {
+    // Check if user is logged in first
+    const res = await fetch(`/api/users/wishlist/${productId}`, { method: 'POST' });
+    if (res.status === 401) {
+      showToast('Please login to add to wishlist', 'error');
+      setTimeout(() => window.location.href = '/login', 1500);
+      return;
+    }
+    const data = await res.json();
+    if (res.ok) {
+      wishlistedIds.add(productId);
+      btn.innerHTML = '<i class="bi bi-heart-fill text-danger"></i>';
+      showToast('Added to wishlist');
+    } else {
+      showToast(data.message, 'error');
+    }
+  } else {
+    const res = await fetch(`/api/users/wishlist/${productId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok) {
+      wishlistedIds.delete(productId);
+      btn.innerHTML = '<i class="bi bi-heart"></i>';
+      showToast('Removed from wishlist');
+    } else {
+      showToast(data.message, 'error');
+    }
+  }
 }
 
 function getStarsHTML(rating) {

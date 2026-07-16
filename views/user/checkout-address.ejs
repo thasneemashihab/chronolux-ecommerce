@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Checkout - Address | ChronoLux</title>
+  <link href="/css/checkout.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+<%- include('../partials/checkoutSteps', { step: 2 }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- LEFT: Address List -->
+    <div class="col-12 col-lg-6">
+      <div class="checkout-panel">
+        <h5 class="fw-bold mb-4">Delivery Address</h5>
+        <div id="addressList"></div>
+
+        <button class="add-address-toggle mt-3 w-100" id="toggleAddForm">
+          <i class="bi bi-plus-lg me-2"></i> Add New Address
+        </button>
+
+        <div class="mt-4 d-flex gap-3">
+          <a href="/cart" class="btn btn-secondary px-4">
+            <i class="bi bi-arrow-left me-2"></i> Back to Cart
+          </a>
+          <button class="btn btn-warning fw-bold px-4" id="continueToPaymentBtn" disabled>
+            Continue to Payment
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Add New Address Form -->
+    <div class="col-12 col-lg-6" id="addAddressPanel">
+      <div class="checkout-panel">
+        <h5 class="fw-bold mb-4">Add New Address</h5>
+        <form id="addAddressForm">
+          <div class="mb-3">
+            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addrFullName" placeholder="Enter full name">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addrPhone" placeholder="Enter phone number">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="addrLine1" placeholder="House no., Building, Street">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Address Line 2 (optional)</label>
+            <input type="text" class="form-control" id="addrLine2" placeholder="Area, Landmark, etc">
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">City <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="addrCity" placeholder="Enter city">
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Pincode <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="addrPincode" placeholder="Enter pincode">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">State <span class="text-danger">*</span></label>
+              <select class="form-select" id="addrState">
+                <option value="">Enter state</option>
+                <option>Kerala</option>
+                <option>Karnataka</option>
+                <option>Tamil Nadu</option>
+                <option>Maharashtra</option>
+                <option>Delhi</option>
+                <option>Gujarat</option>
+                <option>Rajasthan</option>
+                <option>Uttar Pradesh</option>
+                <option>West Bengal</option>
+                <option>Telangana</option>
+              </select>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Address Type</label>
+              <select class="form-select" id="addrLabel">
+                <option value="Home">Home</option>
+                <option value="Work">Work</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3 d-flex align-items-center gap-2">
+            <input type="checkbox" id="addrDefault" class="form-check-input">
+            <label for="addrDefault" class="form-check-label">Set as default address</label>
+          </div>
+          <div class="alert alert-danger d-none" id="addAddrError"></div>
+          <button type="submit" class="btn btn-warning fw-bold w-100">Save Address</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/checkoutAddress.js"></script>
+</body>
+</html>

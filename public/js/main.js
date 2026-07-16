@@ -58,3 +58,26 @@ function showConfirm(message) {
     cancelBtn.addEventListener('click', onCancel);
   });
 }
+
+
+// Load cart count on every page that has the navbar
+async function updateCartCount() {
+  const badge = document.getElementById('cartCountBadge');
+  if (!badge) return; // not on a page with the cart badge
+
+  try {
+    const res = await fetch('/api/users/cart');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.itemCount > 0) {
+      badge.textContent = data.itemCount;
+      badge.classList.remove('d-none');
+    } else {
+      badge.classList.add('d-none');
+    }
+  } catch (err) {
+    // user not logged in — hide badge silently
+  }
+}
+
+updateCartCount();
