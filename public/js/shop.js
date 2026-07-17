@@ -15,7 +15,7 @@ if (urlParams.get('unavailable')) {
 }
 
 async function loadProducts() {
-  const url = `/api/users/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=12&sort=${sortBy}&category=${selectedCategory}&brand=${selectedBrand}&maxPrice=${maxPrice}`;
+  const url = `/api/users/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=8&sort=${sortBy}&category=${selectedCategory}&brand=${selectedBrand}&maxPrice=${maxPrice}`;
   const res = await fetch(url);
   const data = await res.json();
 
@@ -44,7 +44,7 @@ function renderProducts(products) {
       ? `<span class="product-card-discount">${p.discount}% off</span>` : '';
 
     const col = document.createElement('div');
-    col.className = 'col-6 col-md-3 col-lg-2';
+    col.className = 'col-6 col-md-4 col-lg-3';
     col.innerHTML = `
       <div class="product-card">
         <div class="position-relative" onclick="window.location.href='/product/${p._id}'">

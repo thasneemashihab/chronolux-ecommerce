@@ -116,7 +116,8 @@ const colorContainer = document.getElementById('colorOptions');
 if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
   colorsSection.classList.remove('d-none');
   colorContainer.innerHTML = '';
-
+  
+  //when color is clicked- show strip again
   p.colors.forEach((color, i) => {
     const swatch = document.createElement('div');
     swatch.className = `color-swatch ${i === 0 ? 'active' : ''}`;
@@ -126,8 +127,12 @@ if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
     swatch.addEventListener('click', () => {
       document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
       swatch.classList.add('active');
+    
 
-      // Find this color's 3 images
+    // Show thumbnail strip again when color is selected
+    if (strip) strip.classList.remove('d-none'); 
+
+      //Load color images into strip and Find this color's 3 images
       const colorData = p.colorImages?.find(c => c.color === color);
 
       if (colorData && colorData.images && colorData.images.length > 0) {
@@ -135,25 +140,21 @@ if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
         if (mainImg) mainImg.src = colorData.images[0];
 
         // Replace thumbnail strip with this color's images
-        if (strip) {
           strip.innerHTML = '';
+          strip.classList.remove('d-none');
           colorData.images.forEach((img, idx) => {
             const thumb = document.createElement('img');
             thumb.src = img;
             thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
             thumb.addEventListener('click', () => {
-              if (mainImg) mainImg.src = img;
+             mainImg.src = img;
               document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
               thumb.classList.add('active');
             });
             strip.appendChild(thumb);
           });
         }
-      } else if (p.images[i]) {
-        // Fallback: use base image at same index as color
-        if (mainImg) mainImg.src = p.images[i];
-      }
-    });
+      });
 
     colorContainer.appendChild(swatch);
   });
@@ -204,9 +205,12 @@ if (variantsSection && variantContainer && p.variants && p.variants.length > 0) 
       if (variantData && variantData.image) {
         // Change main image only — thumbnails stay as current color
         if (mainImg) mainImg.src = variantData.image;
+        
+        // Hide thumbnail strip — style has only 1 image, no thumbnails needed
+      if (strip) strip.classList.add('d-none');
 
         // Deselect all thumbnails since we're showing a variant image
-        document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+        //document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
       }
     });
 

@@ -7,7 +7,7 @@ exports.getProducts = async (req, res) => {
   try {
     const search = req.query.search || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 8;
     const sortBy = req.query.sort || 'newest';
     const categoryId = req.query.category || '';
     const brandId = req.query.brand || '';
