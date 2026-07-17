@@ -498,3 +498,21 @@ body {
   cursor: pointer;
   z-index: 3;
 }
+
+.admin-detail-card {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 18px;
+}
+
+.status-change-btn {
+  border: 1px solid #444;
+  color: #ccc;
+  background: #2a2a2a;
+  transition: all 0.2s;
+}
+
+.status-change-btn:hover { border-color: #f5b800; color: #f5b800; }
+.status-change-btn.active-status { background: #f5b800; color: #111; border-color: #f5b800; font-weight: 700; }
+.status-change-btn[data-status="Cancelled"].active-status { background: #dc3545; border-color: #dc3545; color: #fff; }
+.status-change-btn[data-status="Delivered"].active-status { background: #28a745; border-color: #28a745; color: #fff; }

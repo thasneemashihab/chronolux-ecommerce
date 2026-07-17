@@ -99,3 +99,6 @@ exports.getOrderDetailPage = async (req, res) => {
   const user = await User.findById(req.userId).select('name email profileImage');
   res.render('user/order-detail', { user, orderId: req.params.id });
 };
+
+exports.getAdminOrders = (req, res) => res.render('admin/orders');
+exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { orderId: req.params.id });

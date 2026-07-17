@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Order Detail - Admin Panel</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/orders" class="sidebar-link active"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <a href="/admin/orders" class="text-secondary text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Back to Orders
+      </a>
+    </div>
+
+    <!-- Order Header -->
+    <div class="row g-3 mb-4 text-secondary small">
+      <div class="col-auto">
+        <span>Order ID: </span>
+        <strong class="text-white" id="detailOrderId">—</strong>
+      </div>
+      <div class="col-auto">
+        <span>Date: </span>
+        <strong class="text-white" id="detailDate">—</strong>
+      </div>
+      <div class="col-auto">
+        <span>Customer: </span>
+        <strong class="text-white" id="detailCustomer">—</strong>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Left: Items + Status -->
+      <div class="col-12 col-lg-7">
+        <div class="admin-detail-card mb-3">
+          <h6 class="fw-bold mb-3">Order Items</h6>
+          <div id="detailItems"></div>
+        </div>
+
+        <div class="admin-detail-card">
+          <h6 class="fw-bold mb-3">Change Status</h6>
+          <div class="d-flex gap-2 flex-wrap" id="statusButtons">
+            <button class="btn btn-sm status-change-btn" data-status="Pending">Pending</button>
+            <button class="btn btn-sm status-change-btn" data-status="Processing">Processing</button>
+            <button class="btn btn-sm status-change-btn" data-status="Shipped">Shipped</button>
+            <button class="btn btn-sm status-change-btn" data-status="Out for Delivery">Out for Delivery</button>
+            <button class="btn btn-sm status-change-btn" data-status="Delivered">Delivered</button>
+            <button class="btn btn-sm status-change-btn" data-status="Cancelled">Cancelled</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Address + Payment -->
+      <div class="col-12 col-lg-5">
+        <div class="admin-detail-card mb-3">
+          <h6 class="fw-bold mb-3">Shipping Address</h6>
+          <div id="detailAddress" class="text-secondary small"></div>
+        </div>
+
+        <div class="admin-detail-card">
+          <h6 class="fw-bold mb-3">Payment Details</h6>
+          <div id="detailPayment"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="d-flex gap-3 mt-4" id="adminOrderActions"></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">No</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/adminOrderDetail.js"></script>
+</body>
+</html>

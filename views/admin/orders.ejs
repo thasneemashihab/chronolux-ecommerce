@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Orders - Admin Panel</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/orders" class="sidebar-link active"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
+    <a href="/admin/coupons" class="sidebar-link"><i class="bi bi-ticket"></i> Coupon</a>
+    <a href="/admin/offers" class="sidebar-link"><i class="bi bi-percent"></i> Offers</a>
+    <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="text-white fw-bold mb-0">Orders</h3>
+      <button class="btn btn-secondary" id="exportBtn">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <select class="form-select" id="statusFilter" style="width:150px;">
+        <option value="">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Processing">Processing</option>
+        <option value="Shipped">Shipped</option>
+        <option value="Out for Delivery">Out for Delivery</option>
+        <option value="Delivered">Delivered</option>
+        <option value="Cancelled">Cancelled</option>
+      </select>
+
+      <select class="form-select" id="paymentFilter" style="width:160px;">
+        <option value="">All Payment</option>
+        <option value="COD">COD</option>
+        <option value="Online">Online</option>
+        <option value="Wallet">Wallet</option>
+      </select>
+
+      <input type="date" class="form-control" id="startDate" style="width:160px;"
+        placeholder="Start Date">
+      <input type="date" class="form-control" id="endDate" style="width:160px;"
+        placeholder="End Date">
+
+      <div class="position-relative" style="width:220px;">
+        <input type="text" class="form-control" id="orderSearch" placeholder="Search order ID...">
+        <span class="clear-search d-none" id="clearSearch">&times;</span>
+      </div>
+
+      <button class="btn btn-secondary" id="clearFiltersBtn">Clear All</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-dark align-middle">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Payment</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-secondary small">Show result:</span>
+        <select class="form-select form-select-sm" id="limitSelect" style="width:80px;">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+        <span class="text-secondary small" id="totalOrdersLabel"></span>
+      </div>
+      <nav><ul class="pagination mb-0" id="ordersPagination"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/adminOrders.js"></script>
+</body>
+</html>
