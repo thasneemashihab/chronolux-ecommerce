@@ -6,7 +6,14 @@ const orderItemSchema = new mongoose.Schema({
   image: String,
   price: Number,
   quantity: Number,
-  itemTotal: Number
+  itemTotal: Number,
+  status: {
+    type: String,
+    enum: ['Active', 'Cancelled', 'Return Requested', 'Returned'],
+    default: 'Active'
+  },
+  cancelReason: { type: String, default: '' },
+  returnReason: { type: String, default: '' }
 });
 
 const orderSchema = new mongoose.Schema({
@@ -34,6 +41,8 @@ const orderSchema = new mongoose.Schema({
     enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
     default: 'Pending'
   },
+  cancelReason: { type: String, default: '' },
+  returnReason: { type: String, default: '' },
   orderId: String
 }, { timestamps: true });
 

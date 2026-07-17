@@ -89,3 +89,13 @@ exports.getPaymentFailedPage = async (req, res) => {
   const user = await User.findById(req.userId).select('name email');
   res.render('user/payment-failed', { user });
 };
+
+exports.getOrdersPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage');
+  res.render('user/orders', { user });
+};
+
+exports.getOrderDetailPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage');
+  res.render('user/order-detail', { user, orderId: req.params.id });
+};

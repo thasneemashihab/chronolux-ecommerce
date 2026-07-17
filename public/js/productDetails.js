@@ -112,7 +112,7 @@ function renderProduct(p) {
 const colorsSection = document.getElementById('colorsSection');
 const colorContainer = document.getElementById('colorOptions');
 
-// Colors — show 3 images per color in thumbnail strip
+// Colors — clicking shows that color's 3 images in thumbnail strip
 if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
   colorsSection.classList.remove('d-none');
   colorContainer.innerHTML = '';
@@ -127,41 +127,65 @@ if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
       document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
       swatch.classList.add('active');
 
-      // Find this color's images from colorImages array
+      // Find this color's 3 images
       const colorData = p.colorImages?.find(c => c.color === color);
 
-      if (colorData && colorData.images.length > 0) {
-        // Show first image of this color as main
-        mainImg.src = colorData.images[0];
+      if (colorData && colorData.images && colorData.images.length > 0) {
+        // Show first image as main
+        if (mainImg) mainImg.src = colorData.images[0];
 
-        // Update thumbnails to show THIS color's 3 images
-        strip.innerHTML = '';
-        colorData.images.forEach((img, idx) => {
-          const thumb = document.createElement('img');
-          thumb.src = img;
-          thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
-          thumb.addEventListener('click', () => {
-            mainImg.src = img;
-            document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
+        // Replace thumbnail strip with this color's images
+        if (strip) {
+          strip.innerHTML = '';
+          colorData.images.forEach((img, idx) => {
+            const thumb = document.createElement('img');
+            thumb.src = img;
+            thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
+            thumb.addEventListener('click', () => {
+              if (mainImg) mainImg.src = img;
+              document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+              thumb.classList.add('active');
+            });
+            strip.appendChild(thumb);
           });
-          strip.appendChild(thumb);
-        });
-      } else {
-        // Fallback: use base images
-        if (p.images[i]) mainImg.src = p.images[i];
+        }
+      } else if (p.images[i]) {
+        // Fallback: use base image at same index as color
+        if (mainImg) mainImg.src = p.images[i];
       }
     });
 
     colorContainer.appendChild(swatch);
   });
+
+  // Auto-load first color's images on page load
+  const firstColorData = p.colorImages?.[0];
+  if (firstColorData && firstColorData.images && firstColorData.images.length > 0) {
+    if (mainImg) mainImg.src = firstColorData.images[0];
+    if (strip) {
+      strip.innerHTML = '';
+      firstColorData.images.forEach((img, idx) => {
+        const thumb = document.createElement('img');
+        thumb.src = img;
+        thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
+        thumb.addEventListener('click', () => {
+          if (mainImg) mainImg.src = img;
+          document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
+        });
+        strip.appendChild(thumb);
+      });
+    }
+  }
 }
 
 // Variants — clicking changes the main image
 const variantsSection = document.getElementById('variantsSection');
 const variantContainer = document.getElementById('variantOptions');
 
-// Variants — show variant's image as main
+
+// Variants — clicking shows ONLY that variant's image as main
+// Thumbnail strip stays as current color's images
 if (variantsSection && variantContainer && p.variants && p.variants.length > 0) {
   variantsSection.classList.remove('d-none');
   variantContainer.innerHTML = '';
@@ -175,11 +199,14 @@ if (variantsSection && variantContainer && p.variants && p.variants.length > 0) 
       document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Find this variant's image
+      // Find this variant's single image
       const variantData = p.variantImages?.find(v => v.variant === variant);
       if (variantData && variantData.image) {
-        mainImg.src = variantData.image;
-        // Keep current color thumbnails in strip, just change main image
+        // Change main image only — thumbnails stay as current color
+        if (mainImg) mainImg.src = variantData.image;
+
+        // Deselect all thumbnails since we're showing a variant image
+        document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
       }
     });
 

@@ -25,11 +25,14 @@ const productSchema = new mongoose.Schema({
   variants: [{ type: String }],        // variant names list
   colorImages: [{                      // images grouped by color
     color: String,
-    images: [String]
+    images: [{
+      type: String  // stores image path
+    }]
+     // always 3 images per color: [front, side, back]
   }],
   variantImages: [{                    // one image per variant
     variant: String,
-    image: String
+    image: String    // 1 image per variant
   }],
   reviews: [reviewSchema],
   isActive: { type: Boolean, default: true },

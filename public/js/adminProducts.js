@@ -10,7 +10,7 @@ let existingImages = [];    // current product's image paths when editing
 let colorCroppedImages = {};    // { "black": [blob1, blob2, blob3] }
 let variantCroppedImages = {};  // { "oyster": blob }
 let currentCropTarget = null;   // { type: 'color'/'variant', name, index }
-
+let editingProduct = null; // stores current product in edit mode
 
 
 async function loadProducts() {
@@ -127,6 +127,7 @@ document.getElementById('cancelProductBtn').addEventListener('click', () => prod
 
 // ----- Open Edit Modal -----
 async function openEditModal(product) {
+  editingProduct = product; // store for generateColorVariantInputs to use
   document.getElementById('productModalTitle').textContent = 'Edit Product';
   document.getElementById('saveProductBtn').textContent = 'Update Product';
   document.getElementById('productId').value = product._id;
@@ -153,6 +154,7 @@ async function openEditModal(product) {
 
   await loadDropdowns(product.brand?._id, product.category?._id);
   productModalBackdrop.classList.remove('d-none');
+  generateColorVariantInputs(); // regenerate after setting editingProduct
 }
 
 // ----- Render existing images with replace button -----
@@ -199,6 +201,7 @@ fileInput.addEventListener('change', (e) => {
 });
 
 //upload boxes when admin types colos/variants.
+
 function generateColorVariantInputs() {
   const colorsRaw = document.getElementById('productColors').value.trim();
   const variantsRaw = document.getElementById('productVariants').value.trim();
@@ -215,32 +218,49 @@ function generateColorVariantInputs() {
 
   if (colors.length > 0) {
     colorSection.classList.remove('d-none');
-    colors.forEach(color => {
+
+    colors.forEach((color, colorIdx) => {
       const wrapper = document.createElement('div');
-      wrapper.className = 'mb-3';
+      wrapper.className = 'mb-4';
+
+      // Check if this color already has images (edit mode)
+      const existingColorData = editingProduct?.colorImages?.find(c => c.color === color);
+
       wrapper.innerHTML = `
-        <p class="fw-bold text-capitalize mb-2">
-          <span class="color-dot" style="background:${color}; width:14px; height:14px; border-radius:50%; display:inline-block; margin-right:6px;"></span>
-          ${color}
-          <span class="text-secondary small">(upload 3 images)</span>
-        </p>
-        <div class="d-flex gap-2 flex-wrap" id="colorImgs_${color}">
-          ${[0,1,2].map(i => `
-            <div class="color-img-slot" id="colorSlot_${color}_${i}">
-              <div class="upload-slot-empty">
-                <label style="cursor:pointer;">
-                  <i class="bi bi-plus-lg"></i>
-                  <input type="file" accept="image/*" class="d-none color-img-input"
-                    data-color="${color}" data-index="${i}">
-                </label>
-              </div>
-            </div>
-          `).join('')}
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="color-dot-preview" style="background:${color}; width:16px; height:16px; border-radius:50%; display:inline-block;"></span>
+          <strong class="text-capitalize">${color}</strong>
+          <span class="text-secondary small">(upload 3 images: front, side, back)</span>
+        </div>
+        <div class="d-flex gap-3 flex-wrap" id="colorSlots_${color}">
+          ${[0, 1, 2].map(i => {
+            const existingImg = existingColorData?.images?.[i];
+            return `
+              <div class="color-img-slot-wrapper">
+                <p class="text-secondary small mb-1">Image ${i + 1}</p>
+                <div class="color-img-slot" id="colorSlot_${color}_${i}">
+                  ${existingImg
+                    ? `<div class="upload-slot-filled">
+                         <img src="${existingImg}">
+                         <span class="slot-remove" data-color="${color}" data-index="${i}">&times;</span>
+                       </div>`
+                    : `<div class="upload-slot-empty">
+                         <label style="cursor:pointer;">
+                           <i class="bi bi-plus-lg"></i>
+                           <input type="file" accept="image/*" class="d-none color-img-input"
+                             data-color="${color}" data-index="${i}">
+                         </label>
+                       </div>`
+                  }
+                </div>
+              </div>`;
+          }).join('')}
         </div>
       `;
+
       colorInputs.appendChild(wrapper);
 
-      // Attach file listeners
+      // Attach file listeners for this color's 3 slots
       wrapper.querySelectorAll('.color-img-input').forEach(input => {
         input.addEventListener('change', (e) => {
           const file = e.target.files[0];
@@ -253,38 +273,105 @@ function generateColorVariantInputs() {
           openCropModal(file, false, -1);
         });
       });
+
+      // Remove button for existing images
+      wrapper.querySelectorAll('.slot-remove').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const color = btn.dataset.color;
+          const index = parseInt(btn.dataset.index);
+          const slot = document.getElementById(`colorSlot_${color}_${index}`);
+          if (!colorCroppedImages[color]) colorCroppedImages[color] = [];
+          colorCroppedImages[color][index] = null;
+          slot.innerHTML = `
+            <div class="upload-slot-empty">
+              <label style="cursor:pointer;">
+                <i class="bi bi-plus-lg"></i>
+                <input type="file" accept="image/*" class="d-none color-img-input"
+                  data-color="${color}" data-index="${index}">
+              </label>
+            </div>`;
+          // Re-attach listener
+          slot.querySelector('.color-img-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            currentCropTarget = { type: 'color', name: color, index };
+            openCropModal(file, false, -1);
+          });
+        });
+      });
     });
   } else {
     colorSection.classList.add('d-none');
   }
 
+  // Variants — only show NEW variant uploads
+  // If variant already has an image in edit mode, show it but allow replacement
   if (variants.length > 0) {
     variantSection.classList.remove('d-none');
+
     variants.forEach(variant => {
+      const existingVariantData = editingProduct?.variantImages?.find(v => v.variant === variant);
+
       const wrapper = document.createElement('div');
       wrapper.className = 'mb-3';
       wrapper.innerHTML = `
-        <p class="fw-bold mb-2">${variant} <span class="text-secondary small">(upload 1 image)</span></p>
-        <div class="d-flex gap-2" id="variantImgs_${variant}">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <strong class="text-capitalize">${variant}</strong>
+          <span class="text-secondary small">(1 image for this style)</span>
+          ${existingVariantData ? '<span class="badge bg-success">Has image</span>' : ''}
+        </div>
+        <div class="d-flex gap-2" id="variantSlots_${variant}">
           <div class="color-img-slot" id="variantSlot_${variant}">
+            ${existingVariantData?.image
+              ? `<div class="upload-slot-filled">
+                   <img src="${existingVariantData.image}">
+                   <span class="slot-remove-variant" data-variant="${variant}">&times;</span>
+                 </div>`
+              : `<div class="upload-slot-empty">
+                   <label style="cursor:pointer;">
+                     <i class="bi bi-plus-lg"></i>
+                     <input type="file" accept="image/*" class="d-none variant-img-input"
+                       data-variant="${variant}">
+                   </label>
+                 </div>`
+            }
+          </div>
+        </div>
+      `;
+
+      variantInputs.appendChild(wrapper);
+
+      const input = wrapper.querySelector('.variant-img-input');
+      if (input) {
+        input.addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          currentCropTarget = { type: 'variant', name: variant, index: 0 };
+          openCropModal(file, false, -1);
+        });
+      }
+
+      const removeBtn = wrapper.querySelector('.slot-remove-variant');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', () => {
+          const slot = document.getElementById(`variantSlot_${variant}`);
+          variantCroppedImages[variant] = null;
+          slot.innerHTML = `
             <div class="upload-slot-empty">
               <label style="cursor:pointer;">
                 <i class="bi bi-plus-lg"></i>
                 <input type="file" accept="image/*" class="d-none variant-img-input"
                   data-variant="${variant}">
               </label>
-            </div>
-          </div>
-        </div>
-      `;
-      variantInputs.appendChild(wrapper);
-
-      wrapper.querySelector('.variant-img-input').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        currentCropTarget = { type: 'variant', name: variant, index: 0 };
-        openCropModal(file, false, -1);
-      });
+            </div>`;
+          slot.querySelector('.variant-img-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            currentCropTarget = { type: 'variant', name: variant, index: 0 };
+            openCropModal(file, false, -1);
+          });
+        });
+      }
     });
   } else {
     variantSection.classList.add('d-none');

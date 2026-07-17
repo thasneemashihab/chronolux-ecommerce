@@ -441,3 +441,60 @@ body {
 .color-img-slot {
   display: inline-block;
 }
+
+.color-img-slot-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-slot-empty {
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #888;
+  font-size: 22px;
+  transition: all 0.2s;
+}
+
+.upload-slot-empty:hover {
+  border-color: #f5b800;
+  color: #f5b800;
+}
+
+.upload-slot-filled {
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+
+.upload-slot-filled img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #f5b800;
+}
+
+.slot-remove,
+.slot-remove-variant {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #dc3545;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 3;
+}

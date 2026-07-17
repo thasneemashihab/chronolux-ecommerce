@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Order Details - ChronoLux</title>
+  <link href="/css/orders.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'orders' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <a href="/orders" class="text-secondary text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> Back to orders
+          </a>
+        </div>
+
+        <!-- Order header -->
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+          <div>
+            <h4 class="fw-bold mb-1" id="detailOrderId">Loading...</h4>
+            <p class="text-secondary small mb-0" id="detailOrderDate"></p>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <span class="order-status-badge" id="detailStatus"></span>
+            <button class="btn btn-secondary btn-sm" id="downloadInvoiceBtn">
+              <i class="bi bi-download me-1"></i> Download Invoice
+            </button>
+          </div>
+        </div>
+
+        <!-- Order Timeline -->
+        <div class="order-timeline mb-4" id="orderTimeline"></div>
+
+        <div class="row g-3">
+          <!-- Left: Items + Notes -->
+          <div class="col-12 col-lg-7">
+            <div class="order-detail-panel mb-3">
+              <h6 class="fw-bold mb-3" id="itemsCount">Order Items</h6>
+              <div id="detailItems"></div>
+            </div>
+
+            <div class="order-detail-panel">
+              <h6 class="fw-bold mb-2">Order Notes</h6>
+              <p class="text-secondary small mb-0">Thank you for shopping with ChronoLux</p>
+            </div>
+          </div>
+
+          <!-- Right: Address + Payment + Price -->
+          <div class="col-12 col-lg-5">
+            <div class="order-detail-panel mb-3">
+              <h6 class="fw-bold mb-3">Shipping Address</h6>
+              <div id="detailAddress" class="text-secondary small"></div>
+            </div>
+
+            <div class="order-detail-panel mb-3">
+              <h6 class="fw-bold mb-3">Payment Information</h6>
+              <div id="detailPayment"></div>
+            </div>
+
+            <div class="order-detail-panel">
+              <h6 class="fw-bold mb-3">Price Details</h6>
+              <div id="detailPricing"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-3 mt-4 flex-wrap" id="orderActions"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel/Return Reason Modal -->
+<div class="modal-backdrop-custom d-none" id="reasonModalBackdrop">
+  <div class="email-modal">
+    <button class="btn-close-modal" id="closeReasonModal">×</button>
+    <h5 class="fw-bold mb-1" id="reasonModalTitle">Cancel Order</h5>
+    <p class="text-secondary small mb-3" id="reasonModalSubtitle"></p>
+
+    <label class="form-label">Reason <span id="reasonRequired" class="text-danger d-none">*</span></label>
+    <select class="form-select mb-3" id="reasonSelect">
+      <option value="">Select a reason</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Found better price elsewhere">Found better price elsewhere</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Product damaged">Product damaged</option>
+      <option value="Wrong item received">Wrong item received</option>
+      <option value="Other">Other</option>
+    </select>
+    <textarea class="form-control mb-3" id="reasonText" rows="3"
+      placeholder="Add more details..."></textarea>
+
+    <div class="alert alert-danger d-none" id="reasonError"></div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary w-50" id="cancelReasonBtn">Back</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmReasonBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">No</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/orderDetail.js"></script>
+</body>
+</html>

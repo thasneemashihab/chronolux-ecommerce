@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>My Orders - ChronoLux</title>
+  <link href="/css/orders.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'orders' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-2">
+          <div>
+            <h3 class="fw-bold mb-1">My Orders</h3>
+            <p class="text-secondary small mb-0">Track, manage and view your orders</p>
+          </div>
+        </div>
+
+        <!-- Search + Filters -->
+        <div class="d-flex gap-2 flex-wrap mb-4 mt-3">
+          <input type="text" class="form-control" id="orderSearch"
+            placeholder="Search by Order ID..." style="max-width:280px;">
+          <select class="form-select" id="statusFilter" style="max-width:180px;">
+            <option value="">All Status</option>
+            <option value="Pending">Pending</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <select class="form-select" id="dateFilter" style="max-width:180px;">
+            <option value="">All Time</option>
+            <option value="6">Last 6 months</option>
+            <option value="3">Last 3 months</option>
+            <option value="1">Last 1 month</option>
+          </select>
+        </div>
+
+        <!-- Orders list -->
+        <div id="ordersList"></div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-secondary small">Show result:</span>
+            <select class="form-select form-select-sm" id="limitSelect" style="width:80px;">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+          <nav><ul class="pagination mb-0" id="ordersPagination"></ul></nav>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel/Return Reason Modal -->
+<div class="modal-backdrop-custom d-none" id="reasonModalBackdrop">
+  <div class="email-modal">
+    <button class="btn-close-modal" id="closeReasonModal">×</button>
+    <h5 class="fw-bold mb-1" id="reasonModalTitle">Cancel Order</h5>
+    <p class="text-secondary small mb-3" id="reasonModalSubtitle">Tell us why you want to cancel</p>
+
+    <label class="form-label">Reason <span id="reasonRequired" class="text-danger d-none">*</span></label>
+    <select class="form-select mb-3" id="reasonSelect">
+      <option value="">Select a reason (optional)</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Found better price elsewhere">Found better price elsewhere</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Delivery time too long">Delivery time too long</option>
+      <option value="Product not needed anymore">Product not needed anymore</option>
+      <option value="Other">Other</option>
+    </select>
+    <textarea class="form-control mb-3" id="reasonText" rows="3"
+      placeholder="Add more details (optional)"></textarea>
+
+    <div class="alert alert-danger d-none" id="reasonError"></div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-secondary w-50" id="cancelReasonBtn">Cancel</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmReasonBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">No</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/orders.js"></script>
+</body>
+</html>
