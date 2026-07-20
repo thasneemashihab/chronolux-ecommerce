@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Separate schema for each item inside an order
 const orderItemSchema = new mongoose.Schema({
   product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
   name: String,
@@ -14,10 +15,15 @@ const orderItemSchema = new mongoose.Schema({
   },
   cancelReason: { type: String, default: '' },
   returnReason: { type: String, default: '' }
-});
+}, { _id: true });
 
+// Main order schema
 const orderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   items: [orderItemSchema],
   shippingAddress: {
     fullName: String,
@@ -28,7 +34,10 @@ const orderSchema = new mongoose.Schema({
     pincode: String,
     label: String
   },
-  paymentMethod: { type: String, default: 'COD' },
+  paymentMethod: {
+    type: String,
+    default: 'COD'
+  },
   subtotal: Number,
   discount: Number,
   couponDiscount: { type: Number, default: 0 },
@@ -38,12 +47,16 @@ const orderSchema = new mongoose.Schema({
   totalAmount: Number,
   status: {
     type: String,
-    enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+    enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
     default: 'Pending'
   },
   cancelReason: { type: String, default: '' },
   returnReason: { type: String, default: '' },
-  orderId: String
-}, { timestamps: true });
+  orderId: String,
+  deliveredAt: { type: Date, default: null }
+}, {
+  timestamps: true,
+  versionKey: false
+});
 
 module.exports = mongoose.model('Order', orderSchema);

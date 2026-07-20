@@ -18,7 +18,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
  const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  console.log('LOGIN ATTEMPT:', JSON.stringify(email), JSON.stringify(password));
+  
   const errorBox = document.getElementById('loginError');
 
   // Hide any previous error before trying again

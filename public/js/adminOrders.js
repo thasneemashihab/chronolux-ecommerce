@@ -155,19 +155,25 @@ clearBtn.addEventListener('click', () => {
 
 // Clear all filters
 document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+  // Reset all state variables
   statusFilter = '';
   paymentFilter = '';
   searchTerm = '';
   startDate = '';
   endDate = '';
   currentPage = 1;
+
+  // Reset all UI elements
   document.getElementById('statusFilter').value = '';
   document.getElementById('paymentFilter').value = '';
   document.getElementById('orderSearch').value = '';
   document.getElementById('startDate').value = '';
   document.getElementById('endDate').value = '';
-  clearBtn.classList.add('d-none');
+  document.getElementById('clearSearch').classList.add('d-none');
+
+  // Reload with clean state
   loadOrders();
+  showToast('Filters cleared');
 });
 
 // Logout

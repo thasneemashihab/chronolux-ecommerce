@@ -25,9 +25,7 @@ const productSchema = new mongoose.Schema({
   variants: [{ type: String }],        // variant names list
   colorImages: [{                      // images grouped by color
     color: String,
-    images: [{
-      type: String  // stores image path
-    }]
+    images: [ String]  // stores image path
      // always 3 images per color: [front, side, back]
   }],
   variantImages: [{                    // one image per variant
@@ -37,7 +35,9 @@ const productSchema = new mongoose.Schema({
   reviews: [reviewSchema],
   isActive: { type: Boolean, default: true },
   isDeleted: { type: Boolean, default: false }
-}, { timestamps: true });
+}, { timestamps: true ,
+  versionKey : false  // — disables the __v version conflict check
+ });
 
 
 // Auto-calculate average rating from reviews

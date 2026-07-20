@@ -88,12 +88,18 @@
      margin-bottom:3px;
      }
 
+     /* Main product image — shows full watch */
 /* Product Details */
 .product-main-image {
-  height: 400px;
-  object-fit: cover;
+  height: 100px;
+  object-fit: contain;   /* changed from cover to contain — shows full image */
   border-radius: 12px;
+  transition: transform 0.3s ease;
+  width: 100%;
+  display: block;
+  background: #111;       /* dark background behind the image */
 }
+
 
 .product-img-outer {
   position: relative;
@@ -108,6 +114,7 @@
   border-radius: 12px;
   cursor: zoom-in;
   width: 100%;
+  background: #111;
 }
 
 .discount-badge {
@@ -144,13 +151,14 @@
 .wishlist-btn.active { color: #dc3545; }
 
 .thumbnail-img {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
   border-radius: 8px;
   cursor: pointer;
   border: 2px solid transparent;
   flex-shrink: 0;
+  background: #111;
 }
 
 .thumbnail-img.active { border-color: #f5b800; }
@@ -249,7 +257,7 @@
 }
 
 .product-image-zoom-wrapper:hover .product-main-image {
-  transform: scale(1.5);
+  transform: scale(1.4);
  
 }
 

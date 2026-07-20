@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Inventory - Admin Panel</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh;">
+
+<div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/inventory" class="sidebar-link active"><i class="bi bi-archive"></i> Inventory</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
+    <h3 class="text-white fw-bold mb-4">Inventory / Stock Management</h3>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="inventory-card inventory-card-danger">
+          <div class="inventory-card-icon"><i class="bi bi-x-circle-fill"></i></div>
+          <div>
+            <p class="inventory-card-label">Out of Stock</p>
+            <h3 class="inventory-card-value" id="outOfStockCount">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="inventory-card inventory-card-warning">
+          <div class="inventory-card-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+          <div>
+            <p class="inventory-card-label">Low Stock (≤10)</p>
+            <h3 class="inventory-card-value" id="lowStockCount">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="inventory-card inventory-card-success">
+          <div class="inventory-card-icon"><i class="bi bi-check-circle-fill"></i></div>
+          <div>
+            <p class="inventory-card-label">In Stock</p>
+            <h3 class="inventory-card-value" id="inStockCount">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <div class="position-relative" style="width:280px;">
+        <input type="text" class="form-control" id="inventorySearch" placeholder="Search product...">
+        <span class="clear-search d-none" id="clearSearch">&times;</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-secondary stock-filter-btn active" data-filter="">All Products</button>
+        <button class="btn btn-secondary stock-filter-btn" data-filter="low">Low Stock</button>
+        <button class="btn btn-secondary stock-filter-btn" data-filter="out">Out of Stock</button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-dark align-middle">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Brand</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Current Stock</th>
+            <th>Update Stock</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+      <span class="text-secondary small" id="inventoryLabel"></span>
+      <nav><ul class="pagination mb-0" id="inventoryPagination"></ul></nav>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
+  <div class="email-modal text-center">
+    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
+    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-secondary w-50" id="confirmCancelBtn">No</button>
+      <button class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes</button>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/adminInventory.js"></script>
+</body>
+</html>

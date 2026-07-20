@@ -516,3 +516,73 @@ body {
 .status-change-btn.active-status { background: #f5b800; color: #111; border-color: #f5b800; font-weight: 700; }
 .status-change-btn[data-status="Cancelled"].active-status { background: #dc3545; border-color: #dc3545; color: #fff; }
 .status-change-btn[data-status="Delivered"].active-status { background: #28a745; border-color: #28a745; color: #fff; }
+
+/* Admin order filters */
+#statusFilter,
+#paymentFilter,
+#startDate,
+#endDate,
+#orderSearch {
+  background: #2a2a2a !important;
+  border: 1px solid #444 !important;
+  color: #fff !important;
+  border-radius: 8px;
+}
+
+#statusFilter option,
+#paymentFilter option {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+#statusFilter:focus,
+#paymentFilter:focus,
+#startDate:focus,
+#endDate:focus,
+#orderSearch:focus {
+  border-color: #f5b800 !important;
+  box-shadow: none !important;
+}
+
+/* Date input calendar icon color */
+#startDate::-webkit-calendar-picker-indicator,
+#endDate::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* Inventory summary cards */
+.inventory-card {
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.inventory-card-danger { background: rgba(220,53,69,0.15); border: 1px solid rgba(220,53,69,0.3); }
+.inventory-card-warning { background: rgba(255,193,7,0.15); border: 1px solid rgba(255,193,7,0.3); }
+.inventory-card-success { background: rgba(25,135,84,0.15); border: 1px solid rgba(25,135,84,0.3); }
+
+.inventory-card-icon { font-size: 32px; }
+.inventory-card-danger .inventory-card-icon { color: #ea868f; }
+.inventory-card-warning .inventory-card-icon { color: #ffc107; }
+.inventory-card-success .inventory-card-icon { color: #75b798; }
+
+.inventory-card-label { color: #888; font-size: 13px; margin-bottom: 2px; }
+.inventory-card-value { color: #fff; font-weight: 800; font-size: 28px; margin-bottom: 0; }
+
+/* Stock badge */
+.stock-badge-danger { background: rgba(220,53,69,0.2); color: #ea868f; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+.stock-badge-warning { background: rgba(255,193,7,0.2); color: #ffc107; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+.stock-badge-success { background: rgba(25,135,84,0.2); color: #75b798; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+
+/* Stock input */
+.stock-update-wrapper { display: flex; gap: 6px; align-items: center; }
+.stock-input { background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 6px; padding: 5px 10px; width: 80px; text-align: center; }
+.stock-input:focus { border-color: #f5b800; outline: none; }
+.btn-update-stock { background: #f5b800; color: #111; border: none; border-radius: 6px; padding: 5px 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.btn-update-stock:hover { background: #e0a800; }
+
+/* Filter buttons */
+.stock-filter-btn.active { background: #f5b800; color: #111; border-color: #f5b800; font-weight: 700; }

@@ -120,6 +120,50 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
+// GET /api/admin/orders/export - export as CSV
+exports.exportOrders = async (req, res) => {
+  try {
+    const status = req.query.status || '';
+    const payment = req.query.payment || '';
+    const search = req.query.search || '';
+
+    const filter = {};
+    if (status) filter.status = status;
+    if (payment) filter.paymentMethod = payment;
+    if (search) filter.orderId = { $regex: search, $options: 'i' };
+
+    const orders = await Order.find(filter)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    // Build CSV content
+    const rows = [
+      ['Order ID', 'Customer', 'Email', 'Amount', 'Payment', 'Status', 'Date']
+    ];
+
+    orders.forEach(o => {
+      rows.push([
+        o.orderId,
+        o.user?.name || 'Unknown',
+        o.user?.email || '',
+        o.totalAmount,
+        o.paymentMethod,
+        o.status,
+        new Date(o.createdAt).toLocaleDateString('en-IN')
+      ]);
+    });
+
+    const csvContent = rows.map(row => row.join(',')).join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=orders.csv');
+    res.send(csvContent);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Export failed' });
+  }
+};
+
 // PUT /api/admin/orders/:id/approve-return
 exports.approveReturn = async (req, res) => {
   try {

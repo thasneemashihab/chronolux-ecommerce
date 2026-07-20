@@ -67,13 +67,15 @@ exports.addCategory = async (req, res) => {
       return res.status(400).json({ message:  `The slug "${slug}" is already in use by another category`});
     }
 
-    const imagePath = req.file ? `/uploads/categories/${req.file.filename}` : '';
+    // Cloudinary gives us the full URL in req.file.path
+    const imagePath = req.file ? req.file.path : '';
+
 
     await Category.create({
       name,
       slug,
       parentCategory: parentCategory || null,
-      image: imagePath
+      image: imagePath   // this is now a full Cloudinary URL like https://res.cloudinary.com/...
     });
 
     res.status(201).json({ message: 'Category added successfully' });
@@ -125,9 +127,9 @@ exports.updateCategory = async (req, res) => {
     category.slug = slug;
     category.parentCategory = parentCategory || null;
 
-    // Only replace the image if a NEW one was uploaded
+    // Only update image if a new one was uploaded
     if (req.file) {
-      category.image = `/uploads/categories/${req.file.filename}`;
+      category.image = req.file.path;  // Cloudinary URL
     }
 
     await category.save();

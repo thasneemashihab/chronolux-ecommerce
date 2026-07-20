@@ -102,3 +102,4 @@ exports.getOrderDetailPage = async (req, res) => {
 
 exports.getAdminOrders = (req, res) => res.render('admin/orders');
 exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { orderId: req.params.id });
+exports.getAdminInventory = (req, res) => res.render('admin/inventory');

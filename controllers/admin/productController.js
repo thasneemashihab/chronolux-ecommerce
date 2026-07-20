@@ -1,11 +1,13 @@
 const Product = require('../../models/Product');
+const Category = require('../../models/Category');
+const Brand = require('../../models/Brand');
 
 // GET /api/admin/products
 exports.getProducts = async (req, res) => {
   try {
     const search = req.query.search || '';
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const limit = parseInt(req.query.limit) || 10;
 
     const filter = {
       isDeleted: false,
@@ -75,58 +77,51 @@ exports.addProduct = async (req, res) => {
     }
    
     // Base images (min 3 required)
-     if (!req.files?.images || req.files.images.length < 3) {
+    
+    if (!req.files?.images || req.files.images.length < 3) {
       return res.status(400).json({ message: 'Please upload at least 3 base product images' });
     }
-    
-    //Build base image paths
-    const imagePaths = req.files.images.map(f => `/uploads/products/${f.filename}`);
-    
+
     const parsedColors = colors ? JSON.parse(colors) : [];
     const parsedVariants = variants ? JSON.parse(variants) : [];
 
-        // Build colorImages — group uploaded color images by color name using metadata
-    const colorImagesResult = [];
+    // Base images — Cloudinary gives full URL in f.path
+    const imagePaths = req.files.images.map(f => f.path);
+
+    // Color images — group by color name using metadata
     const colorFiles = req.files?.colorImages || [];
     const colorMetaRaw = req.body.colorImageMeta;
     const colorMetas = colorMetaRaw
       ? (Array.isArray(colorMetaRaw) ? colorMetaRaw : [colorMetaRaw]).map(m => JSON.parse(m))
       : [];
 
-    // Group by color name
     const colorMap = {};
     colorFiles.forEach((file, i) => {
       const meta = colorMetas[i] || {};
       const colorName = meta.color;
       if (!colorName) return;
       if (!colorMap[colorName]) colorMap[colorName] = [];
-      colorMap[colorName].push(`/uploads/products/${file.filename}`);
+      colorMap[colorName].push(file.path);
     });
 
-    // Convert to array format
-    Object.entries(colorMap).forEach(([color, images]) => {
-      colorImagesResult.push({ color, images });
-    });
+    const colorImagesArray = Object.entries(colorMap).map(([color, images]) => ({
+      color,
+      images
+    }));
 
-    // Build variantImages
-    const variantImagesResult = [];
+    // Variant images
     const variantFiles = req.files?.variantImages || [];
     const variantMetaRaw = req.body.variantImageMeta;
     const variantMetas = variantMetaRaw
       ? (Array.isArray(variantMetaRaw) ? variantMetaRaw : [variantMetaRaw]).map(m => JSON.parse(m))
       : [];
 
-    variantFiles.forEach((file, i) => {
-      const meta = variantMetas[i] || {};
-      if (meta.variant) {
-        variantImagesResult.push({
-          variant: meta.variant,
-          image: `/uploads/products/${file.filename}`
-        });
-      }
-    });
+    const variantImagesArray = variantFiles.map((file, i) => ({
+      variant: variantMetas[i]?.variant || '',
+      image: file.path
+    }));
 
-   await Product.create({
+    await Product.create({
       name: name.trim(),
       brand,
       category,
@@ -139,8 +134,8 @@ exports.addProduct = async (req, res) => {
       images: imagePaths,
       colors: parsedColors,
       variants: parsedVariants,
-      colorImages: colorImagesResult,
-      variantImages: variantImagesResult,
+      colorImages: colorImagesArray,
+      variantImages: variantImagesArray,
       isActive: isActive === 'true'
     });
 
@@ -181,9 +176,7 @@ exports.updateProduct = async (req, res) => {
       return res.status(400).json({ message: 'Product description is required' });
     }        
 
-
-
-    const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
     product.name = name.trim();
@@ -201,10 +194,10 @@ exports.updateProduct = async (req, res) => {
 
     // Replace base images if new ones uploaded
     if (req.files?.images && req.files.images.length >= 3) {
-      product.images = req.files.images.map(f => `/uploads/products/${f.filename}`);
+      product.images = req.files.images.map(f => f.path);
     }
 
-    // Handle individual image replacements
+    // Individual image replacements
     if (req.files?.replacementImages) {
       const files = Array.isArray(req.files.replacementImages)
         ? req.files.replacementImages
@@ -217,12 +210,12 @@ exports.updateProduct = async (req, res) => {
       files.forEach((file, i) => {
         const idx = parseInt(indexes[i]);
         if (!isNaN(idx) && idx >= 0 && idx < product.images.length) {
-          product.images[idx] = `/uploads/products/${file.filename}`;
+          product.images[idx] = file.path;
         }
       });
     }
 
-    // Update color images if new ones uploaded
+    // Update color images
     if (req.files?.colorImages && req.files.colorImages.length > 0) {
       const colorFiles = req.files.colorImages;
       const colorMetaRaw = req.body.colorImageMeta;
@@ -236,10 +229,9 @@ exports.updateProduct = async (req, res) => {
         const colorName = meta.color;
         if (!colorName) return;
         if (!colorMap[colorName]) colorMap[colorName] = [];
-        colorMap[colorName].push(`/uploads/products/${file.filename}`);
+        colorMap[colorName].push(file.path);
       });
 
-      // Merge with existing — replace only uploaded colors, keep others
       const existingColorMap = {};
       product.colorImages.forEach(ci => {
         existingColorMap[ci.color] = ci.images;
@@ -250,7 +242,7 @@ exports.updateProduct = async (req, res) => {
       product.colorImages = Object.entries(existingColorMap).map(([color, images]) => ({ color, images }));
     }
 
-    // Update variant images if new ones uploaded
+    // Update variant images
     if (req.files?.variantImages && req.files.variantImages.length > 0) {
       const variantFiles = req.files.variantImages;
       const variantMetaRaw = req.body.variantImageMeta;
@@ -265,7 +257,7 @@ exports.updateProduct = async (req, res) => {
       variantFiles.forEach((file, i) => {
         const meta = variantMetas[i] || {};
         if (meta.variant) {
-          variantMap[meta.variant] = `/uploads/products/${file.filename}`;
+          variantMap[meta.variant] = file.path;
         }
       });
       product.variantImages = Object.entries(variantMap).map(([variant, image]) => ({ variant, image }));
@@ -290,12 +282,13 @@ exports.toggleProductStatus = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    product.isActive = !product.isActive;
-    await product.save();
+     await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { isActive: !product.isActive } }
+    );
 
     res.status(200).json({
-      message: product.isActive ? 'Product activated' : 'Product deactivated',
-      isActive: product.isActive
+      message: product.isActive ? 'Product activated' : 'Product deactivated'
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -306,13 +299,100 @@ exports.toggleProductStatus = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    if (!product) {
+       return res.status(404).json({ message: 'Product not found' });
+    }
+   
+    // Use findByIdAndUpdate instead of .save() to avoid version conflicts
+    await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { isDeleted: true } }
+    );
 
-    product.isDeleted = true;
-    await product.save();
 
     res.status(200).json({ message: 'Product deleted successfully' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// GET /api/admin/inventory
+exports.getInventory = async (req, res) => {
+  try {
+    const search = req.query.search || '';
+    const stockFilter = req.query.stock || ''; // 'low', 'out', or ''
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const filter = { isDeleted: false };
+
+    if (search) {
+      filter.name = { $regex: search, $options: 'i' };
+    }
+
+    // Stock filter
+    if (stockFilter === 'out') {
+      filter.stock = 0;
+    } else if (stockFilter === 'low') {
+      filter.stock = { $gt: 0, $lte: 10 };
+    }
+
+    const products = await Product.find(filter)
+      .populate('brand', 'name')
+      .populate('category', 'name')
+      .sort({ stock: 1 }) // lowest stock first
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select('name brand category stock images isActive');
+
+    const total = await Product.countDocuments(filter);
+
+    // Count summaries
+    const outOfStock = await Product.countDocuments({ isDeleted: false, stock: 0 });
+    const lowStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 0, $lte: 10 } });
+    const inStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 10 } });
+
+    res.status(200).json({
+      products,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      totalProducts: total,
+      summary: { outOfStock, lowStock, inStock }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to load inventory' });
+  }
+};
+
+// PUT /api/admin/inventory/:id/stock - update stock directly
+exports.updateStock = async (req, res) => {
+  try {
+    const { stock } = req.body;
+
+    if (stock === undefined || stock === null || isNaN(stock)) {
+      return res.status(400).json({ message: 'Please enter a valid stock quantity' });
+    }
+    if (Number(stock) < 0) {
+      return res.status(400).json({ message: 'Stock cannot be negative' });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { $set: { stock: Number(stock) } },
+      { new: true }
+    ).select('name stock');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      message: `Stock updated to ${stock} for ${product.name}`,
+      stock: product.stock
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update stock' });
   }
 };

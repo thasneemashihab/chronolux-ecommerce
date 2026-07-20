@@ -82,7 +82,7 @@ exports.changeEmail=async(req,res)=>{
         //generate OTP
         const otp=Math.floor(100000 + Math.random() * 900000).toString();
         
-        console.log("Email Change OTP:", otp);
+     
 
         user.otp=otp;
         user.otpExpiry=Date.now() + 5 * 60 * 1000;
@@ -92,7 +92,7 @@ exports.changeEmail=async(req,res)=>{
 
         await user.save();
 
-       console.log("Saving tempEmail:", newEmail); 
+       
 
         res.json({message:"OTP sent to new email"});
     }catch(error){
@@ -124,7 +124,7 @@ exports.verifyEmailOtp=async(req,res)=>{
         //update email
         user.email=user.tempEmail;
 
-         console.log("tempEmail:", user.tempEmail);
+        
 
         //clear temp data
         user.tempEmail=null;

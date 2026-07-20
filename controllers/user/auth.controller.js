@@ -134,7 +134,7 @@ exports.forgotPassword =async(req,res)=>{
 
         await user.save();
 
-        console.log("Reset OTP:",otp);//simulate email
+        
 
         res.json({message:"OTP sent to email"});
     }catch(error){
@@ -192,7 +192,7 @@ exports.resendOtp=async(req,res)=>{
 
         await user.save();
 
-        console.log("Resend OTP:",otp);//for testing
+
 
         res.json({message:"OTP resent successfully"});
     }catch(error){
