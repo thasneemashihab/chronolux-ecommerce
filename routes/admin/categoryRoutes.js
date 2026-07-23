@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { uploadCategory } = require('../../config/cloudinary');
 const {
-  getCategories, getCategoryDropdown, addCategory,
-  updateCategory, toggleListCategory, deleteCategory
+  getCategories,
+  getCategoryDropdown,
+  addCategory,
+  updateCategory,
+  toggleListCategory,
+  deleteCategory
 } = require('../../controllers/admin/categoryController');
 const adminAuth = require('../../middleware/adminAuth');
-
+const { uploadCategory } = require('../../config/cloudinary');
 
 router.get('/', adminAuth, getCategories);
 router.get('/dropdown', adminAuth, getCategoryDropdown);
