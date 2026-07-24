@@ -4,58 +4,80 @@ const productId = pathParts[pathParts.length - 1];
 let quantity = 1;
 let maxStock = 0;
 let selectedRating = 0;
+let availabilityCheckInterval;
 
 async function loadProductDetails() {
   try {
     const res = await fetch(`/api/users/products/${productId}`);
-
-    if (!res.ok) {
-      // Non-existent or unavailable product → show 404 page
-      window.location.href = '/not-found';
-      return;
-    }
-
+    if (!res.ok) { showUnavailableMessage(); return; }
     const data = await res.json();
-
-    if (!data || !data.product) {
-      window.location.href = '/not-found';
-      return;
-    }
-
+    if (!data || !data.product) { showUnavailableMessage(); return; }
     renderProduct(data.product);
     renderRelated(data.relatedProducts || []);
-
-    // Only check wishlist if user is logged in (button exists on page)
-    if (document.getElementById('wishlistBtn')) {
-      checkWishlistStatus();
-    }
-
+    startAvailabilityCheck();
+    if (document.getElementById('wishlistBtn')) checkWishlistStatus();
   } catch (err) {
     console.error('loadProductDetails error:', err);
-    window.location.href = '/not-found';
+    showUnavailableMessage();
   }
+}
+
+function showUnavailableMessage() {
+  const productSection = document.getElementById('productSection');
+  if (productSection) productSection.classList.add('d-none');
+  const strip = document.getElementById('thumbnailStrip');
+  if (strip) strip.classList.add('d-none');
+  const container = document.querySelector('.container');
+  if (!container) return;
+  if (container.querySelector('.unavailable-product-msg')) return;
+  const msg = document.createElement('div');
+  msg.className = 'unavailable-product-msg text-center py-5';
+  msg.innerHTML = `
+    <div class="unavailable-icon"><i class="bi bi-exclamation-circle"></i></div>
+    <h3 class="fw-bold mt-4 mb-2">Product Unavailable</h3>
+    <p class="text-secondary mb-1">This product is currently unavailable or has been removed.</p>
+    <p class="text-secondary mb-4">It may have been blocked, deleted, or gone out of stock.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="/shop" class="btn btn-warning fw-bold px-4"><i class="bi bi-bag me-2"></i>Browse Shop</a>
+      <button onclick="history.back()" class="btn btn-secondary px-4"><i class="bi bi-arrow-left me-2"></i>Go Back</button>
+    </div>`;
+  const breadcrumb = container.querySelector('nav');
+  if (breadcrumb) breadcrumb.insertAdjacentElement('afterend', msg);
+  else container.prepend(msg);
+  const breadcrumbName = document.getElementById('breadcrumbProductName');
+  if (breadcrumbName) breadcrumbName.textContent = 'Product Unavailable';
+  document.title = 'Product Unavailable - ChronoLux';
+}
+
+function startAvailabilityCheck() {
+  availabilityCheckInterval = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/users/products/${productId}`);
+      if (!res.ok) {
+        clearInterval(availabilityCheckInterval);
+        showToast('This product is no longer available', 'error');
+        setTimeout(() => showUnavailableMessage(), 1500);
+      }
+    } catch (err) { /* ignore */ }
+  }, 30000);
 }
 
 function renderProduct(p) {
   try {
-    // Breadcrumb
-    const breadcrumb = document.getElementById('breadcrumbProductName');
-    if (breadcrumb) breadcrumb.textContent = p.name || '';
-
-    // Title
     document.title = `${p.name || 'Product'} - ChronoLux`;
+
+    const breadcrumbName = document.getElementById('breadcrumbProductName');
+    if (breadcrumbName) breadcrumbName.textContent = p.name || '';
+
     const nameEl = document.getElementById('productName');
     if (nameEl) nameEl.textContent = p.name || '';
 
-    // Brand
     const brandEl = document.getElementById('brandDisplay');
     if (brandEl) brandEl.textContent = `Brand: ${p.brand?.name || ''}`;
 
-    // Description
     const descEl = document.getElementById('productDescription');
     if (descEl) descEl.textContent = p.description || '';
 
-    // Specifications
     const specEl = document.getElementById('productSpecifications');
     if (specEl) specEl.textContent = p.specifications || 'No specifications available.';
 
@@ -67,7 +89,6 @@ function renderProduct(p) {
       const origEl = document.getElementById('originalPrice');
       const discEl = document.getElementById('discountPercent');
       const badgeEl = document.getElementById('discountBadge');
-
       if (origEl) { origEl.textContent = `₹${p.originalPrice.toLocaleString()}`; origEl.classList.remove('d-none'); }
       if (discEl) { discEl.textContent = `${p.discount}% off`; discEl.classList.remove('d-none'); }
       if (badgeEl) { badgeEl.textContent = `${p.discount}% off`; badgeEl.classList.remove('d-none'); }
@@ -78,29 +99,41 @@ function renderProduct(p) {
     const mainImg = document.getElementById('mainImage');
     const strip = document.getElementById('thumbnailStrip');
 
-    if (mainImg && strip && p.images && p.images.length > 0) {
-      mainImg.src = p.images[0];
+    function loadImagesToStrip(images) {
+      if (!strip || !mainImg) return;
       strip.innerHTML = '';
-
-      p.images.forEach((img, i) => {
+      strip.classList.remove('d-none');
+      images.forEach((img, idx) => {
+        if (!img) return;
         const thumb = document.createElement('img');
         thumb.src = img;
-        thumb.className = `thumbnail-img ${i === 0 ? 'active' : ''}`;
+        thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
         thumb.addEventListener('click', () => {
           mainImg.src = img;
-          document.querySelectorAll('.thumbnail-img').forEach((t, idx) => {
-            t.classList.toggle('active', idx === i);
-          });
+          document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
         });
         strip.appendChild(thumb);
       });
     }
 
+    // Step 1: Load base images first
+    if (mainImg && p.images && p.images.length > 0 && p.images[0]) {
+      mainImg.src = p.images[0];
+      loadImagesToStrip(p.images);
+    }
+
+    // Step 2: Override with first valid color images if they exist
+    const firstValidColor = p.colorImages?.find(c => c.images && c.images.length > 0 && c.images[0]);
+    if (firstValidColor && mainImg) {
+      mainImg.src = firstValidColor.images[0];
+      loadImagesToStrip(firstValidColor.images);
+    }
+
     // Rating
     const reviews = p.reviews || [];
     const avgRating = reviews.length > 0
-      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-      : 0;
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
     const starsEl = document.getElementById('starsDisplay');
     if (starsEl) starsEl.innerHTML = getStarsHTML(avgRating);
@@ -108,128 +141,74 @@ function renderProduct(p) {
     const reviewCountEl = document.getElementById('reviewCount');
     if (reviewCountEl) reviewCountEl.textContent = `${reviews.length} reviews`;
 
-     // Colors — clicking changes the main image
-const colorsSection = document.getElementById('colorsSection');
-const colorContainer = document.getElementById('colorOptions');
+    // Colors
+    const colorsSection = document.getElementById('colorsSection');
+    const colorContainer = document.getElementById('colorOptions');
+    if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
+      colorsSection.classList.remove('d-none');
+      colorContainer.innerHTML = '';
 
-// Colors — clicking shows that color's 3 images in thumbnail strip
-if (colorsSection && colorContainer && p.colors && p.colors.length > 0) {
-  colorsSection.classList.remove('d-none');
-  colorContainer.innerHTML = '';
-  
-  //when color is clicked- show strip again
-  p.colors.forEach((color, i) => {
-    const swatch = document.createElement('div');
-    swatch.className = `color-swatch ${i === 0 ? 'active' : ''}`;
-    swatch.style.background = color;
-    swatch.title = color;
+      p.colors.forEach((color, colorIndex) => {
+        const swatch = document.createElement('div');
+        swatch.className = `color-swatch ${colorIndex === 0 ? 'active' : ''}`;
+        swatch.style.background = color;
+        swatch.title = color;
 
-    swatch.addEventListener('click', () => {
-      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-      swatch.classList.add('active');
-    
+        swatch.addEventListener('click', () => {
+          document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+          swatch.classList.add('active');
 
-    // Show thumbnail strip again when color is selected
-    if (strip) strip.classList.remove('d-none'); 
+          const colorData = p.colorImages?.find(c => c.color === color);
 
-      //Load color images into strip and Find this color's 3 images
-      const colorData = p.colorImages?.find(c => c.color === color);
-
-      if (colorData && colorData.images && colorData.images.length > 0) {
-        // Show first image as main
-        if (mainImg) mainImg.src = colorData.images[0];
-
-        // Replace thumbnail strip with this color's images
-          strip.innerHTML = '';
-          strip.classList.remove('d-none');
-          colorData.images.forEach((img, idx) => {
-            const thumb = document.createElement('img');
-            thumb.src = img;
-            thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
-            thumb.addEventListener('click', () => {
-             mainImg.src = img;
-              document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-              thumb.classList.add('active');
-            });
-            strip.appendChild(thumb);
-          });
-        }
-      });
-
-    colorContainer.appendChild(swatch);
-  });
-
-  // Auto-load first color's images on page load
-  const firstColorData = p.colorImages?.[0];
-  if (firstColorData && firstColorData.images && firstColorData.images.length > 0) {
-    if (mainImg) mainImg.src = firstColorData.images[0];
-    if (strip) {
-      strip.innerHTML = '';
-      firstColorData.images.forEach((img, idx) => {
-        const thumb = document.createElement('img');
-        thumb.src = img;
-        thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
-        thumb.addEventListener('click', () => {
-          if (mainImg) mainImg.src = img;
-          document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-          thumb.classList.add('active');
+          if (colorData && colorData.images?.length > 0 && colorData.images[0]) {
+            if (mainImg) mainImg.src = colorData.images[0];
+            loadImagesToStrip(colorData.images);
+          } else if (p.images[colorIndex]) {
+            if (mainImg) mainImg.src = p.images[colorIndex];
+          }
         });
-        strip.appendChild(thumb);
+
+        colorContainer.appendChild(swatch);
       });
     }
-  }
-}
 
-// Variants — clicking changes the main image
-const variantsSection = document.getElementById('variantsSection');
-const variantContainer = document.getElementById('variantOptions');
+    // Variants
+    const variantsSection = document.getElementById('variantsSection');
+    const variantContainer = document.getElementById('variantOptions');
+    if (variantsSection && variantContainer && p.variants && p.variants.length > 0) {
+      variantsSection.classList.remove('d-none');
+      variantContainer.innerHTML = '';
 
+      p.variants.forEach((variant, variantIndex) => {
+        const btn = document.createElement('button');
+        btn.className = `variant-btn ${variantIndex === 0 ? 'active' : ''}`;
+        btn.textContent = variant;
 
-// Variants — clicking shows ONLY that variant's image as main
-// Thumbnail strip stays as current color's images
-if (variantsSection && variantContainer && p.variants && p.variants.length > 0) {
-  variantsSection.classList.remove('d-none');
-  variantContainer.innerHTML = '';
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const variantData = p.variantImages?.find(v => v.variant === variant);
+          if (variantData && variantData.image) {
+            if (mainImg) mainImg.src = variantData.image;
+            if (strip) strip.classList.add('d-none');
+          }
+        });
 
-  p.variants.forEach((variant, i) => {
-    const btn = document.createElement('button');
-    btn.className = `variant-btn ${i === 0 ? 'active' : ''}`;
-    btn.textContent = variant;
-
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Find this variant's single image
-      const variantData = p.variantImages?.find(v => v.variant === variant);
-      if (variantData && variantData.image) {
-        // Change main image only — thumbnails stay as current color
-        if (mainImg) mainImg.src = variantData.image;
-        
-        // Hide thumbnail strip — style has only 1 image, no thumbnails needed
-      if (strip) strip.classList.add('d-none');
-
-        // Deselect all thumbnails since we're showing a variant image
-        //document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-      }
-    });
-
-    variantContainer.appendChild(btn);
-  });
-}
-
+        variantContainer.appendChild(btn);
+      });
+    }
 
     // Stock status
     const stockEl = document.getElementById('stockStatus');
     const lowStock = document.getElementById('lowStockWarning');
-    const addToCartBtn = document.getElementById('addToCartBtn');
-    const buyNowBtn = document.getElementById('buyNowBtn');
 
     if (stockEl) {
       if (p.stock <= 0) {
         stockEl.innerHTML = '<span class="text-danger fw-bold">Out of Stock</span>';
-        if (addToCartBtn) addToCartBtn.disabled = true;
-        if (buyNowBtn) buyNowBtn.disabled = true;
+        const cartBtn = document.getElementById('addToCartBtn');
+        const nowBtn = document.getElementById('buyNowBtn');
+        if (cartBtn) cartBtn.disabled = true;
+        if (nowBtn) nowBtn.disabled = true;
       } else {
         stockEl.innerHTML = '<span class="text-success fw-bold">In Stock</span>';
         if (p.stock <= 5 && lowStock) {
@@ -239,7 +218,6 @@ if (variantsSection && variantContainer && p.variants && p.variants.length > 0) 
       }
     }
 
-    // Reviews
     renderReviews(reviews);
 
   } catch (err) {
@@ -258,12 +236,10 @@ function getStarsHTML(rating) {
 function renderReviews(reviews) {
   const list = document.getElementById('reviewsList');
   if (!list) return;
-
   if (!reviews || reviews.length === 0) {
     list.innerHTML = '<p class="text-secondary">No reviews yet. Be the first to review!</p>';
     return;
   }
-
   list.innerHTML = reviews.map(r => `
     <div class="border-bottom border-secondary py-3">
       <strong>${r.name || 'Anonymous'}</strong>
@@ -275,12 +251,10 @@ function renderReviews(reviews) {
 function renderRelated(products) {
   const container = document.getElementById('relatedProducts');
   if (!container) return;
-
   if (!products || products.length === 0) {
     container.innerHTML = '<p class="text-secondary col-12">No related products found.</p>';
     return;
   }
-
   container.innerHTML = products.map(p => `
     <div class="col-6 col-md-3">
       <div class="product-card" onclick="window.location.href='/product/${p._id}'">
@@ -333,8 +307,17 @@ if (addToCartBtn) {
       body: JSON.stringify({ productId, quantity })
     });
     const data = await res.json();
-    showToast(data.message, res.ok ? 'success' : 'error');
-    if (res.ok) updateCartCount();
+    if (!res.ok) {
+      if (res.status === 404) {
+        showToast('This product is no longer available', 'error');
+        setTimeout(() => showUnavailableMessage(), 1500);
+      } else {
+        showToast(data.message, 'error');
+      }
+      return;
+    }
+    showToast('Added to cart successfully!');
+    updateCartCount();
   });
 }
 
@@ -342,7 +325,7 @@ if (addToCartBtn) {
 const buyNowBtn = document.getElementById('buyNowBtn');
 if (buyNowBtn) {
   buyNowBtn.addEventListener('click', () => {
-    showToast('Checkout coming soon!');
+    window.location.href = '/checkout/address';
   });
 }
 
@@ -363,7 +346,6 @@ if (submitReviewBtn) {
     const comment = document.getElementById('reviewComment')?.value.trim();
     if (!selectedRating) { showToast('Please select a rating', 'error'); return; }
     if (!comment) { showToast('Please write a comment', 'error'); return; }
-
     const res = await fetch(`/api/users/products/${productId}/review`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -387,9 +369,7 @@ async function checkWishlistStatus() {
       btn.classList.add('active');
       btn.innerHTML = '<i class="bi bi-heart-fill"></i>';
     }
-  } catch (err) {
-    // Not logged in — ignore silently
-  }
+  } catch (err) { /* not logged in */ }
 }
 
 const wishlistBtn = document.getElementById('wishlistBtn');
@@ -397,22 +377,22 @@ if (wishlistBtn) {
   wishlistBtn.addEventListener('click', async () => {
     const isActive = wishlistBtn.classList.contains('active');
     const method = isActive ? 'DELETE' : 'POST';
-
     const res = await fetch(`/api/users/wishlist/${productId}`, { method });
     const data = await res.json();
     showToast(data.message, res.ok ? 'success' : 'error');
-
     if (res.ok) {
       wishlistBtn.classList.toggle('active', !isActive);
       wishlistBtn.innerHTML = isActive
         ? '<i class="bi bi-heart"></i>'
         : '<i class="bi bi-heart-fill"></i>';
-
-     updateWishlistCount(); // ← update badge after toggle   
+      updateWishlistCount();
     }
   });
 }
 
-// Start
+window.addEventListener('beforeunload', () => {
+  if (availabilityCheckInterval) clearInterval(availabilityCheckInterval);
+});
+
 loadProductDetails();
 updateCartCount();

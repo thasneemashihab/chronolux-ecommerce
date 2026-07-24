@@ -402,3 +402,20 @@
 .card-wishlist-btn:hover {
   color: #dc3545;
 }
+
+.unavailable-product-msg {
+  background: #1a1a1a;
+  border-radius: 16px;
+  padding: 60px 40px;
+  margin: 20px 0;
+  border: 1px solid #2a2a2a;
+}
+
+.unavailable-icon {
+  font-size: 70px;
+  color: #444;
+}
+
+.unavailable-product-msg h3 {
+  color: #fff;
+}
