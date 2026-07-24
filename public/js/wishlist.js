@@ -68,6 +68,7 @@ async function moveToCart(productId) {
   showToast(data.message, res.ok ? 'success' : 'error');
   if (res.ok) {
     updateCartCount();
+     updateWishlistCount(); // ← add this
     loadWishlist();
   }
 }
@@ -79,7 +80,9 @@ async function removeFromWishlist(productId) {
   const res = await fetch(`/api/users/wishlist/${productId}`, { method: 'DELETE' });
   const data = await res.json();
   showToast(data.message, res.ok ? 'success' : 'error');
-  if (res.ok) loadWishlist();
+  if (res.ok) 
+     updateWishlistCount(); // ← add this
+    loadWishlist();
 }
 
 document.getElementById('moveAllToCartBtn').addEventListener('click', async () => {
@@ -102,7 +105,9 @@ document.getElementById('clearWishlistBtn').addEventListener('click', async () =
   const res = await fetch('/api/users/wishlist/clear', { method: 'DELETE' });
   const data = await res.json();
   showToast(data.message, res.ok ? 'success' : 'error');
-  if (res.ok) loadWishlist();
+  if (res.ok) 
+     updateWishlistCount(); // ← add this
+    loadWishlist();
 });
 
 loadWishlist();

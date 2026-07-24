@@ -116,6 +116,7 @@ async function toggleWishlistFromCard(btn, productId) {
       wishlistedIds.add(productId);
       btn.innerHTML = '<i class="bi bi-heart-fill text-danger"></i>';
       showToast('Added to wishlist');
+      updateWishlistCount(); // ← add this
     } else {
       showToast(data.message, 'error');
     }
@@ -126,6 +127,7 @@ async function toggleWishlistFromCard(btn, productId) {
       wishlistedIds.delete(productId);
       btn.innerHTML = '<i class="bi bi-heart"></i>';
       showToast('Removed from wishlist');
+      updateWishlistCount(); // ← add this
     } else {
       showToast(data.message, 'error');
     }

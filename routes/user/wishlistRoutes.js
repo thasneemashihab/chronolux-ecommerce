@@ -7,9 +7,11 @@ const {
 const authMiddleware = require('../../middleware/authMiddleware');
 
 router.get('/', authMiddleware, getWishlist);
-router.post('/:productId', authMiddleware, addToWishlist);
+
 router.delete('/clear', authMiddleware, clearWishlist);
 router.post('/move-all-to-cart', authMiddleware, moveAllToCart);
+
+router.post('/:productId', authMiddleware, addToWishlist);
 router.delete('/:productId', authMiddleware, removeFromWishlist);
 
 module.exports = router;

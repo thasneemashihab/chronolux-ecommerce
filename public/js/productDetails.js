@@ -407,6 +407,8 @@ if (wishlistBtn) {
       wishlistBtn.innerHTML = isActive
         ? '<i class="bi bi-heart"></i>'
         : '<i class="bi bi-heart-fill"></i>';
+
+     updateWishlistCount(); // ← update badge after toggle   
     }
   });
 }

@@ -59,6 +59,30 @@ function showConfirm(message) {
   });
 }
 
+async function updateWishlistCount() {
+  const badge = document.getElementById('wishlistCountBadge');
+  if (!badge) return;
+
+  try {
+    const res = await fetch('/api/users/wishlist');
+    if (!res.ok) return;
+    const data = await res.json();
+    const count = data.products?.length || 0;
+
+    if (count > 0) {
+      badge.textContent = count;
+      badge.classList.remove('d-none');
+    } else {
+      badge.classList.add('d-none');
+    }
+  } catch (err) {
+    // not logged in — hide badge silently
+  }
+}
+
+// Call on every page load
+updateWishlistCount();
+
 
 // Load cart count on every page that has the navbar
 async function updateCartCount() {
@@ -81,3 +105,4 @@ async function updateCartCount() {
 }
 
 updateCartCount();
+
