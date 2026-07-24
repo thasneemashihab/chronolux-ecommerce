@@ -3,7 +3,7 @@ const Cart = require('../../models/Cart');
 const Product = require('../../models/Product');
 const User = require('../../models/User');
 
-// GET /api/users/orders/checkout-data
+// GET /api/users/orders/checkout-data — Stage 4
 exports.getCheckoutData = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.userId })
@@ -16,22 +16,47 @@ exports.getCheckoutData = async (req, res) => {
       return res.status(400).json({ message: 'Your cart is empty' });
     }
 
-    const validItems = cart.items.filter(item =>
-      item.product &&
-      !item.product.isDeleted &&
-      item.product.isActive
-    );
+    // Stage 4: Filter blocked/deleted products
+    const unavailableItems = [];
+    const validItems = cart.items.filter(item => {
+      if (!item.product || item.product.isDeleted || !item.product.isActive) {
+        unavailableItems.push(item.product?.name || 'Unknown product');
+        return false;
+      }
+      return true;
+    });
+
+    if (unavailableItems.length > 0) {
+      // Clean them from cart automatically
+      const cart2 = await Cart.findOne({ user: req.userId });
+      cart2.items = cart2.items.filter(item => {
+        return validItems.some(vi => vi.product._id.toString() === item.product.toString());
+      });
+      await cart2.save();
+
+      return res.status(400).json({
+        message: `Some products are no longer available and have been removed from your cart: ${unavailableItems.join(', ')}. Please review your cart.`
+      });
+    }
 
     if (validItems.length === 0) {
       return res.status(400).json({ message: 'No available products in cart' });
     }
 
+    // Stage 4: Check stock for every item
+    const stockErrors = [];
     for (const item of validItems) {
-      if (item.product.stock < item.quantity) {
-        return res.status(400).json({
-          message: `Only ${item.product.stock} units of "${item.product.name}" are available`
-        });
+      if (item.product.stock <= 0) {
+        stockErrors.push(`"${item.product.name}" is out of stock`);
+      } else if (item.quantity > item.product.stock) {
+        stockErrors.push(`Only ${item.product.stock} units of "${item.product.name}" available (you have ${item.quantity} in cart)`);
       }
+    }
+
+    if (stockErrors.length > 0) {
+      return res.status(400).json({
+        message: `Stock issue: ${stockErrors[0]}. Please update your cart.`
+      });
     }
 
     const user = await User.findById(req.userId).select('addresses name');
@@ -59,7 +84,8 @@ exports.getCheckoutData = async (req, res) => {
   }
 };
 
-// POST /api/users/orders/place
+
+// POST /api/users/orders/place — Stage 5
 exports.placeOrder = async (req, res) => {
   try {
     const { addressId, paymentMethod = 'COD', couponDiscount = 0, couponCode = '' } = req.body;
@@ -71,7 +97,7 @@ exports.placeOrder = async (req, res) => {
     const user = await User.findById(req.userId);
     const address = user.addresses.id(addressId);
     if (!address) {
-      return res.status(404).json({ message: 'Selected address not found' });
+      return res.status(404).json({ message: 'Selected address not found. Please select a valid address.' });
     }
 
     const cart = await Cart.findOne({ user: req.userId })
@@ -81,22 +107,41 @@ exports.placeOrder = async (req, res) => {
       return res.status(400).json({ message: 'Your cart is empty' });
     }
 
-    const validItems = cart.items.filter(item =>
-      item.product && !item.product.isDeleted && item.product.isActive
-    );
+    // Stage 5: Final availability check
+    const unavailable = [];
+    const validItems = cart.items.filter(item => {
+      if (!item.product || item.product.isDeleted || !item.product.isActive) {
+        unavailable.push(item.product?.name || 'A product');
+        return false;
+      }
+      return true;
+    });
+
+    if (unavailable.length > 0) {
+      return res.status(400).json({
+        message: `Cannot place order. These products are no longer available: ${unavailable.join(', ')}. Please remove them from your cart.`
+      });
+    }
 
     if (validItems.length === 0) {
       return res.status(400).json({ message: 'No available products in cart' });
     }
 
+    // Stage 5: Final stock check for every item
     for (const item of validItems) {
-      if (item.product.stock < item.quantity) {
+      if (item.product.stock <= 0) {
         return res.status(400).json({
-          message: `Sorry, only ${item.product.stock} units of "${item.product.name}" are now available`
+          message: `"${item.product.name}" just went out of stock. Please remove it from your cart and try again.`
+        });
+      }
+      if (item.quantity > item.product.stock) {
+        return res.status(400).json({
+          message: `Insufficient stock for "${item.product.name}". Only ${item.product.stock} units available but you ordered ${item.quantity}. Please update your cart.`
         });
       }
     }
 
+    // Calculate totals
     const subtotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discount = validItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity * (item.product.discount || 0) / 100);
@@ -106,6 +151,7 @@ exports.placeOrder = async (req, res) => {
     const couponDiscountAmount = Number(couponDiscount) || 0;
     const totalAmount = Math.round(subtotal - discount - couponDiscountAmount + shippingCharge + tax);
 
+    // Build order items snapshot
     const orderItems = validItems.map(item => ({
       product: item.product._id,
       name: item.product.name,
@@ -140,7 +186,7 @@ exports.placeOrder = async (req, res) => {
       orderId
     });
 
-    // Reduce stock for each ordered product
+    // Reduce stock atomically
     for (const item of validItems) {
       await Product.findByIdAndUpdate(
         item.product._id,
@@ -148,7 +194,7 @@ exports.placeOrder = async (req, res) => {
       );
     }
 
-    // Clear the cart
+    // Clear cart
     cart.items = [];
     await cart.save();
 

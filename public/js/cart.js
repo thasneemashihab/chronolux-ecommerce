@@ -7,6 +7,19 @@ async function loadCart() {
     return;
   }
 
+  // Show message if items were auto-removed due to being blocked
+  if (data.removedItems && data.removedItems.length > 0) {
+    showToast(
+      `${data.removedItems.length} unavailable item(s) were removed from your cart`,
+      'error'
+    );
+  }
+
+  // Show message if quantities were adjusted due to stock changes
+  if (data.stockAdjusted) {
+    showToast('Some quantities were adjusted due to stock availability', 'error');
+  }
+
   if (data.items.length === 0) {
     document.getElementById('cartContent').classList.add('d-none');
     document.getElementById('emptyCart').classList.remove('d-none');
