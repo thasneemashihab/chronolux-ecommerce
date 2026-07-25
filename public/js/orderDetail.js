@@ -30,35 +30,68 @@ function renderOrderDetail(order) {
   renderTimeline(order.status);
 
   // Items
-  const itemsContainer = document.getElementById('detailItems');
-  document.getElementById('itemsCount').textContent = `Order Items (${order.items.length})`;
-  itemsContainer.innerHTML = '';
+const itemsContainer = document.getElementById('detailItems');
+document.getElementById('itemsCount').textContent = `Order Items (${order.items.length})`;
+itemsContainer.innerHTML = '';
 
-  order.items.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'detail-item';
-    div.innerHTML = `
-      <img src="${item.image || '/images/default-product.jpg'}"
-           class="detail-item-img" alt="${item.name}">
-      <div class="flex-grow-1">
-        <p class="detail-item-name">${item.name}</p>
-        <p class="detail-item-sub">₹${item.price?.toLocaleString()} × ${item.quantity}</p>
-        ${item.status !== 'Active' ? `<span class="status-badge status-Cancelled" style="font-size:11px;">${item.status}</span>` : ''}
-      </div>
-      <div class="text-end">
-        <p class="fw-bold text-warning mb-0">₹${item.itemTotal?.toLocaleString()}</p>
-        ${['Pending','Processing'].includes(order.status) && item.status === 'Active'
-          ? `<button class="btn btn-link text-danger p-0 small cancel-item-btn"
-               data-item-id="${item._id}">Cancel item</button>`
-          : ''}
-      </div>`;
-    itemsContainer.appendChild(div);
-  });
+order.items.forEach(item => {
+  const canCancelItem = ['Pending', 'Processing'].includes(order.status) && item.status === 'Active';
+  const canReturnItem = order.status === 'Delivered' && item.status === 'Active';
 
-  // Cancel item buttons
-  document.querySelectorAll('.cancel-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => openReasonModal('cancelItem', btn.dataset.itemId));
+  const itemStatusBadge = item.status !== 'Active'
+    ? `<span class="item-status-badge item-status-${item.status.replace(' ', '-')}">${item.status}</span>`
+    : '';
+
+  const itemReason = item.cancelReason && item.status === 'Cancelled'
+    ? `<p class="text-secondary small mb-0 mt-1">Reason: ${item.cancelReason}</p>`
+    : item.returnReason && item.status !== 'Active'
+      ? `<p class="text-secondary small mb-0 mt-1">Return reason: ${item.returnReason}</p>`
+      : '';
+
+  const div = document.createElement('div');
+  div.className = `detail-item ${item.status !== 'Active' ? 'detail-item-inactive' : ''}`;
+  div.innerHTML = `
+    <img src="${item.image || '/images/default-product.jpg'}"
+         class="detail-item-img ${item.status !== 'Active' ? 'opacity-50' : ''}"
+         alt="${item.name}">
+    <div class="flex-grow-1">
+      <p class="detail-item-name">${item.name}</p>
+      <p class="detail-item-sub">₹${item.price?.toLocaleString()} × ${item.quantity}</p>
+      ${itemStatusBadge}
+      ${itemReason}
+    </div>
+    <div class="text-end d-flex flex-column align-items-end gap-2">
+      <p class="fw-bold text-warning mb-0">₹${item.itemTotal?.toLocaleString()}</p>
+      ${canCancelItem ? `
+        <button class="btn btn-sm btn-outline-danger cancel-item-btn"
+          data-item-id="${item._id}"
+          data-item-name="${item.name}">
+          <i class="bi bi-x-circle me-1"></i> Cancel Item
+        </button>` : ''}
+      ${canReturnItem ? `
+        <button class="btn btn-sm btn-outline-warning return-item-btn"
+          data-item-id="${item._id}"
+          data-item-name="${item.name}">
+          <i class="bi bi-arrow-counterclockwise me-1"></i> Return Item
+        </button>` : ''}
+    </div>`;
+
+  itemsContainer.appendChild(div);
+});
+
+// Attach cancel item button listeners
+document.querySelectorAll('.cancel-item-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    openItemReasonModal('cancelItem', btn.dataset.itemId, btn.dataset.itemName);
   });
+});
+
+// Attach return item button listeners
+document.querySelectorAll('.return-item-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    openItemReasonModal('returnItem', btn.dataset.itemId, btn.dataset.itemName);
+  });
+});
 
   // Shipping address
   const addr = order.shippingAddress;
@@ -184,41 +217,150 @@ function renderActions(order) {
   window._currentOrder = order;
 }
 
-// Reason Modal
-let currentAction = null;
+  let currentAction = null;
 let currentItemId = null;
 
-function openReasonModal(action, itemId = null) {
+function openItemReasonModal(action, itemId, itemName) {
   currentAction = action;
   currentItemId = itemId;
 
   const titleEl = document.getElementById('reasonModalTitle');
   const subtitleEl = document.getElementById('reasonModalSubtitle');
   const requiredEl = document.getElementById('reasonRequired');
+  const errorEl = document.getElementById('reasonError');
 
-  if (action === 'return') {
-    titleEl.textContent = 'Return / Replace Order';
-    subtitleEl.textContent = 'Please tell us why you want to return this order';
-    requiredEl.classList.remove('d-none');
-  } else if (action === 'cancelItem') {
-    titleEl.textContent = 'Cancel Item';
-    subtitleEl.textContent = 'Tell us why you want to cancel this item (optional)';
-    requiredEl.classList.add('d-none');
-  } else {
-    titleEl.textContent = 'Cancel Order';
-    subtitleEl.textContent = 'Tell us why you want to cancel (optional)';
-    requiredEl.classList.add('d-none');
-  }
-
+  errorEl.classList.add('d-none');
   document.getElementById('reasonSelect').value = '';
   document.getElementById('reasonText').value = '';
-  document.getElementById('reasonError').classList.add('d-none');
+
+  if (action === 'cancelItem') {
+    titleEl.textContent = `Cancel Item`;
+    subtitleEl.textContent = `"${itemName}" — Tell us why you want to cancel this item`;
+    requiredEl.classList.add('d-none'); // optional for cancel
+
+    // Set cancel-specific reasons
+    document.getElementById('reasonSelect').innerHTML = `
+      <option value="">Select a reason (optional)</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Found better price elsewhere">Found better price elsewhere</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Delivery time too long">Delivery time too long</option>
+      <option value="Other">Other</option>`;
+
+  } else if (action === 'returnItem') {
+    titleEl.textContent = `Return Item`;
+    subtitleEl.textContent = `"${itemName}" — Please tell us why you want to return this item`;
+    requiredEl.classList.remove('d-none'); // mandatory for return
+
+    // Set return-specific reasons
+    document.getElementById('reasonSelect').innerHTML = `
+      <option value="">Select a reason *</option>
+      <option value="Product damaged">Product damaged or defective</option>
+      <option value="Wrong item received">Wrong item received</option>
+      <option value="Not as described">Not as described</option>
+      <option value="Size/fit issue">Size or fit issue</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Other">Other</option>`;
+  }
+
   document.getElementById('reasonModalBackdrop').classList.remove('d-none');
 }
+
+// Update the confirm button handler
+document.getElementById('confirmReasonBtn').addEventListener('click', async () => {
+  const selectReason = document.getElementById('reasonSelect').value;
+  const textReason = document.getElementById('reasonText').value.trim();
+  const reason = selectReason
+    ? `${selectReason}${textReason ? ` — ${textReason}` : ''}`
+    : textReason;
+  const errorEl = document.getElementById('reasonError');
+
+  errorEl.classList.add('d-none');
+
+  // Return requires mandatory reason
+  if (currentAction === 'returnItem' && !selectReason) {
+    errorEl.textContent = 'Please select a reason for the return request';
+    errorEl.classList.remove('d-none');
+    return;
+  }
+
+  let url, body;
+
+  if (currentAction === 'cancelItem') {
+    url = `/api/users/orders/${orderId}/cancel-item/${currentItemId}`;
+    body = { reason };
+  } else if (currentAction === 'returnItem') {
+    url = `/api/users/orders/${orderId}/return-item/${currentItemId}`;
+    body = { reason };
+  } else if (currentAction === 'cancelOrder') {
+    url = `/api/users/orders/${orderId}/cancel`;
+    body = { reason };
+  } else if (currentAction === 'return') {
+    if (!selectReason) {
+      errorEl.textContent = 'Please select a reason for the return request';
+      errorEl.classList.remove('d-none');
+      return;
+    }
+    url = `/api/users/orders/${orderId}/return`;
+    body = { reason };
+  }
+
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+
+  document.getElementById('reasonModalBackdrop').classList.add('d-none');
+
+  if (res.ok) {
+    showToast(data.message);
+    setTimeout(() => loadOrderDetail(), 800);
+  } else {
+    showToast(data.message, 'error');
+  }
+});
+
 
 //GenerateInvoicePDF
 function generateInvoicePDF(order) {
   if (!order) { showToast('Order data not ready', 'error'); return; }
+
+  // Only include non-cancelled items in the invoice
+  const activeItems = order.items.filter(item =>
+    item.status !== 'Cancelled'
+  );
+
+  // Recalculate totals based on active items only
+  const activeSubtotal = activeItems.reduce((sum, item) => sum + item.itemTotal, 0);
+  const cancelledSubtotal = order.items
+    .filter(item => item.status === 'Cancelled')
+    .reduce((sum, item) => sum + item.itemTotal, 0);
+
+  // Check if any items were cancelled or returned
+  const hasCancellations = order.items.some(i => i.status === 'Cancelled');
+  const hasReturns = order.items.some(i =>
+    i.status === 'Return Requested' || i.status === 'Returned'
+  );
+
+  const invoiceNote = hasCancellations || hasReturns
+    ? `<p style="color:#dc3545; font-size:12px; margin-top:5px;">
+        Note: This invoice reflects adjustments due to ${hasCancellations ? 'cancellations' : ''}
+        ${hasCancellations && hasReturns ? ' and ' : ''}
+        ${hasReturns ? 'returns' : ''}.
+       </p>`
+    : '';
+
+  // Recalculate discount proportionally for active items
+  const discountRatio = order.subtotal > 0 ? (order.discount / order.subtotal) : 0;
+  const activeDiscount = Math.round(activeSubtotal * discountRatio);
+  const activeCoupon = order.couponDiscount > 0
+    ? Math.round(order.couponDiscount * (activeSubtotal / order.subtotal))
+    : 0;
+  const activeTotal = Math.round(
+    activeSubtotal - activeDiscount - activeCoupon + order.shippingCharge + order.tax
+  );
 
   const win = window.open('', '_blank');
   win.document.write(`
@@ -237,7 +379,13 @@ function generateInvoicePDF(order) {
         td { padding: 10px; font-size: 13px; border: 1px solid #ddd; }
         .total-row { font-weight: bold; background: #f9f9f9; }
         .amount { color: #d4a017; font-weight: bold; }
+        .cancelled-row { color: #999; text-decoration: line-through; }
+        .status-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-return { background: #fff3cd; color: #856404; }
         .footer { margin-top: 40px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #ddd; padding-top: 15px; }
+        .adjustment-note { background: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 12px; }
       </style>
     </head>
     <body>
@@ -245,65 +393,125 @@ function generateInvoicePDF(order) {
         <div>
           <div class="brand">CHRONOLUX</div>
           <div class="tagline">— Timeless Elegance —</div>
+          <div style="margin-top:5px; font-size:12px; color:#888;">support@chronolux.com</div>
         </div>
         <div style="text-align:right;">
-          <div><strong>Invoice</strong></div>
+          <div><strong>INVOICE</strong></div>
           <div>Order: ${order.orderId}</div>
           <div>Date: ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
-          <div>Status: ${order.status}</div>
+          <div>Status: <strong>${order.status}</strong></div>
         </div>
       </div>
 
+      ${hasCancellations || hasReturns ? `
+      <div class="adjustment-note">
+        ⚠️ This invoice has been updated to reflect
+        ${hasCancellations ? 'item cancellations' : ''}
+        ${hasCancellations && hasReturns ? ' and ' : ''}
+        ${hasReturns ? 'return requests' : ''}.
+        Crossed-out items are not charged.
+      </div>` : ''}
+
       <h2>Shipping Address</h2>
-      <p>${order.shippingAddress?.fullName}<br>
-         ${order.shippingAddress?.fullAddress}<br>
-         ${order.shippingAddress?.city}, ${order.shippingAddress?.state} - ${order.shippingAddress?.pincode}<br>
-         Phone: ${order.shippingAddress?.phone}</p>
+      <p>
+        ${order.shippingAddress?.fullName}<br>
+        ${order.shippingAddress?.fullAddress}<br>
+        ${order.shippingAddress?.city}, ${order.shippingAddress?.state} - ${order.shippingAddress?.pincode}<br>
+        Phone: ${order.shippingAddress?.phone}
+      </p>
 
       <h2>Order Items</h2>
       <table>
         <tr>
           <th>Product</th>
+          <th>Status</th>
           <th>Price</th>
           <th>Qty</th>
           <th>Total</th>
         </tr>
         ${order.items.map(item => `
-          <tr>
+          <tr class="${item.status === 'Cancelled' ? 'cancelled-row' : ''}">
             <td>${item.name}</td>
+            <td>
+              <span class="status-badge ${
+                item.status === 'Active' ? 'status-active' :
+                item.status === 'Cancelled' ? 'status-cancelled' :
+                'status-return'
+              }">
+                ${item.status}
+              </span>
+            </td>
             <td>₹${item.price?.toLocaleString()}</td>
             <td>${item.quantity}</td>
-            <td>₹${item.itemTotal?.toLocaleString()}</td>
+            <td>${item.status === 'Cancelled'
+              ? '<span style="color:#999;">Not charged</span>'
+              : '₹' + item.itemTotal?.toLocaleString()
+            }</td>
           </tr>`).join('')}
       </table>
 
-      <h2>Price Summary</h2>
+      <h2>Price Summary ${hasCancellations || hasReturns ? '(Adjusted)' : ''}</h2>
       <table>
-        <tr><td>Subtotal</td><td>₹${order.subtotal?.toLocaleString()}</td></tr>
-        <tr><td>Discount</td><td>-₹${order.discount?.toLocaleString()}</td></tr>
-        ${order.couponDiscount > 0 ? `<tr><td>Coupon (${order.couponCode})</td><td>-₹${order.couponDiscount?.toLocaleString()}</td></tr>` : ''}
-        <tr><td>Shipping</td><td>${order.shippingCharge === 0 ? 'Free' : '₹' + order.shippingCharge}</td></tr>
-        <tr><td>Tax (5% GST)</td><td>₹${order.tax?.toLocaleString()}</td></tr>
-        <tr class="total-row">
-          <td>Total Amount</td>
-          <td class="amount">₹${order.totalAmount?.toLocaleString()}</td>
+        ${hasCancellations ? `
+        <tr style="color:#999; font-size:12px;">
+          <td>Original Subtotal</td>
+          <td style="text-decoration:line-through;">₹${order.subtotal?.toLocaleString()}</td>
         </tr>
+        <tr>
+          <td><strong>Adjusted Subtotal (active items only)</strong></td>
+          <td><strong>₹${activeSubtotal?.toLocaleString()}</strong></td>
+        </tr>` : `
+        <tr>
+          <td>Subtotal (${activeItems.length} items)</td>
+          <td>₹${activeSubtotal?.toLocaleString()}</td>
+        </tr>`}
+
+        ${activeDiscount > 0 ? `
+        <tr>
+          <td>Product Discount</td>
+          <td style="color:green;">-₹${activeDiscount?.toLocaleString()}</td>
+        </tr>` : ''}
+
+        ${activeCoupon > 0 ? `
+        <tr>
+          <td>Coupon (${order.couponCode})</td>
+          <td style="color:green;">-₹${activeCoupon?.toLocaleString()}</td>
+        </tr>` : ''}
+
+        <tr>
+          <td>Shipping</td>
+          <td>${order.shippingCharge === 0 ? '<span style="color:green;">Free</span>' : '₹' + order.shippingCharge}</td>
+        </tr>
+
+        ${order.tax > 0 ? `
+        <tr>
+          <td>Tax (5% GST)</td>
+          <td>₹${order.tax?.toLocaleString()}</td>
+        </tr>` : ''}
+
+        <tr class="total-row">
+          <td>Amount ${hasCancellations ? 'Payable' : 'Total'}</td>
+          <td class="amount">₹${activeTotal?.toLocaleString()}</td>
+        </tr>
+
+        ${hasCancellations ? `
+        <tr style="font-size:12px; color:#28a745;">
+          <td>You save (cancellations)</td>
+          <td>₹${cancelledSubtotal?.toLocaleString()}</td>
+        </tr>` : ''}
       </table>
 
       <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
 
       <div class="footer">
-        Thank you for shopping with ChronoLux! &nbsp;|&nbsp; support@chronolux.com &nbsp;|&nbsp; www.chronolux.com<br>
-        © 2026 ChronoLux. All rights reserved.
+        Thank you for shopping with ChronoLux!<br>
+        © 2026 ChronoLux. All rights reserved. | support@chronolux.com
       </div>
     </body>
     </html>`);
 
   win.document.close();
-  setTimeout(() => {
-    win.print();
-    win.close();
-  }, 500);
+  setTimeout(() => { win.print(); win.close(); }, 500);
 }
 
 //Event listeners for reason model

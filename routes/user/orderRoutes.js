@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../../middleware/authMiddleware');
 const {
   getCheckoutData,
   placeOrder,
@@ -7,16 +8,17 @@ const {
   getOrderDetails,
   cancelOrder,
   cancelOrderItem,
-  returnOrder
+  returnOrder,
+  returnOrderItem
 } = require('../../controllers/user/orderController');
-const authMiddleware = require('../../middleware/authMiddleware');
 
 router.get('/checkout-data', authMiddleware, getCheckoutData);
 router.post('/place', authMiddleware, placeOrder);
 router.get('/', authMiddleware, getUserOrders);
 router.get('/:orderId', authMiddleware, getOrderDetails);
 router.put('/:orderId/cancel', authMiddleware, cancelOrder);
-router.put('/:orderId/cancel-item/:itemId', authMiddleware, cancelOrderItem);
 router.put('/:orderId/return', authMiddleware, returnOrder);
+router.put('/:orderId/cancel-item/:itemId', authMiddleware, cancelOrderItem);
+router.put('/:orderId/return-item/:itemId', authMiddleware, returnOrderItem);
 
 module.exports = router;

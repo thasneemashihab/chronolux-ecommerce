@@ -302,56 +302,13 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
-// PUT /api/users/orders/:orderId/cancel-item/:itemId - cancel specific item
-exports.cancelOrderItem = async (req, res) => {
-  try {
-    const { reason } = req.body;
-    const order = await Order.findById(req.params.orderId);
-
-    if (!order) return res.status(404).json({ message: 'Order not found' });
-    if (order.user.toString() !== req.userId.toString()) {
-      return res.status(403).json({ message: 'Unauthorized' });
-    }
-    if (!['Pending', 'Processing'].includes(order.status)) {
-      return res.status(400).json({ message: 'Cannot cancel items in this order status' });
-    }
-
-    const item = order.items.id(req.params.itemId);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-    if (item.status === 'Cancelled') {
-      return res.status(400).json({ message: 'Item already cancelled' });
-    }
-
-    item.status = 'Cancelled';
-    item.cancelReason = reason || '';
-
-    // Restore stock for this specific item
-    await Product.findByIdAndUpdate(
-      item.product,
-      { $inc: { stock: item.quantity } }
-    );
-
-    // Check if all items cancelled — if so, cancel the whole order
-    const allCancelled = order.items.every(i => i.status === 'Cancelled');
-    if (allCancelled) {
-      order.status = 'Cancelled';
-    }
-
-    await order.save();
-    res.status(200).json({ message: 'Item cancelled successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to cancel item' });
-  }
-};
-
-// PUT /api/users/orders/:orderId/return - return order (only when Delivered)
+// PUT /api/users/orders/:orderId/return - return entire order
 exports.returnOrder = async (req, res) => {
   try {
     const { reason } = req.body;
 
     if (!reason || reason.trim() === '') {
-      return res.status(400).json({ message: 'Reason is required for return requests' });
+      return res.status(400).json({ message: 'Please provide a reason for the return request' });
     }
 
     const order = await Order.findById(req.params.orderId);
@@ -359,26 +316,143 @@ exports.returnOrder = async (req, res) => {
     if (order.user.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-
-    // Can only return Delivered orders
     if (order.status !== 'Delivered') {
       return res.status(400).json({ message: 'Only delivered orders can be returned' });
     }
 
-    order.status = 'Cancelled';  // treat return as cancelled for simplicity
-    order.returnReason = reason;
-
     order.items.forEach(item => {
       if (item.status === 'Active') {
         item.status = 'Return Requested';
-        item.returnReason = reason;
+        item.returnReason = reason.trim();
       }
     });
 
+    order.returnReason = reason.trim();
     await order.save();
+
     res.status(200).json({ message: 'Return request submitted successfully' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Failed to submit return request' });
+    res.status(500).json({ message: 'Failed to submit return request. Please try again.' });
+  }
+};
+
+// PUT /api/users/orders/:orderId/cancel-item/:itemId
+exports.cancelOrderItem = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const order = await Order.findById(req.params.orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (order.user.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Can only cancel items in Pending or Processing orders
+    if (!['Pending', 'Processing'].includes(order.status)) {
+      return res.status(400).json({
+        message: `Cannot cancel items in an order that is ${order.status}`
+      });
+    }
+
+    // Find the specific item
+    const item = order.items.id(req.params.itemId);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found in this order' });
+    }
+    if (item.status === 'Cancelled') {
+      return res.status(400).json({ message: 'This item is already cancelled' });
+    }
+    if (item.status !== 'Active') {
+      return res.status(400).json({ message: `Cannot cancel item with status: ${item.status}` });
+    }
+
+    // Cancel this specific item
+    item.status = 'Cancelled';
+    item.cancelReason = reason || 'No reason provided';
+
+    // Restore stock for this item only
+    await Product.findByIdAndUpdate(
+      item.product,
+      { $inc: { stock: item.quantity } }
+    );
+
+    // Check if ALL items are now cancelled — if so cancel whole order
+    const allCancelled = order.items.every(i => i.status === 'Cancelled');
+    if (allCancelled) {
+      order.status = 'Cancelled';
+      order.cancelReason = 'All items cancelled by customer';
+    }
+
+    await order.save();
+
+    res.status(200).json({
+      message: `"${item.name}" has been cancelled successfully`,
+      allOrderCancelled: allCancelled
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to cancel item. Please try again.' });
+  }
+};
+
+// PUT /api/users/orders/:orderId/return-item/:itemId
+exports.returnOrderItem = async (req, res) => {
+  try {
+    const { reason } = req.body;
+
+    // Return reason is mandatory
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({ message: 'Please provide a reason for the return request' });
+    }
+
+    const order = await Order.findById(req.params.orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (order.user.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Can only return items from Delivered orders
+    if (order.status !== 'Delivered') {
+      return res.status(400).json({
+        message: 'Return requests can only be made for delivered orders'
+      });
+    }
+
+    // Find the specific item
+    const item = order.items.id(req.params.itemId);
+    if (!item) {
+      return res.status(404).json({ message: 'Item not found in this order' });
+    }
+
+    if (item.status === 'Return Requested') {
+      return res.status(400).json({ message: 'Return already requested for this item' });
+    }
+    if (item.status === 'Returned') {
+      return res.status(400).json({ message: 'This item has already been returned' });
+    }
+    if (item.status === 'Cancelled') {
+      return res.status(400).json({ message: 'Cannot return a cancelled item' });
+    }
+    if (item.status !== 'Active') {
+      return res.status(400).json({ message: `Cannot request return for item with status: ${item.status}` });
+    }
+
+    item.status = 'Return Requested';
+    item.returnReason = reason.trim();
+
+    await order.save();
+
+    res.status(200).json({
+      message: `Return request submitted for "${item.name}". We'll process it shortly.`
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to submit return request. Please try again.' });
   }
 };

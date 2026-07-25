@@ -179,3 +179,44 @@
   .order-timeline { padding: 15px 10px; }
   .timeline-label { font-size: 10px; max-width: 55px; }
 }
+
+/* Item-level status badges */
+.item-status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.item-status-Cancelled {
+  background: rgba(220,53,69,0.15);
+  color: #ea868f;
+}
+
+.item-status-Return-Requested {
+  background: rgba(255,193,7,0.15);
+  color: #ffc107;
+}
+
+.item-status-Returned {
+  background: rgba(25,135,84,0.15);
+  color: #75b798;
+}
+
+/* Dimmed inactive items */
+.detail-item-inactive {
+  opacity: 0.65;
+}
+
+/* Item action buttons */
+.btn-outline-danger {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.btn-outline-warning {
+  font-size: 12px;
+  padding: 4px 10px;
+}
