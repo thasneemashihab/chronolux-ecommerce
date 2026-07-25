@@ -185,21 +185,26 @@ function renderActions(order) {
   buyAgainBtn.innerHTML = '<i class="bi bi-bag-plus"></i> Buy Again';
   container.appendChild(buyAgainBtn);
 
-  // Cancel Order — only for Pending/Processing
-  if (['Pending', 'Processing'].includes(order.status)) {
+  // Cancel Order — only for Pending/Processing AND has at least one active item
+  const hasActiveItems = order.items.some(i => i.status === 'Active');
+  if (['Pending', 'Processing'].includes(order.status) && hasActiveItems) {
     const cancelBtn = document.createElement('button');
     cancelBtn.className = 'btn-order-action btn-cancel-order';
     cancelBtn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel Order';
-    cancelBtn.addEventListener('click', () => openReasonModal('cancelOrder'));
+    cancelBtn.addEventListener('click', () => {
+      openItemReasonModal('cancelOrder', null, 'All Active Items');
+    });
     container.appendChild(cancelBtn);
   }
 
-  // Return Order — only for Delivered
-  if (order.status === 'Delivered') {
+  // Return Order — only for Delivered AND has active items
+  if (order.status === 'Delivered' && hasActiveItems) {
     const returnBtn = document.createElement('button');
     returnBtn.className = 'btn-order-action btn-return-order';
     returnBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i> Return / Replace';
-    returnBtn.addEventListener('click', () => openReasonModal('return'));
+    returnBtn.addEventListener('click', () => {
+      openItemReasonModal('return', null, 'All Active Items');
+    });
     container.appendChild(returnBtn);
   }
 
@@ -211,13 +216,17 @@ function renderActions(order) {
   container.appendChild(helpBtn);
 
   // Download Invoice
-  document.getElementById('downloadInvoiceBtn').addEventListener('click', () => {
-    generateInvoicePDF(window._currentOrder);
-  });
+  const downloadBtn = document.getElementById('downloadInvoiceBtn');
+  if (downloadBtn) {
+    // Remove old listeners
+    const newBtn = downloadBtn.cloneNode(true);
+    downloadBtn.parentNode.replaceChild(newBtn, downloadBtn);
+    newBtn.addEventListener('click', () => generateInvoicePDF(window._currentOrder));
+  }
   window._currentOrder = order;
 }
 
-  let currentAction = null;
+let currentAction = null;
 let currentItemId = null;
 
 function openItemReasonModal(action, itemId, itemName) {
@@ -228,18 +237,30 @@ function openItemReasonModal(action, itemId, itemName) {
   const subtitleEl = document.getElementById('reasonModalSubtitle');
   const requiredEl = document.getElementById('reasonRequired');
   const errorEl = document.getElementById('reasonError');
+  const selectEl = document.getElementById('reasonSelect');
 
-  errorEl.classList.add('d-none');
-  document.getElementById('reasonSelect').value = '';
-  document.getElementById('reasonText').value = '';
+  if (errorEl) errorEl.classList.add('d-none');
+  if (selectEl) selectEl.value = '';
+  const textEl = document.getElementById('reasonText');
+  if (textEl) textEl.value = '';
 
   if (action === 'cancelItem') {
-    titleEl.textContent = `Cancel Item`;
-    subtitleEl.textContent = `"${itemName}" — Tell us why you want to cancel this item`;
-    requiredEl.classList.add('d-none'); // optional for cancel
+    if (titleEl) titleEl.textContent = 'Cancel Item';
+    if (subtitleEl) subtitleEl.textContent = `"${itemName}" — Tell us why`;
+    if (requiredEl) requiredEl.classList.add('d-none');
+    if (selectEl) selectEl.innerHTML = `
+      <option value="">Select a reason (optional)</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Found better price elsewhere">Found better price elsewhere</option>
+      <option value="Ordered by mistake">Ordered by mistake</option>
+      <option value="Delivery time too long">Delivery time too long</option>
+      <option value="Other">Other</option>`;
 
-    // Set cancel-specific reasons
-    document.getElementById('reasonSelect').innerHTML = `
+  } else if (action === 'cancelOrder') {
+    if (titleEl) titleEl.textContent = 'Cancel Order';
+    if (subtitleEl) subtitleEl.textContent = 'Cancel all active items in this order';
+    if (requiredEl) requiredEl.classList.add('d-none');
+    if (selectEl) selectEl.innerHTML = `
       <option value="">Select a reason (optional)</option>
       <option value="Changed my mind">Changed my mind</option>
       <option value="Found better price elsewhere">Found better price elsewhere</option>
@@ -248,79 +269,101 @@ function openItemReasonModal(action, itemId, itemName) {
       <option value="Other">Other</option>`;
 
   } else if (action === 'returnItem') {
-    titleEl.textContent = `Return Item`;
-    subtitleEl.textContent = `"${itemName}" — Please tell us why you want to return this item`;
-    requiredEl.classList.remove('d-none'); // mandatory for return
-
-    // Set return-specific reasons
-    document.getElementById('reasonSelect').innerHTML = `
+    if (titleEl) titleEl.textContent = 'Return Item';
+    if (subtitleEl) subtitleEl.textContent = `"${itemName}" — Please tell us why`;
+    if (requiredEl) requiredEl.classList.remove('d-none');
+    if (selectEl) selectEl.innerHTML = `
       <option value="">Select a reason *</option>
       <option value="Product damaged">Product damaged or defective</option>
       <option value="Wrong item received">Wrong item received</option>
       <option value="Not as described">Not as described</option>
-      <option value="Size/fit issue">Size or fit issue</option>
+      <option value="Changed my mind">Changed my mind</option>
+      <option value="Other">Other</option>`;
+
+  } else if (action === 'return') {
+    if (titleEl) titleEl.textContent = 'Return / Replace Order';
+    if (subtitleEl) subtitleEl.textContent = 'Request return for all active items';
+    if (requiredEl) requiredEl.classList.remove('d-none');
+    if (selectEl) selectEl.innerHTML = `
+      <option value="">Select a reason *</option>
+      <option value="Product damaged">Product damaged or defective</option>
+      <option value="Wrong item received">Wrong item received</option>
+      <option value="Not as described">Not as described</option>
       <option value="Changed my mind">Changed my mind</option>
       <option value="Other">Other</option>`;
   }
 
-  document.getElementById('reasonModalBackdrop').classList.remove('d-none');
+  const backdrop = document.getElementById('reasonModalBackdrop');
+  if (backdrop) backdrop.classList.remove('d-none');
 }
 
-// Update the confirm button handler
-document.getElementById('confirmReasonBtn').addEventListener('click', async () => {
-  const selectReason = document.getElementById('reasonSelect').value;
-  const textReason = document.getElementById('reasonText').value.trim();
-  const reason = selectReason
-    ? `${selectReason}${textReason ? ` — ${textReason}` : ''}`
-    : textReason;
-  const errorEl = document.getElementById('reasonError');
+// Close modal
+const closeReasonModal = document.getElementById('closeReasonModal');
+if (closeReasonModal) {
+  closeReasonModal.addEventListener('click', () => {
+    document.getElementById('reasonModalBackdrop').classList.add('d-none');
+  });
+}
 
-  errorEl.classList.add('d-none');
+const cancelReasonBtn = document.getElementById('cancelReasonBtn');
+if (cancelReasonBtn) {
+  cancelReasonBtn.addEventListener('click', () => {
+    document.getElementById('reasonModalBackdrop').classList.add('d-none');
+  });
+}
 
-  // Return requires mandatory reason
-  if (currentAction === 'returnItem' && !selectReason) {
-    errorEl.textContent = 'Please select a reason for the return request';
-    errorEl.classList.remove('d-none');
-    return;
-  }
+// Confirm action
+const confirmReasonBtn = document.getElementById('confirmReasonBtn');
+if (confirmReasonBtn) {
+  confirmReasonBtn.addEventListener('click', async () => {
+    const selectReason = document.getElementById('reasonSelect')?.value || '';
+    const textReason = document.getElementById('reasonText')?.value.trim() || '';
+    const reason = selectReason
+      ? `${selectReason}${textReason ? ` — ${textReason}` : ''}`
+      : textReason;
+    const errorEl = document.getElementById('reasonError');
 
-  let url, body;
+    if (errorEl) errorEl.classList.add('d-none');
 
-  if (currentAction === 'cancelItem') {
-    url = `/api/users/orders/${orderId}/cancel-item/${currentItemId}`;
-    body = { reason };
-  } else if (currentAction === 'returnItem') {
-    url = `/api/users/orders/${orderId}/return-item/${currentItemId}`;
-    body = { reason };
-  } else if (currentAction === 'cancelOrder') {
-    url = `/api/users/orders/${orderId}/cancel`;
-    body = { reason };
-  } else if (currentAction === 'return') {
-    if (!selectReason) {
-      errorEl.textContent = 'Please select a reason for the return request';
-      errorEl.classList.remove('d-none');
+    // Return requires mandatory reason
+    if ((currentAction === 'returnItem' || currentAction === 'return') && !selectReason) {
+      if (errorEl) {
+        errorEl.textContent = 'Please select a reason for the return request';
+        errorEl.classList.remove('d-none');
+      }
       return;
     }
-    url = `/api/users/orders/${orderId}/return`;
-    body = { reason };
-  }
 
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    let url;
+    if (currentAction === 'cancelItem') {
+      url = `/api/users/orders/${orderId}/cancel-item/${currentItemId}`;
+    } else if (currentAction === 'cancelOrder') {
+      url = `/api/users/orders/${orderId}/cancel`;
+    } else if (currentAction === 'returnItem') {
+      url = `/api/users/orders/${orderId}/return-item/${currentItemId}`;
+    } else if (currentAction === 'return') {
+      url = `/api/users/orders/${orderId}/return`;
+    }
+
+    if (!url) return;
+
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: reason || 'No reason provided' })
+    });
+    const data = await res.json();
+
+    document.getElementById('reasonModalBackdrop').classList.add('d-none');
+
+    if (res.ok) {
+      showToast(data.message);
+      setTimeout(() => loadOrderDetail(), 800);
+    } else {
+      showToast(data.message, 'error');
+    }
   });
-  const data = await res.json();
-
-  document.getElementById('reasonModalBackdrop').classList.add('d-none');
-
-  if (res.ok) {
-    showToast(data.message);
-    setTimeout(() => loadOrderDetail(), 800);
-  } else {
-    showToast(data.message, 'error');
-  }
-});
+}
 
 
 //GenerateInvoicePDF
