@@ -8,9 +8,21 @@ if (newsletterForm) {
   });
 }
 
+// Sidebar logout — covers ALL user pages
+const sidebarLogout = document.getElementById('sidebarLogout');
+if (sidebarLogout) {
+  sidebarLogout.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  });
+}
+
+// Navbar logout button
 const logoutBtn = document.getElementById('logoutBtn');
 if (logoutBtn) {
-  logoutBtn.addEventListener('click', async () => {
+  logoutBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/login';
   });
