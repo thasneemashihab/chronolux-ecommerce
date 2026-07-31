@@ -282,10 +282,11 @@ exports.toggleProductStatus = async (req, res) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-     await Product.findByIdAndUpdate(
-      req.params.id,
-      { $set: { isActive: !product.isActive } }
-    );
+    await Product.findByIdAndUpdate(
+  req.params.id,
+  { $set: { isActive: !product.isActive } },
+  { returnDocument: 'after' }
+);
 
     res.status(200).json({
       message: product.isActive ? 'Product activated' : 'Product deactivated'
@@ -334,7 +335,7 @@ exports.getInventory = async (req, res) => {
     if (stockFilter === 'out') {
       filter.stock = 0;
     } else if (stockFilter === 'low') {
-      filter.stock = { $gt: 0, $lte: 10 };
+      filter.stock = { $gt: 0, $lte: 15 };
     }
 
     const products = await Product.find(filter)

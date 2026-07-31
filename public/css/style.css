@@ -505,15 +505,72 @@ body {
   padding: 18px;
 }
 
+/* Status change buttons */
 .status-change-btn {
   border: 1px solid #444;
   color: #ccc;
   background: #2a2a2a;
   transition: all 0.2s;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.status-change-btn:hover:not(:disabled) {
+  border-color: #f5b800;
+  color: #f5b800;
 }
 
 .status-change-btn:hover { border-color: #f5b800; color: #f5b800; }
-.status-change-btn.active-status { background: #f5b800; color: #111; border-color: #f5b800; font-weight: 700; }
+
+/* Current status highlighting */
+.status-change-btn.active-status[data-status="Pending"] {
+  background: rgba(255,193,7,0.2);
+  border-color: #ffc107;
+  color: #ffc107;
+  font-weight: 700;
+}
+.status-change-btn.active-status[data-status="Processing"] {
+  background: rgba(13,110,253,0.2);
+  border-color: #6ea8fe;
+  color: #6ea8fe;
+  font-weight: 700;
+}
+
+.status-change-btn.active-status[data-status="Shipped"] {
+  background: rgba(13,202,240,0.2);
+  border-color: #0dcaf0;
+  color: #0dcaf0;
+  font-weight: 700;
+}
+
+.status-change-btn.active-status[data-status="Out for Delivery"] {
+  background: rgba(255,165,0,0.2);
+  border-color: #ffa500;
+  color: #ffa500;
+  font-weight: 700;
+}
+/* Delivered — clearly green */
+.status-change-btn.active-status[data-status="Delivered"] {
+  background: #28a745 !important;        /* solid green, not transparent */
+  border-color: #28a745 !important;
+  color: #fff !important;               /* white text for contrast */
+  font-weight: 700;
+}
+
+.status-change-btn.active-status[data-status="Cancelled"] {
+  background: #dc3545 !important;        /* solid red */
+  border-color: #dc3545 !important;
+  color: #fff !important;               /* white text */
+  font-weight: 700;
+}
+
+/* Disabled state */
+.status-change-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed ;
+}
 .status-change-btn[data-status="Cancelled"].active-status { background: #dc3545; border-color: #dc3545; color: #fff; }
 .status-change-btn[data-status="Delivered"].active-status { background: #28a745; border-color: #28a745; color: #fff; }
 

@@ -27,7 +27,7 @@ exports.getProducts = async (req, res) => {
 
     // Sort options matching your Figma dropdown
     const sortOptions = {
-      newest: { createdAt: -1 },
+      newest: { createdAt: -1},
       oldest: { createdAt: 1 },
       priceLow: { price: 1 },
       priceHigh: { price: -1 },

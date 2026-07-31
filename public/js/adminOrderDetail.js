@@ -43,10 +43,45 @@ function renderDetail(order) {
   });
 
   // Status buttons — highlight current status
-  document.querySelectorAll('.status-change-btn').forEach(btn => {
-    btn.classList.toggle('active-status', btn.dataset.status === order.status);
-    btn.addEventListener('click', () => handleStatusChange(order._id, btn.dataset.status));
-  });
+  const statusOrder = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+const currentIdx = statusOrder.indexOf(order.status);
+
+document.querySelectorAll('.status-change-btn').forEach(btn => {
+  const btnStatus = btn.dataset.status;
+  const btnIdx = statusOrder.indexOf(btnStatus);
+
+  // Clone button to remove all previous event listeners
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  // Highlight current active status
+  newBtn.classList.toggle('active-status', btnStatus === order.status);
+
+  const isDeliveredLocked = order.status === 'Delivered' && btnStatus !== 'Cancelled';
+  const isBackwardLocked = btnIdx < currentIdx && btnStatus !== 'Cancelled' && currentIdx >= 3;
+  const isLocked = isDeliveredLocked || isBackwardLocked;
+
+  if (isLocked) {
+    // Visually disable but keep clickable to show message
+    newBtn.disabled = false; // keep enabled so click works
+    newBtn.style.opacity = '0.35';
+    newBtn.style.cursor = 'not-allowed';
+
+    newBtn.addEventListener('click', () => {
+      showToast(
+        `Order is already ${order.status}. Cannot go back to ${btnStatus}.`,
+        'error'
+      );
+    });
+  } else if (btnStatus === order.status) {
+    // Current status — not clickable, no action
+    newBtn.style.cursor = 'default';
+  } else {
+    newBtn.style.opacity = '1';
+    newBtn.style.cursor = 'pointer';
+    newBtn.addEventListener('click', () => handleStatusChange(order._id, btnStatus));
+  }
+});
 
   // Address
   const addr = order.shippingAddress;

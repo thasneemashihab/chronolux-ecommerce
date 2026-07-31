@@ -215,15 +215,19 @@ function renderActions(order) {
   helpBtn.innerHTML = '<i class="bi bi-headset"></i> Need Help?';
   container.appendChild(helpBtn);
 
-  // Download Invoice
-  const downloadBtn = document.getElementById('downloadInvoiceBtn');
-  if (downloadBtn) {
-    // Remove old listeners
+ // Download Invoice — only show after Delivered
+const downloadBtn = document.getElementById('downloadInvoiceBtn');
+if (downloadBtn) {
+  if (order.status === 'Delivered') {
+    downloadBtn.classList.remove('d-none'); // show button
     const newBtn = downloadBtn.cloneNode(true);
     downloadBtn.parentNode.replaceChild(newBtn, downloadBtn);
     newBtn.addEventListener('click', () => generateInvoicePDF(window._currentOrder));
+  } else {
+    downloadBtn.classList.add('d-none'); // hide button for other statuses
   }
-  window._currentOrder = order;
+}
+window._currentOrder = order;
 }
 
 let currentAction = null;

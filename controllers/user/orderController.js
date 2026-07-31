@@ -16,6 +16,8 @@ exports.getCheckoutData = async (req, res) => {
       return res.status(400).json({ message: 'Your cart is empty' });
     }
 
+
+
     // Stage 4: Filter blocked/deleted products
     const unavailableItems = [];
     const validItems = cart.items.filter(item => {
@@ -85,6 +87,7 @@ exports.getCheckoutData = async (req, res) => {
 };
 
 
+
 // POST /api/users/orders/place — Stage 5
 exports.placeOrder = async (req, res) => {
   try {
@@ -146,7 +149,7 @@ exports.placeOrder = async (req, res) => {
     const discount = validItems.reduce((sum, item) => {
       return sum + (item.price * item.quantity * (item.product.discount || 0) / 100);
     }, 0);
-    const shippingCharge = subtotal > 999 ? 0 : 99;
+    const shippingCharge = subtotal > 1999 ? 0 : 99;
     const tax = Math.round(subtotal * 0.05);
     const couponDiscountAmount = Number(couponDiscount) || 0;
     const totalAmount = Math.round(subtotal - discount - couponDiscountAmount + shippingCharge + tax);
@@ -161,7 +164,7 @@ exports.placeOrder = async (req, res) => {
       itemTotal: item.price * item.quantity
     }));
 
-    const orderId = 'CLX-' + Date.now().toString().slice(-7);
+    const orderId = 'ORD-' + Date.now().toString().slice(-7);
 
     const order = await Order.create({
       user: req.userId,

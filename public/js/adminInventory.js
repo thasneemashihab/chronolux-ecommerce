@@ -26,7 +26,7 @@ async function loadInventory() {
 
 function getStockBadge(stock) {
   if (stock === 0) return `<span class="stock-badge-danger">Out of Stock</span>`;
-  if (stock <= 10) return `<span class="stock-badge-warning">Low Stock</span>`;
+  if (stock <= 15) return `<span class="stock-badge-warning">Low Stock</span>`;
   return `<span class="stock-badge-success">In Stock</span>`;
 }
 

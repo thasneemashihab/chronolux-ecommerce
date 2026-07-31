@@ -29,6 +29,9 @@ if (logoutBtn) {
 }
 
 function showToast(message, type = 'success') {
+  // Remove any existing toasts before showing new one
+  document.querySelectorAll('.toastify').forEach(t => t.remove());
+
   Toastify({
     text: message,
     duration: 3000,

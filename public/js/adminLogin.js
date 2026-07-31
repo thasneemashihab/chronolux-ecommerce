@@ -2,6 +2,12 @@ const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('sessionExpired')) {
   showToast('Your session expired. Please log in again.', 'error');
 }
+if (urlParams.get('unauthorized')) {
+  showToast('You no longer have admin access.', 'error');
+}
+if (urlParams.get('blocked')) {
+  showToast('Your admin account has been blocked.', 'error');
+}
 
 document.querySelectorAll('.toggle-eye').forEach(btn => {
   btn.addEventListener('click', () => {

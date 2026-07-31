@@ -82,32 +82,42 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    // Prevent changing status of already cancelled orders
     if (order.status === 'Cancelled') {
       return res.status(400).json({ message: 'Cannot update a cancelled order' });
+    }
+
+    // Prevent going backwards after Delivered
+    const statusOrder = ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
+    const currentIdx = statusOrder.indexOf(order.status);
+    const newIdx = statusOrder.indexOf(status);
+
+    if (order.status === 'Delivered' && status !== 'Cancelled') {
+      return res.status(400).json({
+        message: `Order is already Delivered. Cannot change to ${status}.`
+      });
+    }
+
+    // Prevent going backward in general (except to Cancelled)
+    if (newIdx < currentIdx && status !== 'Cancelled') {
+      return res.status(400).json({
+        message: `Cannot change status from ${order.status} back to ${status}`
+      });
     }
 
     const previousStatus = order.status;
     order.status = status;
 
-    // If admin cancels — restore stock
     if (status === 'Cancelled' && previousStatus !== 'Cancelled') {
       for (const item of order.items) {
         if (item.status === 'Active') {
-          await Product.findByIdAndUpdate(
-            item.product,
-            { $inc: { stock: item.quantity } }
-          );
+          await Product.findByIdAndUpdate(item.product, { $inc: { stock: item.quantity } });
           item.status = 'Cancelled';
         }
       }
     }
 
-    // If delivered — update deliveredAt timestamp
     if (status === 'Delivered') {
       order.deliveredAt = new Date();
     }
@@ -119,6 +129,8 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).json({ message: 'Failed to update order status' });
   }
 };
+
+
 
 // GET /api/admin/orders/export - export as CSV
 exports.exportOrders = async (req, res) => {
