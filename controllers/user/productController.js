@@ -74,7 +74,8 @@ exports.getProductDetails = async (req, res) => {
     })
       .populate('brand', 'name')
       .populate('category', 'name')
-      .populate('reviews.user', 'name');
+      .populate('reviews.user', 'name')
+      .lean();
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found or unavailable' });

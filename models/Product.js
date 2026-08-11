@@ -20,6 +20,10 @@ const productSchema = new mongoose.Schema({
   originalPrice: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
   stock: { type: Number, required: true, default: 0 },
+   colorVariants: [{                                    // stock per color
+    color: { type: String },
+    stock: { type: Number, default: 0 }
+  }],
   images: [{ type: String }],          // 3 base product images
   colors: [{ type: String }],          // color names list
   variants: [{ type: String }],        // variant names list

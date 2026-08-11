@@ -19,9 +19,11 @@ exports.getProducts = async (req, res) => {
       .populate('category', 'name')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
-
-    const total = await Product.countDocuments(filter);
+      .limit(limit)
+      .lean() // .lean() — returns plain JS objects, skips virtual field errors
+      .select('name brand category price originalPrice discount images stock isActive reviews colors variants colorVariants');
+    
+      const total = await Product.countDocuments(filter);
 
     res.status(200).json({
       products,
@@ -30,8 +32,8 @@ exports.getProducts = async (req, res) => {
       totalProducts: total
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('getProduct error:',err.message);
+    res.status(500).json({ message: 'Server error:' + err.message });
   }
 };
 
@@ -54,7 +56,7 @@ exports.getProductDropdowns = async (req, res) => {
 exports.addProduct = async (req, res) => {
   try {
     const { name, brand, category, description, specifications,
-            price, originalPrice, discount, stock, isActive, colors, variants } = req.body;
+            price, originalPrice, discount, stock, isActive, colors, variants , colorStocks  } = req.body;
 
      // validation
      if (!name || name.trim() === '') {
@@ -84,6 +86,27 @@ exports.addProduct = async (req, res) => {
 
     const parsedColors = colors ? JSON.parse(colors) : [];
     const parsedVariants = variants ? JSON.parse(variants) : [];
+    const parsedColorStocks = colorStocks ? JSON.parse(colorStocks) : {};
+    
+    // validate every color stock value
+for (const color in parsedColorStocks) {
+  const val = parsedColorStocks[color];
+  if (val === undefined || val === null || isNaN(val) || Number(val) < 0) {
+    return res.status(400).json({ message: `Invalid stock value for "${color}"` });
+  }
+}
+
+    // Build colorVariants array from color stocks
+    const colorVariants = parsedColors.map(color => ({
+      color,
+      stock: parsedColorStocks[color] || 0
+    }));
+
+    // Total stock = sum of all color stocks
+    // If no colors defined, use the manually entered stock
+    const totalStock = colorVariants.length > 0
+      ? colorVariants.reduce((sum, cv) => sum + cv.stock, 0)
+      : Number(req.body.stock) || 0;
 
     // Base images — Cloudinary gives full URL in f.path
     const imagePaths = req.files.images.map(f => f.path);
@@ -130,7 +153,8 @@ exports.addProduct = async (req, res) => {
       price: Number(price),
       originalPrice: Number(originalPrice) || Number(price),
       discount: Number(discount) || 0,
-      stock: Number(stock),
+      stock: totalStock,
+      colorVariants,
       images: imagePaths,
       colors: parsedColors,
       variants: parsedVariants,
@@ -154,7 +178,7 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { name, brand, category, description, specifications,
-            price, originalPrice, discount, stock, isActive, colors, variants } = req.body;
+            price, originalPrice, discount, stock, isActive, colors, variants , colorStocks  } = req.body;
     
     // Validation        
     if (!name || name.trim() === '') {
@@ -191,8 +215,30 @@ exports.updateProduct = async (req, res) => {
     product.isActive = isActive === 'true';
     product.colors = colors ? JSON.parse(colors) : [];
     product.variants = variants ? JSON.parse(variants) : [];
+    
+    // In updateProduct — update colorVariants
+const parsedColorStocks = req.body.colorStocks ? JSON.parse(req.body.colorStocks) : {};
+const parsedColors = req.body.colors ? JSON.parse(req.body.colors) : [];
 
-    // Replace base images if new ones uploaded
+// validate every color stock value that was actually sent
+for (const color in parsedColorStocks) {
+  const val = parsedColorStocks[color];
+  if (isNaN(val) || Number(val) < 0) {
+    return res.status(400).json({ message: `Invalid stock value for "${color}"` });
+  }
+}
+
+if (parsedColors.length > 0) {
+  product.colorVariants = parsedColors.map(color => ({
+    color,
+    stock: parsedColorStocks[color] !== undefined
+      ? Number(parsedColorStocks[color])
+      : (product.colorVariants?.find(cv => cv.color === color)?.stock || 0)
+  }));
+  product.stock = product.colorVariants.reduce((sum, cv) => sum + cv.stock, 0);
+}
+
+  // Replace base images if new ones uploaded
     if (req.files?.images && req.files.images.length >= 3) {
       product.images = req.files.images.map(f => f.path);
     }

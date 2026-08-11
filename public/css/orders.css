@@ -1,13 +1,12 @@
 /* Order card in listing */
 .order-card {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
+  padding: 16px 0;
+  margin-bottom: 0;
   display: flex;
   gap: 15px;
   align-items: center;
   flex-wrap: wrap;
+   border-bottom: 1px solid #333; 
 }
 
 .order-card-img {

@@ -3,6 +3,8 @@ const Cart = require('../../models/Cart');
 const Product = require('../../models/Product');
 const User = require('../../models/User');
 
+
+
 // GET /api/users/orders/checkout-data — Stage 4
 exports.getCheckoutData = async (req, res) => {
   try {
@@ -16,7 +18,7 @@ exports.getCheckoutData = async (req, res) => {
       return res.status(400).json({ message: 'Your cart is empty' });
     }
 
-
+  
 
     // Stage 4: Filter blocked/deleted products
     const unavailableItems = [];
@@ -130,19 +132,38 @@ exports.placeOrder = async (req, res) => {
       return res.status(400).json({ message: 'No available products in cart' });
     }
 
-    // Stage 5: Final stock check for every item
+    // Stage 5: Final stock check for every item- Place order (final validation)
+   
     for (const item of validItems) {
-      if (item.product.stock <= 0) {
-        return res.status(400).json({
-          message: `"${item.product.name}" just went out of stock. Please remove it from your cart and try again.`
-        });
-      }
-      if (item.quantity > item.product.stock) {
-        return res.status(400).json({
-          message: `Insufficient stock for "${item.product.name}". Only ${item.product.stock} units available but you ordered ${item.quantity}. Please update your cart.`
-        });
-      }
+    if (item.selectedColor) {
+    // Validate per-color stock
+    const freshProduct = await Product.findById(item.product._id);
+    const colorVariant = freshProduct.colorVariants?.find(cv => cv.color === item.selectedColor);
+    const colorStock = colorVariant?.stock || 0;
+
+    if (colorStock <= 0) {
+      return res.status(400).json({
+        message: `"${item.product.name}" in ${item.selectedColor} just went out of stock. Please update your cart.`
+      });
     }
+    if (item.quantity > colorStock) {
+      return res.status(400).json({
+        message: `Only ${colorStock} units of "${item.product.name}" (${item.selectedColor}) are now available. You ordered ${item.quantity}.`
+      });
+    }
+  } else {
+    if (item.product.stock <= 0) {
+      return res.status(400).json({
+        message: `"${item.product.name}" is out of stock. Please remove it from your cart.`
+      });
+    }
+    if (item.quantity > item.product.stock) {
+      return res.status(400).json({
+        message: `Only ${item.product.stock} units of "${item.product.name}" available. You ordered ${item.quantity}.`
+      });
+    }
+  }
+}
 
     // Calculate totals
     const subtotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -189,13 +210,32 @@ exports.placeOrder = async (req, res) => {
       orderId
     });
 
-    // Reduce stock atomically
+    // After order is created, reduce stock
     for (const item of validItems) {
+       const selectedColor = item.selectedColor; // we need to pass this from cart
+      
+  if (selectedColor) {
+    // Reduce specific color stock AND total stock
+     await Product.findOneAndUpdate(
+      {
+        _id: item.product._id,
+        'colorVariants.color': selectedColor
+      },
+      {
+        $inc: {
+          'colorVariants.$.stock': -item.quantity,  // reduce color-specific stock
+          stock: -item.quantity                      // reduce total stock
+        }
+      }
+    );
+  } else {
+    // No color selected — reduce only total stock
       await Product.findByIdAndUpdate(
         item.product._id,
         { $inc: { stock: -item.quantity } }
       );
     }
+  }
 
     // Clear cart
     cart.items = [];

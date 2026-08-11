@@ -69,7 +69,7 @@ exports.getCart = async (req, res) => {
 // POST /api/users/cart - add product to cart
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity = 1 } = req.body;
+    const { productId, quantity = 1, selectedColor } = req.body;
 
     if (!productId) {
       return res.status(400).json({ message: 'Product ID is required' });
@@ -82,18 +82,39 @@ exports.addToCart = async (req, res) => {
       isActive: true
     });
 
-    if (!product) {
-      return res.status(404).json({
-        message: 'This product is no longer available'
-      });
-    }
+   // Stage 1 — Add to cart stock validation
+if (selectedColor) {
+  const colorVariant = product.colorVariants?.find(cv => cv.color === selectedColor);
+  const colorStock = colorVariant?.stock || 0;
 
-    // Stage 1: Check stock availability
-    if (product.stock <= 0) {
-      return res.status(400).json({
-        message: `${product.name} is currently out of stock`
-      });
-    }
+  if (colorStock <= 0) {
+    return res.status(400).json({
+      message: `"${product.name}" in ${selectedColor} color is currently out of stock`
+    });
+  }
+  if (quantity > colorStock) {
+    return res.status(400).json({
+      message: `Only ${colorStock} units of "${product.name}" (${selectedColor}) available`
+    });
+  }
+  if (quantity > MAX_QTY_PER_PRODUCT) {
+    return res.status(400).json({
+      message: `Maximum ${MAX_QTY_PER_PRODUCT} units per product allowed`
+    });
+  }
+} else {
+  if (product.stock <= 0) {
+    return res.status(400).json({
+      message: `"${product.name}" is currently out of stock`
+    });
+  }
+  if (quantity > product.stock) {
+    return res.status(400).json({
+      message: `Only ${product.stock} units of "${product.name}" available`
+    });
+  }
+}
+
     // Step 3: Find or create cart for this user
     let cart = await Cart.findOne({ user: req.userId });
     if (!cart) {

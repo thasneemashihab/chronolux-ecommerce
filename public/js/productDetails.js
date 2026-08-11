@@ -62,6 +62,26 @@ function startAvailabilityCheck() {
   }, 30000);
 }
 
+function loadImagesToStrip(images) {
+  const mainImg = document.getElementById('mainImage');
+  const strip = document.getElementById('thumbnailStrip');
+  if (!strip || !mainImg || !images || images.length === 0) return;
+  strip.innerHTML = '';
+  strip.classList.remove('d-none');
+  images.forEach((img, idx) => {
+    if (!img) return;
+    const thumb = document.createElement('img');
+    thumb.src = img;
+    thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
+    thumb.addEventListener('click', () => {
+      mainImg.src = img;
+      document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
+      thumb.classList.add('active');
+    });
+    strip.appendChild(thumb);
+  });
+}
+
 function renderProduct(p) {
   try {
     document.title = `${p.name || 'Product'} - ChronoLux`;
@@ -95,35 +115,16 @@ function renderProduct(p) {
     }
 
     // Images
-    maxStock = p.stock || 0;
     const mainImg = document.getElementById('mainImage');
     const strip = document.getElementById('thumbnailStrip');
 
-    function loadImagesToStrip(images) {
-      if (!strip || !mainImg) return;
-      strip.innerHTML = '';
-      strip.classList.remove('d-none');
-      images.forEach((img, idx) => {
-        if (!img) return;
-        const thumb = document.createElement('img');
-        thumb.src = img;
-        thumb.className = `thumbnail-img ${idx === 0 ? 'active' : ''}`;
-        thumb.addEventListener('click', () => {
-          mainImg.src = img;
-          document.querySelectorAll('.thumbnail-img').forEach(t => t.classList.remove('active'));
-          thumb.classList.add('active');
-        });
-        strip.appendChild(thumb);
-      });
-    }
-
-    // Step 1: Load base images first
+    // Step 1: Load base images
     if (mainImg && p.images && p.images.length > 0 && p.images[0]) {
       mainImg.src = p.images[0];
       loadImagesToStrip(p.images);
     }
 
-    // Step 2: Override with first valid color images if they exist
+    // Step 2: Override with first valid color images
     const firstValidColor = p.colorImages?.find(c => c.images && c.images.length > 0 && c.images[0]);
     if (firstValidColor && mainImg) {
       mainImg.src = firstValidColor.images[0];
@@ -133,13 +134,20 @@ function renderProduct(p) {
     // Rating
     const reviews = p.reviews || [];
     const avgRating = reviews.length > 0
-      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+      ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / reviews.length : 0;
 
     const starsEl = document.getElementById('starsDisplay');
     if (starsEl) starsEl.innerHTML = getStarsHTML(avgRating);
 
     const reviewCountEl = document.getElementById('reviewCount');
     if (reviewCountEl) reviewCountEl.textContent = `${reviews.length} reviews`;
+
+    // Set initial maxStock
+    if (p.colorVariants && p.colorVariants.length > 0) {
+      maxStock = p.colorVariants[0].stock || 0;
+    } else {
+      maxStock = p.stock || 0;
+    }
 
     // Colors
     const colorsSection = document.getElementById('colorsSection');
@@ -154,17 +162,48 @@ function renderProduct(p) {
         swatch.style.background = color;
         swatch.title = color;
 
+        // Get stock for this color
+        const colorVariant = p.colorVariants?.find(cv => cv.color === color);
+        const colorStock = colorVariant ? colorVariant.stock : p.stock;
+
         swatch.addEventListener('click', () => {
           document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
           swatch.classList.add('active');
 
-          const colorData = p.colorImages?.find(c => c.color === color);
+          // Update maxStock for this color
+          maxStock = colorStock || 0;
+          quantity = 1;
+          const qtyDisplay = document.getElementById('qtyDisplay');
+          if (qtyDisplay) qtyDisplay.textContent = 1;
 
-          if (colorData && colorData.images?.length > 0 && colorData.images[0]) {
-            if (mainImg) mainImg.src = colorData.images[0];
+          // Update stock display
+          const stockEl = document.getElementById('stockStatus');
+          const lowStockEl = document.getElementById('lowStockWarning');
+          const cartBtn = document.getElementById('addToCartBtn');
+
+          if (stockEl) {
+            if (colorStock <= 0) {
+              stockEl.innerHTML = '<span class="text-danger fw-bold">Out of Stock</span>';
+              if (cartBtn) cartBtn.disabled = true;
+            } else {
+              stockEl.innerHTML = '<span class="text-success fw-bold">In Stock</span>';
+              if (cartBtn) cartBtn.disabled = false;
+              if (colorStock <= 5 && lowStockEl) {
+                lowStockEl.textContent = `Only ${colorStock} left in ${color}`;
+                lowStockEl.classList.remove('d-none');
+              } else if (lowStockEl) {
+                lowStockEl.classList.add('d-none');
+              }
+            }
+          }
+
+          // Switch images
+          const colorData = p.colorImages?.find(c => c.color === color);
+          if (colorData && colorData.images?.length > 0 && colorData.images[0] && mainImg) {
+            mainImg.src = colorData.images[0];
             loadImagesToStrip(colorData.images);
-          } else if (p.images[colorIndex]) {
-            if (mainImg) mainImg.src = p.images[colorIndex];
+          } else if (p.images[colorIndex] && mainImg) {
+            mainImg.src = p.images[colorIndex];
           }
         });
 
@@ -188,8 +227,8 @@ function renderProduct(p) {
           document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           const variantData = p.variantImages?.find(v => v.variant === variant);
-          if (variantData && variantData.image) {
-            if (mainImg) mainImg.src = variantData.image;
+          if (variantData && variantData.image && mainImg) {
+            mainImg.src = variantData.image;
             if (strip) strip.classList.add('d-none');
           }
         });
@@ -198,12 +237,12 @@ function renderProduct(p) {
       });
     }
 
-    // Stock status
+    // Stock status (initial)
     const stockEl = document.getElementById('stockStatus');
     const lowStock = document.getElementById('lowStockWarning');
 
     if (stockEl) {
-      if (p.stock <= 0) {
+      if (maxStock <= 0) {
         stockEl.innerHTML = '<span class="text-danger fw-bold">Out of Stock</span>';
         const cartBtn = document.getElementById('addToCartBtn');
         const nowBtn = document.getElementById('buyNowBtn');
@@ -211,8 +250,8 @@ function renderProduct(p) {
         if (nowBtn) nowBtn.disabled = true;
       } else {
         stockEl.innerHTML = '<span class="text-success fw-bold">In Stock</span>';
-        if (p.stock <= 5 && lowStock) {
-          lowStock.textContent = `Only ${p.stock} left in stock`;
+        if (maxStock <= 5 && lowStock) {
+          lowStock.textContent = `Only ${maxStock} left in stock`;
           lowStock.classList.remove('d-none');
         }
       }
@@ -243,7 +282,7 @@ function renderReviews(reviews) {
   list.innerHTML = reviews.map(r => `
     <div class="border-bottom border-secondary py-3">
       <strong>${r.name || 'Anonymous'}</strong>
-      <span class="ms-2">${getStarsHTML(r.rating)}</span>
+      <span class="ms-2">${getStarsHTML(r.rating || 0)}</span>
       <p class="text-secondary small mt-1 mb-0">${r.comment || ''}</p>
     </div>`).join('');
 }
@@ -301,16 +340,20 @@ if (qtyPlus) {
 const addToCartBtn = document.getElementById('addToCartBtn');
 if (addToCartBtn) {
   addToCartBtn.addEventListener('click', async () => {
+    const activeColorSwatch = document.querySelector('.color-swatch.active');
+    const selectedColor = activeColorSwatch?.title || '';
+
     const res = await fetch('/api/users/cart', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, quantity })
+      body: JSON.stringify({ productId, quantity, selectedColor })
     });
+
     const data = await res.json();
     if (!res.ok) {
-      if (res.status === 404) {
-        showToast('This product is no longer available', 'error');
-        setTimeout(() => showUnavailableMessage(), 1500);
+      if (res.status === 401) {
+        showToast('Please login to add items to cart', 'error');
+        setTimeout(() => window.location.href = '/login', 1500);
       } else {
         showToast(data.message, 'error');
       }

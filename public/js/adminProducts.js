@@ -219,62 +219,75 @@ function generateColorVariantInputs() {
   if (colors.length > 0) {
     colorSection.classList.remove('d-none');
 
-    colors.forEach((color, colorIdx) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'mb-4';
+  colors.forEach((color, colorIdx) => {
+  const existingColorData = editingProduct?.colorImages?.find(c => c.color === color);
+  const existingColorVariant = editingProduct?.colorVariants?.find(c => c.color === color);
+  const existingStock = existingColorVariant?.stock || 0;
 
-      // Check if this color already has images (edit mode)
-      const existingColorData = editingProduct?.colorImages?.find(c => c.color === color);
+  const wrapper = document.createElement('div');
+  wrapper.className = 'mb-4 p-3 rounded' ;
+  wrapper.style.background = '#1a1a1a';
+  wrapper.innerHTML = `
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span class="color-dot-preview" style="background:${color}; width:16px; height:16px; border-radius:50%; display:inline-block;"></span>
+      <strong class="text-capitalize">${color}</strong>
+    </div>
 
-      wrapper.innerHTML = `
-        <div class="d-flex align-items-center gap-2 mb-2">
-          <span class="color-dot-preview" style="background:${color}; width:16px; height:16px; border-radius:50%; display:inline-block;"></span>
-          <strong class="text-capitalize">${color}</strong>
-          <span class="text-secondary small">(upload 3 images: front, side, back)</span>
-        </div>
-        <div class="d-flex gap-3 flex-wrap" id="colorSlots_${color}">
-          ${[0, 1, 2].map(i => {
-            const existingImg = existingColorData?.images?.[i];
-            return `
-              <div class="color-img-slot-wrapper">
-                <p class="text-secondary small mb-1">Image ${i + 1}</p>
-                <div class="color-img-slot" id="colorSlot_${color}_${i}">
-                  ${existingImg
-                    ? `<div class="upload-slot-filled">
-                         <img src="${existingImg}">
-                         <span class="slot-remove" data-color="${color}" data-index="${i}">&times;</span>
-                       </div>`
-                    : `<div class="upload-slot-empty">
-                         <label style="cursor:pointer;">
-                           <i class="bi bi-plus-lg"></i>
-                           <input type="file" accept="image/*" class="d-none color-img-input"
-                             data-color="${color}" data-index="${i}">
-                         </label>
-                       </div>`
-                  }
-                </div>
-              </div>`;
-          }).join('')}
-        </div>
-      `;
+    <!-- Stock input per color -->
+    <div class="mb-3">
+      <label class="form-label small text-secondary">Stock for ${color}</label>
+      <input type="number"
+        class="form-control color-stock-input"
+        id="colorStock_${color}"
+        data-color="${color}"
+        value="${existingStock}"
+        min="0"
+        placeholder="Enter stock for ${color}">
+    </div>
 
-      colorInputs.appendChild(wrapper);
+    <p class="text-secondary small mb-2">Upload 3 images: front, side, back</p>
+    <div class="d-flex gap-3 flex-wrap" id="colorSlots_${color}">
+      ${[0, 1, 2].map(i => {
+        const existingImg = existingColorData?.images?.[i];
+        return `
+          <div class="color-img-slot-wrapper">
+            <p class="text-secondary small mb-1">Image ${i + 1}</p>
+            <div class="color-img-slot" id="colorSlot_${color}_${i}">
+              ${existingImg
+                ? `<div class="upload-slot-filled">
+                     <img src="${existingImg}">
+                     <span class="slot-remove" data-color="${color}" data-index="${i}">&times;</span>
+                   </div>`
+                : `<div class="upload-slot-empty">
+                     <label style="cursor:pointer;">
+                       <i class="bi bi-plus-lg"></i>
+                       <input type="file" accept="image/*" class="d-none color-img-input"
+                         data-color="${color}" data-index="${i}">
+                     </label>
+                   </div>`
+              }
+            </div>
+          </div>`;
+      }).join('')}
+    </div>`;
 
-      // Attach file listeners for this color's 3 slots
-      wrapper.querySelectorAll('.color-img-input').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          currentCropTarget = {
-            type: 'color',
-            name: input.dataset.color,
-            index: parseInt(input.dataset.index)
-          };
-          openCropModal(file, false, -1);
-        });
-      });
+  colorInputs.appendChild(wrapper);
 
-      // Remove button for existing images
+  // Attach file listeners
+  wrapper.querySelectorAll('.color-img-input').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      currentCropTarget = {
+        type: 'color',
+        name: input.dataset.color,
+        index: parseInt(input.dataset.index)
+      };
+      openCropModal(file, false, -1);
+    });
+  });
+
+ // Remove button for existing images
       wrapper.querySelectorAll('.slot-remove').forEach(btn => {
         btn.addEventListener('click', () => {
           const color = btn.dataset.color;
@@ -300,7 +313,8 @@ function generateColorVariantInputs() {
         });
       });
     });
-  } else {
+    
+  } else{
     colorSection.classList.add('d-none');
   }
 
@@ -549,12 +563,23 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   formData.append('price', price);
   formData.append('originalPrice', originalPrice || price);
   formData.append('discount', discount || 0);
-  formData.append('stock', stock);
   formData.append('description', description);
   formData.append('specifications', specifications);
   formData.append('isActive', isActive);
   formData.append('colors', JSON.stringify(colors));
   formData.append('variants', JSON.stringify(variants));
+
+  // In form submit handler — collect color stocks
+const colorStocks = {};
+document.querySelectorAll('.color-stock-input').forEach(input => {
+  colorStocks[input.dataset.color] = parseInt(input.value) || 0;
+});
+
+// Calculate total stock from color stocks
+const totalStock = Object.values(colorStocks).reduce((sum, s) => sum + s, 0);
+
+formData.append('colorStocks', JSON.stringify(colorStocks));
+formData.append('stock', totalStock); // total = sum of all color stocks
   
   // Send color images
   colors.forEach(color => {
