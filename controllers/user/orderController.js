@@ -357,9 +357,18 @@ exports.cancelOrder = async (req, res) => {
 
     order.status = 'Cancelled';
     order.cancelReason = reason || '';
+
+    //Handle refund for online payments
+    if(order.paymentMethod==='Online' && order.paymentStatus==='Paid'){
+      order.paymentMethod==='Refunded';
+      //In production:await razorpayInstance.payments.refund(order.razorpayPaymentId,{amount:order.totalAmount*100});
+    }
     await order.save();
 
-    res.status(200).json({ message: 'Order cancelled successfully' });
+    res.status(200).json({ message: order.paymentMethod==='Online' && order.paymentStatus==='Refunded'
+      ? 'Order cancelled successfully. Your refund will be processed shortly.'
+      : 'Order cancelled successfully'
+     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to cancel order' });
@@ -376,7 +385,10 @@ exports.returnOrder = async (req, res) => {
     }
 
     const order = await Order.findById(req.params.orderId);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
     if (order.user.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
@@ -384,17 +396,58 @@ exports.returnOrder = async (req, res) => {
       return res.status(400).json({ message: 'Only delivered orders can be returned' });
     }
 
-    order.items.forEach(item => {
-      if (item.status === 'Active') {
-        item.status = 'Return Requested';
-        item.returnReason = reason.trim();
-      }
-    });
+    //can only cancel items in pending or processing orders
+    if(!['Pending','Processing'].includes(order.status)){
+      return res.status(400).json({message:
+        `Cannot cancel items in an order that is ${order.status}` 
+      });
+    }
 
-    order.returnReason = reason.trim();
+    //Find the specific item
+    const item =order.item.id(req.params.itemId);
+    if(!item){
+      return res.status(404).json({message:'Item not found in this order'});
+    }
+    if(item.status==='Cancelled'){
+      return res.status(400).json({ message:'This item is already cancelled'});
+    }
+    if(item.status!=='Active'){
+      return res.status(400).json({ message:`Cannot cancel item with status: ${item.status}`});
+    }
+
+    //Cancel this specific item
+    item.status='Cancelled';
+    item.cancelReason=reason || 'No reason provided';
+
+    //Restore stock for this item only
+    await Product.findByIdAndUpdate(
+      item.product,
+      {$inc:{ stock:item.quantity}}
+    );
+
+    //Check if all items are now cancelled- if so cancel whole order
+    const allCancelled=order.items.every(i => i.status === 'Cancelled');
+    let refundIssued =false;
+
+    if(allCancelled){
+      order.status='Cancelled';
+      order.cancelReason = 'All items cancelled by customer';
+
+      //Handle refund for online payment ,only when whole order is now cancelled
+      if(order.paymentMethod==='Online' && order.paymentStatus==='Paid'){
+        order.paymentStatus='Refunded';
+        refundIssued=true;
+        //In production:await razorpayInstance.payments.refund(order.razorpayPaymentId,{ amount:order.totalAmount * 100});
+      }
+    }
+
     await order.save();
 
-    res.status(200).json({ message: 'Return request submitted successfully' });
+    res.status(200).json({ message: refundIssued ?
+      `"${item.name}" has been cancelled. All items are now cancelled-Your refund will be processed shortly.`
+      : `"${item.name}" has been cancelled successfully`,
+      allOrderCancelled: allCancelled
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to submit return request. Please try again.' });
