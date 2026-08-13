@@ -3,6 +3,7 @@ const router = express.Router();
 const authMiddleware = require('../../middleware/authMiddleware');
 const {
   getCheckoutData,
+  createRazorpayOrder,
   placeOrder,
   getUserOrders,
   getOrderDetails,
@@ -13,6 +14,7 @@ const {
 } = require('../../controllers/user/orderController');
 
 router.get('/checkout-data', authMiddleware, getCheckoutData);
+router.post('/create-razorpay-order',authMiddleware, createRazorpayOrder);
 router.post('/place', authMiddleware, placeOrder);
 router.get('/', authMiddleware, getUserOrders);
 router.get('/:orderId', authMiddleware, getOrderDetails);

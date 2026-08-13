@@ -80,9 +80,6 @@ document.querySelectorAll('.payment-option').forEach(option => {
     option.querySelector('.payment-radio').classList.add('selected');
     selectedPayment = option.dataset.method;
 
-    if (selectedPayment === 'Online') {
-      showToast('Online payment integration coming soon', 'error');
-    }
     if (selectedPayment === 'Wallet') {
       showToast('Wallet feature coming soon', 'error');
     }
@@ -145,11 +142,20 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
     return;
   }
 
-  if (selectedPayment !== 'COD') {
-    showToast('Only Cash on Delivery is available right now', 'error');
+  if( selectedPayment === 'Wallet'){
+    showToast('Wallet feature coming soon','error');
     return;
   }
 
+  if( selectedPayment === 'COD'){
+    await placeOrderCOD(addressId);
+  }else if(selectedPayment === 'Online'){
+    await placeOrderOnline(addressId);
+  }
+});
+
+//----COD  flow (your existing logic,unchanged) ---
+async function placeOrderCOD(addressId){
   const btn = document.getElementById('placeOrderBtn');
   btn.disabled = true;
   btn.textContent = 'Placing Order...';
@@ -180,6 +186,107 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   sessionStorage.removeItem('selectedAddressId');
 
   window.location.href = '/order-success';
+}
+
+//--- Online payment flow ----
+
+async function placeOrderOnline(addressId){
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true;
+  btn.textContent='Opening payment.....';
+
+  //Step A:ask our backend to create aRazorpay order
+  const totalAmount=document.getElementById('summaryTotal').textContent.replace(/[₹,]/g,'');
+
+  const razorRes =await fetch('/api/users/orders/create-razorpay-order',{
+   method:'POST',
+  headers:{ 'Content-Type':'application/json'},
+  body: JSON.stringify({amount:totalAmount})
+ });
+
+ const razorData= await razorRes.json();
+
+ console.log('Razorpay response from backend:', razorData);
+
+ if(!razorRes.ok){
+  showToast(razorData.message || 'could not start payment','error');
+  btn.disabled=false;
+  btn.textContent='Place Order';
+  return;
+ }
+
+ //step B:Open Razorpay's popup
+
+ const options={
+  key:razorData.keyId,
+  amount:razorData.amount,
+  currency:razorData.currency,
+  order_id:razorData.orderId,
+  name:'ChronoLux',
+  description:'Watch Purchase',
+  handler:async function (response){
+    //step c:payment succeeded in the popup-now verify + place order on OUR backend
+    await confirmOnlineOrder(addressId,response);
+  },
+  modal:{
+    ondismiss: function(){
+      //user closed the popup without paying
+      showToast('payment cancelled','error');
+      btn.disabled=false;
+      btn.textContent='Place Order';
+    }
+  },
+  theme:{color:'#f5b800'}
+ };
+
+ const rzp=new Razorpay(options);
+
+ rzp.on('payment.failed',function(response){
+  showToast('payment failed: ' + response.error.description,'error');
+  window.location.href='/payment-failed';
+ });
+
+ rzp.open();
+
+ //Reset button text since popup is now handling the wait
+ btn.disabled=false;
+ btn.textContent='Place Order';
+}
+
+//----After successful Razorpay payment ,confirm with our backend---
+async function confirmOnlineOrder(addressId,razorpayResponse){
+const btn=document.getElementById('placeOrderBtn');
+btn.disabled=true;
+btn.textContent='Comfirming payment...';
+
+const res=await fetch('/api/users/orders/place',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+    addressId,
+    paymentMethod:'Online',
+    couponDiscount,
+    couponCode:appliedCoupon,
+    razorpayOrderId:razorpayResponse.razorpay_order_id,
+    razorpayPaymentId:razorpayResponse.razorpay_payment_id,
+    razorpaySignature:razorpayResponse.razorpay_signature
+  })
 });
+
+const data=await res.json();
+
+if(!res.ok){
+  showToast(data.message,'error');
+  btn.disabled=false;
+  btn.textContent='Place Order';
+  window.location.href='/payment-failed';
+  return;
+}
+
+sessionStorage.setItem('lastOrderId',data.orderId);
+sessionStorage.setItem('lastOrderDbId',data.orderDbId);
+sessionStorage.removeItem('selectedAddressId');
+window.location.href='/order-success';
+}
 
 loadPaymentData();

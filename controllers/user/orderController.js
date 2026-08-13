@@ -1,8 +1,9 @@
+const crypto=require('crypto');
 const Order = require('../../models/Order');
 const Cart = require('../../models/Cart');
 const Product = require('../../models/Product');
 const User = require('../../models/User');
-
+const razorpayInstance = require('../../config/razorpay');
 
 
 // GET /api/users/orders/checkout-data — Stage 4
@@ -93,10 +94,27 @@ exports.getCheckoutData = async (req, res) => {
 // POST /api/users/orders/place — Stage 5
 exports.placeOrder = async (req, res) => {
   try {
-    const { addressId, paymentMethod = 'COD', couponDiscount = 0, couponCode = '' } = req.body;
+    const { addressId, paymentMethod = 'COD', couponDiscount = 0, couponCode = '',
+      razorpayOrderId,razorpayPaymentId,razorpaySignature
+     } = req.body;
 
     if (!addressId) {
       return res.status(400).json({ message: 'Please select a delivery address' });
+    }
+
+    //verify payment signature if this is an online payment
+    if(paymentMethod==='Online'){
+      if(!razorpayOrderId|| !razorpayPaymentId|| !razorpaySignature){
+        return res.status(400).json({message:'Payment verification data missing'});
+      }
+
+      const generatedSignature=crypto.createHmac('sha256',process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpayOrderId + '|' + razorpayPaymentId)
+      .digest('hex');
+
+      if(generatedSignature !== razorpaySignature){
+        return res.status(400).json({message:'Payment verification failed.Please try again.'});
+      }
     }
 
     const user = await User.findById(req.userId);
@@ -200,6 +218,9 @@ exports.placeOrder = async (req, res) => {
         label: address.label
       },
       paymentMethod,
+      paymentStatus:paymentMethod==='Online' ? 'Paid':'Pending',
+      razorpayOrderId:razorpayOrderId || '',
+      razorpayPaymentId:razorpayPaymentId || '',
       subtotal: Math.round(subtotal),
       discount: Math.round(discount),
       couponDiscount: couponDiscountAmount,
@@ -497,5 +518,34 @@ exports.returnOrderItem = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to submit return request. Please try again.' });
+  }
+};
+
+//POST /api/users/orders/create-razorpay-order
+exports.createRazorpayOrder=async (req,res)=>{
+  try{
+    const {amount }=req.body; //amount in rupees
+
+    if(!amount || isNaN(amount) || Number(amount) <= 0){
+      return res.status(400).json({message :'Invalid amount'});
+    }
+
+    const options={
+      amount : Math.round(Number(amount)* 100), //Razor needs paise , not rupees
+      currency : 'INR',
+      receipt : 'receipt_' + Date.now()
+    };
+
+    const razorpayOrder = await razorpayInstance.orders.create(options);
+
+    res.status(200).json({
+     orderId : razorpayOrder.id,
+     amount : razorpayOrder.amount,
+     currency : razorpayOrder.currency,
+     keyId : process.env.RAZORPAY_KEY_ID
+    });
+  } catch (err){
+    console.error(err);
+    res.status(500).json({ message:'Failed to create payment order'});
   }
 };
