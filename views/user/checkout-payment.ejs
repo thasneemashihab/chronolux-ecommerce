@@ -50,18 +50,21 @@
         </div>
       </div>
 
-      <div class="checkout-panel mb-4">
-        <h6 class="fw-bold mb-3">Apply Coupon</h6>
+     <div class="checkout-panel mb-4">
+       <h6 class="fw-bold mb-3">Apply Coupon</h6>
         <div class="d-flex gap-2">
-          <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
+         <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
           <button class="btn btn-warning fw-bold px-4" id="applyCouponBtn">Apply</button>
-        </div>
-        <div class="mt-2 d-none" id="couponSuccess">
-          <span class="text-success small" id="couponSuccessMsg"></span>
-          <button class="btn btn-link text-danger p-0 ms-2 small" id="removeCouponBtn">Remove</button>
-        </div>
-        <div class="text-danger small mt-1 d-none" id="couponError"></div>
+       </div>
+      <div class="mt-2 d-none" id="couponSuccess">
+       <span class="text-success small" id="couponSuccessMsg"></span>
+        <button class="btn btn-link text-danger p-0 ms-2 small" id="removeCouponBtn">Remove</button>
       </div>
+      <div class="text-danger small mt-1 d-none" id="couponError"></div>
+
+     <!-- NEW: available coupons list -->
+     <div class="mt-3" id="availableCouponsList"></div>
+   </div> 
 
       <div class="d-flex gap-3">
         <a href="/checkout/address" class="btn btn-secondary px-4">

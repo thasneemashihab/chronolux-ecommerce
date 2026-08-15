@@ -86,7 +86,6 @@ document.querySelectorAll('.payment-option').forEach(option => {
   });
 });
 
-// Coupon apply
 document.getElementById('applyCouponBtn').addEventListener('click', async () => {
   const code = document.getElementById('couponInput').value.trim().toUpperCase();
   const errorEl = document.getElementById('couponError');
@@ -101,25 +100,42 @@ document.getElementById('applyCouponBtn').addEventListener('click', async () => 
     return;
   }
 
-  // Simple demo coupons — replace with real DB lookup later
-  const demoCoupons = {
-    'WELCOME10': 1000,
-    'SAVE500': 500,
-    'FLAT200': 200
-  };
-
-  if (demoCoupons[code]) {
-    couponDiscount = demoCoupons[code];
-    appliedCoupon = code;
-    document.getElementById('couponSuccessMsg').textContent =
-      `Coupon applied! You saved ₹${couponDiscount.toLocaleString()}`;
-    successEl.classList.remove('d-none');
-    updateSummaryTotals();
-    showToast(`Coupon ${code} applied successfully`);
-  } else {
-    errorEl.textContent = 'Invalid coupon code. Please try again.';
+  // Prevent multiple coupon applications — one at a time
+  if (appliedCoupon) {
+    errorEl.textContent = 'A coupon is already applied. Remove it first to apply a different one.';
     errorEl.classList.remove('d-none');
+    return;
   }
+
+  if (!checkoutData) {
+    errorEl.textContent = 'Order data not loaded yet, please wait';
+    errorEl.classList.remove('d-none');
+    return;
+  }
+
+  const orderAmount = checkoutData.subtotal - checkoutData.discount;
+
+  const res = await fetch('/api/users/coupons/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, orderAmount })
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    errorEl.textContent = data.message;
+    errorEl.classList.remove('d-none');
+    return;
+  }
+
+  couponDiscount = data.discountAmount;
+  appliedCoupon = data.couponCode;
+  document.getElementById('couponSuccessMsg').textContent = data.message;
+  successEl.classList.remove('d-none');
+  document.getElementById('couponInput').disabled = true;   // prevent typing another while one is active
+  document.getElementById('applyCouponBtn').disabled = true;
+  updateSummaryTotals();
+  showToast(data.message);
 });
 
 // Remove coupon
@@ -127,6 +143,8 @@ document.getElementById('removeCouponBtn').addEventListener('click', () => {
   couponDiscount = 0;
   appliedCoupon = '';
   document.getElementById('couponInput').value = '';
+  document.getElementById('couponInput').disabled = false;
+  document.getElementById('applyCouponBtn').disabled = false;
   document.getElementById('couponSuccess').classList.add('d-none');
   updateSummaryTotals();
   showToast('Coupon removed');
@@ -289,4 +307,36 @@ sessionStorage.removeItem('selectedAddressId');
 window.location.href='/order-success';
 }
 
+async function loadAvailableCoupons() {
+  const res = await fetch('/api/users/coupons');
+  if (!res.ok) return;
+  const data = await res.json();
+
+  const container = document.getElementById('availableCouponsList');
+  if (!data.coupons || data.coupons.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `<p class="text-secondary small mb-2">Available coupons:</p>` +
+    data.coupons.map(c => `
+      <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2" style="border-color:#333 !important;">
+        <div>
+          <span class="fw-bold text-warning">${c.code}</span>
+          <span class="text-secondary small ms-2">
+            ${c.discountType === 'percentage' ? c.discountValue + '% off' : '₹' + c.discountValue + ' off'}
+            (min order ₹${c.minOrderAmount.toLocaleString()})
+          </span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-warning use-coupon-btn" data-code="${c.code}">Use</button>
+      </div>`).join('');
+
+  document.querySelectorAll('.use-coupon-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('couponInput').value = btn.dataset.code;
+    });
+  });
+}
+
+loadAvailableCoupons();
 loadPaymentData();

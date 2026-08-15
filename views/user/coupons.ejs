@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Coupons - ChronoLux</title>
+  <link href="/css/orders.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'coupons' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+
+        <div class="mb-4">
+          <h3 class="fw-bold mb-1">Coupons</h3>
+          <p class="text-secondary small mb-0">Save more with exclusive coupons and deals</p>
+        </div>
+
+        <div id="couponsList"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/coupons.js"></script>
+</body>
+</html>

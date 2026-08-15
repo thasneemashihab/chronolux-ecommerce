@@ -43,6 +43,7 @@ router.get('/order-success', authMiddleware, viewController.getOrderSuccessPage)
 router.get('/payment-failed', authMiddleware, viewController.getPaymentFailedPage);
 router.get('/orders', authMiddleware, viewController.getOrdersPage);
 router.get('/orders/:id', authMiddleware, viewController.getOrderDetailPage);
+router.get('/coupons', authMiddleware, viewController.getCouponsPage);
 
 //admin pages
 router.get('/admin/login', viewController.getAdminLogin);

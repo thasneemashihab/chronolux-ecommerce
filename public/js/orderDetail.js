@@ -562,12 +562,7 @@ function generateInvoicePDF(order) {
 }
 
 //Event listeners for reason model
-document.getElementById('closeReasonModal').addEventListener('click', () => {
-  document.getElementById('reasonModalBackdrop').classList.add('d-none');
-});
-document.getElementById('cancelReasonBtn').addEventListener('click', () => {
-  document.getElementById('reasonModalBackdrop').classList.add('d-none');
-});
+
 
 document.getElementById('confirmReasonBtn').addEventListener('click', async () => {
   const selectReason = document.getElementById('reasonSelect').value;

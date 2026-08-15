@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentStatus:{
     type:String ,
-    enum:['Pending','Paid','Failed'],
+    enum:['Pending','Paid','Failed','Refunded'],
     default:'Pending'
   },
   razorpayOrderId:{
@@ -61,7 +61,7 @@ const orderSchema = new mongoose.Schema({
   totalAmount: Number,
   status: {
     type: String,
-    enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
+    enum: ['Pending', 'Processing', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled' , 'Returned'],
     default: 'Pending'
   },
   cancelReason: { type: String, default: '' },
