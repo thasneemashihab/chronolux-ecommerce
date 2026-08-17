@@ -45,7 +45,6 @@ router.get('/orders', authMiddleware, viewController.getOrdersPage);
 router.get('/orders/:id', authMiddleware, viewController.getOrderDetailPage);
 router.get('/coupons', authMiddleware, viewController.getCouponsPage);
 router.get('/wallet', authMiddleware, viewController.getWalletPage);
-router.get('/admin/offers', adminAuth, viewController.getAdminOffers);
 
 
 //admin pages
@@ -56,7 +55,8 @@ router.get('/admin/products', adminAuth, viewController.getAdminProducts);
 router.get('/admin/orders', adminAuth, viewController.getAdminOrders);
 router.get('/admin/orders/:id', adminAuth, viewController.getAdminOrderDetail);
 router.get('/admin/inventory', adminAuth, viewController.getAdminInventory);
-
+router.get('/admin/offers', adminAuth, viewController.getAdminOffers);
+router.get('/admin/coupons', adminAuth, viewController.getAdminCoupons);
 
 
 module.exports = router;

@@ -119,3 +119,4 @@ exports.getAdminOrders = (req, res) => res.render('admin/orders');
 exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { orderId: req.params.id });
 exports.getAdminInventory = (req, res) => res.render('admin/inventory');
 exports.getAdminOffers = (req, res) => res.render('admin/offers');
+exports.getAdminCoupons = (req, res) => res.render('admin/coupons');
