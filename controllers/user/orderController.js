@@ -202,7 +202,7 @@ exports.placeOrder = async (req, res) => {
         return res.status(400).json({ message: 'Insufficient wallet balance. Please choose another payment method.' });
       }
     }
-    
+
     // Build order items snapshot
     const orderItems = validItems.map(item => ({
       product: item.product._id,
@@ -252,6 +252,16 @@ if (paymentMethod === 'Wallet') {
   );
 }
 
+
+   // NEW: referral reward — first order only
+if (user.referredBy && !user.referralRewardGiven) {
+  const referrer = await User.findOne({ referralCode: user.referredBy });
+  if (referrer) {
+    await creditWallet(referrer._id, 100, `Referral reward — ${user.name} placed their first order`, order._id);
+    user.referralRewardGiven = true;
+    await user.save();
+  }
+}
 
     // After order is created, reduce stock
     for (const item of validItems) {

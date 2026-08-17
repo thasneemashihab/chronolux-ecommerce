@@ -110,6 +110,12 @@ exports.getWalletPage = async (req, res) => {
   res.render('user/wallet', { user });
 };
 
+exports.getReferPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage referralCode');
+  res.render('user/refer', { user });
+};
+
 exports.getAdminOrders = (req, res) => res.render('admin/orders');
 exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { orderId: req.params.id });
 exports.getAdminInventory = (req, res) => res.render('admin/inventory');
+exports.getAdminOffers = (req, res) => res.render('admin/offers');

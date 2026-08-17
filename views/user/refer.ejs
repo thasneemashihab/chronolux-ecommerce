@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Refer & Earn - ChronoLux</title>
+  <link href="/css/orders.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'refer' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+
+        <h3 class="fw-bold mb-1">Refer & Earn</h3>
+        <p class="text-secondary small mb-4">Invite your friends and earn exciting rewards</p>
+
+        <!-- Invite box -->
+        <div class="p-4 rounded mb-4" style="background:#1a1a1a;">
+          <h6 class="fw-bold mb-1">Invite Your Friends</h6>
+          <p class="text-secondary small mb-3">Share your referral link with your friends and earn rewards when they shop.</p>
+          <div class="d-flex gap-2 mb-3">
+            <input type="text" class="form-control" id="referralLinkInput" readonly>
+            <button class="btn btn-warning fw-bold px-4" id="copyLinkBtn">Copy Link</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Total Referrals</p>
+              <h4 class="fw-bold mb-0" id="statTotal">0</h4>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Successful</p>
+              <h4 class="fw-bold text-success mb-0" id="statSuccessful">0</h4>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Pending</p>
+              <h4 class="fw-bold text-warning mb-0" id="statPending">0</h4>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Total Earnings</p>
+              <h4 class="fw-bold text-warning mb-0">₹<span id="statEarnings">0</span></h4>
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <h6 class="fw-bold mb-3">How It Works</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <div class="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                   style="width:36px;height:36px;background:#f5b800;color:#111;border-radius:50%;font-weight:700;">1</div>
+              <p class="fw-bold mb-1">Invite Friends</p>
+              <p class="text-secondary small mb-0">Share your link with friends</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <div class="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                   style="width:36px;height:36px;background:#f5b800;color:#111;border-radius:50%;font-weight:700;">2</div>
+              <p class="fw-bold mb-1">They Shop</p>
+              <p class="text-secondary small mb-0">Your friend signs up and shops</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded text-center" style="background:#1a1a1a;">
+              <div class="mx-auto mb-2 d-flex align-items-center justify-content-center"
+                   style="width:36px;height:36px;background:#f5b800;color:#111;border-radius:50%;font-weight:700;">3</div>
+              <p class="fw-bold mb-1">You Earn</p>
+              <p class="text-secondary small mb-0">Get rewarded when they order</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/refer.js"></script>
+</body>
+</html>

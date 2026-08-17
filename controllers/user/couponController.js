@@ -1,4 +1,6 @@
 const Coupon = require('../../models/Coupon');
+const User = require('../../models/User');
+const Wallet = require('../../models/Wallet');
 
 // GET /api/users/coupons - list all currently valid coupons
 exports.getAvailableCoupons = async (req, res) => {
@@ -70,3 +72,37 @@ exports.applyCoupon = async (req, res) => {
     res.status(500).json({ message: 'Failed to apply coupon' });
   }
 };
+
+// GET /api/users/referral
+exports.getReferralInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('referralCode name');
+
+    // Everyone who used this user's code
+    const referredUsers = await User.find({ referredBy: user.referralCode }).select('referralRewardGiven');
+
+    const totalReferrals = referredUsers.length;
+    const successfulReferrals = referredUsers.filter(u => u.referralRewardGiven).length;
+    const pendingReferrals = totalReferrals - successfulReferrals;
+
+    // Sum up wallet credits that came from referral rewards
+    const wallet = await Wallet.findOne({ user: req.userId });
+    const totalEarnings = wallet
+      ? wallet.transactions
+          .filter(t => t.description.includes('Referral reward'))
+          .reduce((sum, t) => sum + t.amount, 0)
+      : 0;
+
+    res.status(200).json({
+      referralCode: user.referralCode,
+      referralUrl: `${req.protocol}://${req.get('host')}/signup?ref=${user.referralCode}`,
+      totalReferrals,
+      successfulReferrals,
+      pendingReferrals,
+      totalEarnings
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to load referral info' });
+  }
+}; 

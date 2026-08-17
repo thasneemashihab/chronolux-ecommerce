@@ -41,6 +41,7 @@ app.use('/api/users/orders', require('./routes/user/orderRoutes'));
 app.use('/api/admin/orders', require('./routes/admin/adminOrderRoutes'));
 app.use('/api/users/coupons', require('./routes/user/couponRoutes'));
 app.use('/api/users/wallet', require('./routes/user/walletRoutes'));
+app.use('/api/admin/offers', require('./routes/admin/offerRoutes'));
 
 // Add BEFORE the 404 handler
 app.get('/not-found', (req, res) => {

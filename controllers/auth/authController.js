@@ -5,6 +5,7 @@ const generateToken = require('../../utils/generateToken');
 
 const generateOtp = require('../../utils/generateOtp');
 const sendEmail = require('../../utils/sendEmail');
+const generateReferralCode = require('../../utils/generateReferralCode'); 
 
 // POST /api/auth/signup
 exports.signup = async (req, res) => {
@@ -29,6 +30,18 @@ exports.signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOtp();
     const otpExpiry = Date.now() + 5 * 60 * 1000;
+
+    // generate THIS user's own shareable referral code
+    const myReferralCode = generateReferralCode(name);
+
+    // validate the referral code they entered (if any) actually belongs to someone
+    let referredByCode = null;
+    if (referralCode) {
+      const referrer = await User.findOne({ referralCode: referralCode.trim().toUpperCase() });
+      if (referrer) {
+        referredByCode = referrer.referralCode;
+      }
+    }
 
     let user;
     if (existingUser && !existingUser.isVerified) {
@@ -222,6 +235,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 
+
 // POST /api/auth/reset-password
 exports.resetPassword = async (req, res) => {
   try {
@@ -295,6 +309,7 @@ exports.verifyResetOtp = async (req, res) => {
     res.status(500).json({ message: 'Verification failed. Please try again.' });
   }
 };
+
 
 
 

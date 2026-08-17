@@ -54,7 +54,13 @@ function renderProducts(products) {
         </div>
         <div class="product-card-body">
           <p class="product-card-name">${p.name}</p>
-          <p class="product-card-price">₹${p.price.toLocaleString()}</p>
+          <p class="product-card-price">
+        ${p.offerDiscountAmount > 0
+          ? `<span class="text-decoration-line-through text-secondary" style="font-size:13px;">₹${p.price.toLocaleString()}</span>
+             <span class="text-warning fw-bold ms-2">₹${p.finalPrice.toLocaleString()}</span>`
+          : `₹${p.price.toLocaleString()}`
+        }
+      </p>
           <div class="d-flex justify-content-between align-items-center">
             <div>${stars}</div>
             <button class="card-wishlist-btn" data-id="${p._id}" title="Add to Wishlist">

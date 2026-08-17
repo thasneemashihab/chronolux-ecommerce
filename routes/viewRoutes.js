@@ -45,6 +45,8 @@ router.get('/orders', authMiddleware, viewController.getOrdersPage);
 router.get('/orders/:id', authMiddleware, viewController.getOrderDetailPage);
 router.get('/coupons', authMiddleware, viewController.getCouponsPage);
 router.get('/wallet', authMiddleware, viewController.getWalletPage);
+router.get('/admin/offers', adminAuth, viewController.getAdminOffers);
+
 
 //admin pages
 router.get('/admin/login', viewController.getAdminLogin);

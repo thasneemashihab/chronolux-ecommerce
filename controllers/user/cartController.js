@@ -1,6 +1,7 @@
 const Cart = require('../../models/Cart');
 const Product = require('../../models/Product');
 const Wishlist = require('../../models/Wishlist');
+const { getBestOfferForProduct } = require('../../utils/offerHelper');
 
 const MAX_QTY_PER_PRODUCT = 5; // change this one value to update limit everywhere
 
@@ -74,6 +75,12 @@ exports.addToCart = async (req, res) => {
     if (!productId) {
       return res.status(400).json({ message: 'Product ID is required' });
     }
+
+
+    // calculate offer-adjusted price for this product
+    const { discountAmount } = await getBestOfferForProduct(product);
+    const finalPrice = Math.max(0, product.price - discountAmount);
+
 
     // Stage 1: Check product exists and is available
     const product = await Product.findOne({
@@ -160,7 +167,7 @@ if (selectedColor) {
       cart.items.push({
         product: productId,
         quantity,
-        price: product.price
+        price: finalPrice  //now the offer-adjusted price
       });
     }
 

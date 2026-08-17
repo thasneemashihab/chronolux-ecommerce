@@ -1,6 +1,7 @@
 const Product = require('../../models/Product');
 const Category = require('../../models/Category');
 const Brand = require('../../models/Brand');
+const { getBestOfferForProduct } = require('../../utils/offerHelper'); 
 
 // GET /api/users/products - product listing with search, filter, sort, pagination
 exports.getProducts = async (req, res) => {
@@ -50,8 +51,22 @@ exports.getProducts = async (req, res) => {
     const categories = await Category.find({ isDeleted: false, isListed: true }).select('name');
     const brands = await Brand.find({ isDeleted: false }).select('name');
 
+     //  attach best offer + final price to every product
+    const productsWithOffers = await Promise.all(
+      products.map(async (p) => {
+        const { offer, discountAmount } = await getBestOfferForProduct(p);
+        const finalPrice = Math.max(0, p.price - discountAmount);
+        return {
+          ...p.toObject(),
+          appliedOffer: offer ? { name: offer.name, discountType: offer.discountType, discountValue: offer.discountValue } : null,
+          offerDiscountAmount: discountAmount,
+          finalPrice
+        };
+      })
+    );
+
     res.status(200).json({
-      products,
+      products:productsWithOffers,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       totalProducts: total,
@@ -80,6 +95,14 @@ exports.getProductDetails = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found or unavailable' });
     } 
+
+
+    // attach best offer pricing
+    const { offer, discountAmount } = await getBestOfferForProduct(product);
+    product.appliedOffer = offer ? { name: offer.name, discountType: offer.discountType, discountValue: offer.discountValue } : null;
+    product.offerDiscountAmount = discountAmount;
+    product.finalPrice = Math.max(0, product.price - discountAmount);
+     
 
     // Get related products from same category
      const relatedProducts = await Product.find({

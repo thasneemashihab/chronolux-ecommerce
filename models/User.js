@@ -38,11 +38,16 @@ const userSchema=new mongoose.Schema({
     default: 'Female' },
    referralCode:{
     type:String,
+    unique: true,  // allows old users without a code to not violate uniqueness
     sparse:true //allows some users to not have a code
    },
    referredBy: {
-      type: String, //  store referrer's referCode 
+      type: String, //  store referrer's referCode  (matches your existing design)
       default: null
+    },
+    referralRewardGiven: {
+     type: Boolean,
+     default: false
     },
      googleId: {
     type: String,
