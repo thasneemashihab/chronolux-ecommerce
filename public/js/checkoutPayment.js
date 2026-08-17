@@ -79,10 +79,6 @@ document.querySelectorAll('.payment-option').forEach(option => {
     option.classList.add('selected');
     option.querySelector('.payment-radio').classList.add('selected');
     selectedPayment = option.dataset.method;
-
-    if (selectedPayment === 'Wallet') {
-      showToast('Wallet feature coming soon', 'error');
-    }
   });
 });
 
@@ -160,9 +156,10 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
     return;
   }
 
-  if( selectedPayment === 'Wallet'){
-    showToast('Wallet feature coming soon','error');
-    return;
+
+  if (selectedPayment === 'Wallet') {
+  await placeOrderWallet(addressId);
+  return;
   }
 
   if( selectedPayment === 'COD'){
@@ -203,6 +200,37 @@ async function placeOrderCOD(addressId){
   sessionStorage.setItem('lastOrderDbId', data.orderDbId);
   sessionStorage.removeItem('selectedAddressId');
 
+  window.location.href = '/order-success';
+}
+
+async function placeOrderWallet(addressId) {
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true;
+  btn.textContent = 'Processing payment...';
+
+  const res = await fetch('/api/users/orders/place', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      addressId,
+      paymentMethod: 'Wallet',
+      couponDiscount,
+      couponCode: appliedCoupon
+    })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    showToast(data.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Place Order';
+    return;
+  }
+
+  sessionStorage.setItem('lastOrderId', data.orderId);
+  sessionStorage.setItem('lastOrderDbId', data.orderDbId);
+  sessionStorage.removeItem('selectedAddressId');
   window.location.href = '/order-success';
 }
 
@@ -338,5 +366,14 @@ async function loadAvailableCoupons() {
   });
 }
 
-loadAvailableCoupons();
+async function loadWalletBalance() {
+  const res = await fetch('/api/users/wallet');
+  if (!res.ok) return;
+  const data = await res.json();
+  document.querySelector('#walletOption .text-success').textContent =
+    `Available balance: ₹${data.balance.toLocaleString()}`;
+}
+
 loadPaymentData();
+loadWalletBalance();
+loadAvailableCoupons();

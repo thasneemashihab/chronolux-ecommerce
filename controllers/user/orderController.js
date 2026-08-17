@@ -4,6 +4,8 @@ const Cart = require('../../models/Cart');
 const Product = require('../../models/Product');
 const User = require('../../models/User');
 const razorpayInstance = require('../../config/razorpay');
+const Wallet = require('../../models/Wallet');
+const { creditWallet, debitWallet } = require('../../utils/walletHelper');
 
 
 // GET /api/users/orders/checkout-data — Stage 4
@@ -193,6 +195,14 @@ exports.placeOrder = async (req, res) => {
     const couponDiscountAmount = Number(couponDiscount) || 0;
     const totalAmount = Math.round(subtotal - discount - couponDiscountAmount + shippingCharge + tax);
 
+     // ⬇️ INSERT THE NEW WALLET CHECK RIGHT HERE — after totalAmount is calculated, BEFORE Order.create() ⬇️
+    if (paymentMethod === 'Wallet') {
+      const wallet = await Wallet.findOne({ user: req.userId });
+      if (!wallet || wallet.balance < totalAmount) {
+        return res.status(400).json({ message: 'Insufficient wallet balance. Please choose another payment method.' });
+      }
+    }
+    
     // Build order items snapshot
     const orderItems = validItems.map(item => ({
       product: item.product._id,
@@ -230,6 +240,18 @@ exports.placeOrder = async (req, res) => {
       totalAmount,
       orderId
     });
+
+
+    // Actually debit the wallet now that the order exists
+if (paymentMethod === 'Wallet') {
+  await debitWallet(
+    req.userId,
+    totalAmount,
+    `Payment for order #${order.orderId}`,
+    order._id
+  );
+}
+
 
     // After order is created, reduce stock
     for (const item of validItems) {
@@ -359,9 +381,16 @@ exports.cancelOrder = async (req, res) => {
     order.cancelReason = reason || '';
 
     // NEW: handle refund for online payments
+    //...inside cancelOrder, replace the refund block
     if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
       order.paymentStatus = 'Refunded';
       // In production: await razorpayInstance.payments.refund(order.razorpayPaymentId, { amount: order.totalAmount * 100 });
+      await creditWallet(
+      order.user,
+       order.totalAmount,
+        `Refund for cancelled order #${order.orderId}`,
+       order._id
+      );
     }
 
     await order.save();
@@ -429,8 +458,8 @@ exports.cancelOrderItem = async (req, res) => {
     if (order.user.toString() !== req.userId.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-
-    // Can only cancel items in Pending or Processing orders
+    
+     // Can only cancel items in Pending or Processing orders
     if (!['Pending', 'Processing'].includes(order.status)) {
       return res.status(400).json({
         message: `Cannot cancel items in an order that is ${order.status}`
@@ -459,17 +488,35 @@ exports.cancelOrderItem = async (req, res) => {
       { $inc: { stock: item.quantity } }
     );
 
+
+    // NEW: refund this item's amount to wallet, if it was an online payment
+    let refundIssued = false;
+    if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+      refundIssued = true;
+      await creditWallet(
+        order.user,
+        item.itemTotal,
+        `Refund for cancelled item "${item.name}" — order #${order.orderId}`,
+        order._id
+      );
+    }
+
     // Check if ALL items are now cancelled — if so cancel whole order
     const allCancelled = order.items.every(i => i.status === 'Cancelled');
     if (allCancelled) {
       order.status = 'Cancelled';
       order.cancelReason = 'All items cancelled by customer';
+      if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+        order.paymentStatus = 'Refunded';
+      }
     }
 
     await order.save();
 
     res.status(200).json({
-      message: `"${item.name}" has been cancelled successfully`,
+      message: refundIssued
+        ? `"${item.name}" has been cancelled. ₹${item.itemTotal.toLocaleString()} refunded to your wallet.`
+        : `"${item.name}" has been cancelled successfully`,
       allOrderCancelled: allCancelled
     });
   } catch (err) {

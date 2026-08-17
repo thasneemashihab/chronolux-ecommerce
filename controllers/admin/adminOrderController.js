@@ -1,5 +1,6 @@
 const Order = require('../../models/Order');
 const Product = require('../../models/Product');
+const { creditWallet } = require('../../utils/walletHelper'); 
 
 // GET /api/admin/orders - list all orders with filters
 exports.getOrders = async (req, res) => {
@@ -182,29 +183,29 @@ exports.approveReturn = async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    for (const item of order.items){
-      if(item.status === 'Return Requested'){
+    for (const item of order.items) {
+      if (item.status === 'Return Requested') {
         item.status = 'Returned';
 
-        //Restore stock now that the item is physically back
+        // Restore stock now that the item is physically back
         await Product.findByIdAndUpdate(
           item.product,
-          { $inc: { stock: item.quantity }}
+          { $inc: { stock: item.quantity } }
         );
       }
     }
 
-   order.status = 'Returned'; //New status,not 'Cancelled'
-   
-   //Handle refund if this was an online payment
-   if(order.paymentMethod === 'Online' && order.paymentStatus === 'Paid'){
-    order.paymentStatus = 'Refunded';
-    //In production: await razorpayInstance.payments.refund(order.razorpayPaymentId,{ amount:order.totalAmount * 100});
-    }
-   
-   await order.save();
+    order.status = 'Returned';   // NEW status, not 'Cancelled'
 
-    res.status(200).json({ message: 'Return approved successfully . Stock restored and refund processed' });
+    // Handle refund if this was an online payment
+    if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+      order.paymentStatus = 'Refunded';
+      // In production: await razorpayInstance.payments.refund(order.razorpayPaymentId, { amount: order.totalAmount * 100 });
+    }
+
+    await order.save();
+
+    res.status(200).json({ message: 'Return approved successfully. Stock restored and refund processed.' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to approve return' });

@@ -105,6 +105,11 @@ exports.getCouponsPage = async (req, res) => {
   res.render('user/coupons', { user });
 };
 
+exports.getWalletPage = async (req, res) => {
+  const user = await User.findById(req.userId).select('name email profileImage');
+  res.render('user/wallet', { user });
+};
+
 exports.getAdminOrders = (req, res) => res.render('admin/orders');
 exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { orderId: req.params.id });
 exports.getAdminInventory = (req, res) => res.render('admin/inventory');

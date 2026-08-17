@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>My Wallet - ChronoLux</title>
+  <link href="/css/orders.css" rel="stylesheet">
+</head>
+<body style="background:#0d0d0d; min-height:100vh; color:#fff;">
+
+<%- include('../partials/navbar', { user: user }) %>
+
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-12 col-lg-3">
+      <%- include('../partials/profileSidebar', { user: user, active: 'wallet' }) %>
+    </div>
+
+    <div class="col-12 col-lg-9">
+      <div class="profile-panel text-white">
+
+        <h3 class="fw-bold mb-4">My Wallet</h3>
+
+        <!-- Total Balance -->
+        <div class="d-flex justify-content-between align-items-center p-3 rounded mb-3" style="background:#1a1a1a;">
+          <div>
+            <p class="text-secondary small mb-1">Total Balance</p>
+            <h2 class="fw-bold text-success mb-0">₹<span id="walletBalance">0.00</span></h2>
+            <p class="text-success small mb-0">Available Balance</p>
+          </div>
+        </div>
+
+        <!-- Overview -->
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <div class="p-3 rounded" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Total Credit</p>
+              <h5 class="fw-bold text-success mb-0">₹<span id="totalCredit">0.00</span></h5>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="p-3 rounded" style="background:#1a1a1a;">
+              <p class="text-secondary small mb-1">Total Debit</p>
+              <h5 class="fw-bold text-danger mb-0">₹<span id="totalDebit">0.00</span></h5>
+            </div>
+          </div>
+        </div>
+
+        <h5 class="fw-bold mb-3">Transactions</h5>
+        <div id="transactionsList"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
+<script src="/js/wallet.js"></script>
+</body>
+</html>
