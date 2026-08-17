@@ -103,17 +103,16 @@ document.querySelectorAll('.return-item-btn').forEach(btn => {
 
   // Payment info
   document.getElementById('detailPayment').innerHTML = `
-    <div class="d-flex justify-content-between align-items-center">
-      <div>
-        <p class="fw-bold mb-1">${order.paymentMethod}</p>
-        <p class="text-secondary small mb-0">
-          ${order.paymentMethod === 'COD' ? 'Pay on delivery' : 'Paid online'}
-        </p>
-      </div>
-      <span class="status-badge ${order.status === 'Delivered' ? 'status-Delivered' : 'status-Pending'}">
-        ${order.status === 'Delivered' ? 'Paid' : 'Pending'}
-      </span>
-    </div>`;
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+    <span style="color:#888;">Payment Method</span>
+    <span>${order.paymentMethod}</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+    <span style="color:#888;">Payment Status</span>
+    <span class="status-badge ${order.paymentStatus === 'Paid' ? 'status-Delivered' : order.paymentStatus === 'Refunded' ? 'status-Cancelled' : 'status-Pending'}">
+      ${order.paymentStatus}
+    </span>
+  </div>`;
 
   // Price details
   document.getElementById('detailPricing').innerHTML = `

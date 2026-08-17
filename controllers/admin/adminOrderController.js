@@ -197,10 +197,16 @@ exports.approveReturn = async (req, res) => {
 
     order.status = 'Returned';   // NEW status, not 'Cancelled'
 
-    // Handle refund if this was an online payment
-    if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+    // Handle refund if this was an online payment or wallet payment
+     if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
       order.paymentStatus = 'Refunded';
       // In production: await razorpayInstance.payments.refund(order.razorpayPaymentId, { amount: order.totalAmount * 100 });
+       await creditWallet(
+        order.user,
+        order.totalAmount,
+        `Refund for returned order #${order.orderId}`,
+        order._id
+      );
     }
 
     await order.save();
