@@ -120,3 +120,4 @@ exports.getAdminOrderDetail = (req, res) => res.render('admin/order-detail', { o
 exports.getAdminInventory = (req, res) => res.render('admin/inventory');
 exports.getAdminOffers = (req, res) => res.render('admin/offers');
 exports.getAdminCoupons = (req, res) => res.render('admin/coupons');
+exports.getAdminSalesReport = (req, res) => res.render('admin/sales-report');

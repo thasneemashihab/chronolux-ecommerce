@@ -57,6 +57,7 @@ router.get('/admin/orders/:id', adminAuth, viewController.getAdminOrderDetail);
 router.get('/admin/inventory', adminAuth, viewController.getAdminInventory);
 router.get('/admin/offers', adminAuth, viewController.getAdminOffers);
 router.get('/admin/coupons', adminAuth, viewController.getAdminCoupons);
+router.get('/admin/sales-report', adminAuth, viewController.getAdminSalesReport);
 
 
 module.exports = router;
