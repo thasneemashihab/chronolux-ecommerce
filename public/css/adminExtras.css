@@ -1,0 +1,71 @@
+.admin-content {
+  margin-left: 260px;
+  min-height: 100vh;
+  background: #0d0d0d;
+  color: #fff;
+}
+
+.table-dark {
+  background: #1a1a1a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-dark th {
+  background: #222;
+  color: #f5b800;
+  font-weight: 600;
+  border-color: #333;
+  white-space: nowrap;
+}
+
+.table-dark td {
+  border-color: #2a2a2a;
+  vertical-align: middle;
+}
+
+.form-control, .form-select {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+}
+.form-control:focus, .form-select:focus {
+  background: #1a1a1a;
+  border-color: #f5b800;
+  color: #fff;
+  box-shadow: none;
+}
+
+.modal-backdrop-custom {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.email-modal {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.badge { font-weight: 600; padding: 5px 10px; }
+
+@media (max-width: 768px) {
+  .admin-content { margin-left: 0; }
+}
