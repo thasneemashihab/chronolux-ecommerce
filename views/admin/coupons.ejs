@@ -5,9 +5,28 @@
   <link href="/css/adminExtras.css" rel="stylesheet">
   <title>Coupons - Admin</title>
 </head>
-<body>
-<%- include('../partials/adminSidebar', { active: 'coupon' }) %>
+<body style="background:#0d0d0d; min-height:100vh;">
 
+  <div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/inventory" class="sidebar-link"><i class="bi bi-archive"></i> Inventory</a>
+    <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/coupons" class="sidebar-link active"><i class="bi bi-ticket"></i> Coupon</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/offers" class="sidebar-link"><i class="bi bi-percent"></i> Offers</a>
+    <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+ <div class="flex-grow-1 p-4">
 <div class="admin-content p-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold text-white">Coupons</h3>
@@ -47,47 +66,55 @@
       <h5 class="fw-bold mb-0" id="couponModalTitle">Add Coupon</h5>
       <button class="btn-close-modal" id="closeCouponModal">×</button>
     </div>
-    <form id="couponForm">
+    <form id="couponForm" novalidate>
       <input type="hidden" id="editCouponId">
 
       <label class="form-label">Coupon Name *</label>
-      <input type="text" class="form-control mb-3" id="couponName" placeholder="Enter coupon name" required>
+      <input type="text" class="form-control mb-3" id="couponName" placeholder="Enter coupon name">
+      <div class="text-danger small mb-2" id="couponNameError"></div>
 
       <label class="form-label">Coupon Code *</label>
-      <input type="text" class="form-control mb-1" id="couponCode" placeholder="Enter coupon code" required>
+      <input type="text" class="form-control mb-1" id="couponCode" placeholder="Enter coupon code">
       <p class="text-secondary small mb-3">Customers will use this code to avail the offer.</p>
+      <div class="text-danger small mb-2" id="couponCodeError"></div>
 
       <label class="form-label">Discount Type *</label>
-      <select class="form-select mb-3" id="couponType" required>
+      <select class="form-select mb-3" id="couponType">
         <option value="">Select discount type</option>
         <option value="percentage">Percentage</option>
         <option value="flat">Fixed</option>
       </select>
+      <div class="text-danger small mb-2" id="couponTypeError"></div>
 
       <div class="row g-3 mb-1">
         <div class="col-6">
           <label class="form-label">Discount Value *</label>
-          <input type="number" class="form-control" id="couponValue" placeholder="Enter value" required>
+          <input type="number" class="form-control" id="couponValue" placeholder="Enter value">
+          <div class="text-danger small mb-2" id="couponValueError"></div>
         </div>
         <div class="col-6">
           <label class="form-label">Max Discount Amount</label>
           <input type="number" class="form-control" id="couponMaxDiscount" placeholder="Enter max discount">
+          <div class="text-danger small mb-2" id="couponMaxDiscountError"></div>
         </div>
       </div>
       <p class="text-secondary small mb-3">Maximum discount limit for this coupon.</p>
 
       <label class="form-label">Min Purchase Amount *</label>
-      <input type="number" class="form-control mb-1" id="couponMinOrder" placeholder="Enter minimum purchase amount" required>
+      <input type="number" class="form-control mb-1" id="couponMinOrder" placeholder="Enter minimum purchase amount">
       <p class="text-secondary small mb-3">Minimum cart amount to apply this coupon</p>
+      <div class="text-danger small mb-2" id="couponMinOrderError"></div>
 
       <div class="row g-3 mb-3">
         <div class="col-6">
           <label class="form-label">Start Date *</label>
-          <input type="date" class="form-control" id="couponStartDate" required>
+          <input type="date" class="form-control" id="couponStartDate">
+          <div class="text-danger small mb-2" id="couponStartDateError"></div>
         </div>
         <div class="col-6">
           <label class="form-label">End Date *</label>
-          <input type="date" class="form-control" id="couponValidTill" required>
+          <input type="date" class="form-control" id="couponValidTill">
+          <div class="text-danger small mb-2" id="couponValidTillError"></div>
         </div>
       </div>
 
@@ -108,8 +135,11 @@
     </form>
   </div>
 </div>
+</div>
+</div>
 
 <%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
 <script src="/js/adminCoupons.js"></script>
 </body>
 </html>

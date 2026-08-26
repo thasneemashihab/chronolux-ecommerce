@@ -5,10 +5,28 @@
   <link href="/css/adminExtras.css" rel="stylesheet">
   <title>Offers - Admin</title>
 </head>
-<body>
-<%- include('../partials/adminSidebar', { active: 'offers' }) %>
+<body style="background:#0d0d0d; min-height:100vh;">
 
-<div class="admin-content p-4">
+  <div class="d-flex">
+  <div class="admin-sidebar">
+    <div class="text-center mb-4 px-3">
+      <img src="/images/logo.png" width="36" class="mb-1" alt="logo">
+      <h6 class="text-warning fw-bold mb-0">CHRONOLUX</h6>
+      <small class="text-secondary">ADMIN PANEL</small>
+    </div>
+    <a href="/admin/dashboard" class="sidebar-link"><i class="bi bi-grid"></i> Dashboard</a>
+    <a href="/admin/products" class="sidebar-link"><i class="bi bi-box"></i> Products</a>
+    <a href="/admin/inventory" class="sidebar-link"><i class="bi bi-archive"></i> Inventory</a>
+    <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
+    <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
+    <a href="/admin/coupons" class="sidebar-link "><i class="bi bi-ticket"></i> Coupon</a>
+    <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
+    <a href="/admin/offers" class="sidebar-link active"><i class="bi bi-percent"></i> Offers</a>
+    <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
+    <a href="#" id="adminLogoutBtn" class="sidebar-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
+  </div>
+
+  <div class="flex-grow-1 p-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="fw-bold text-white">Offers</h3>
     <button class="btn btn-warning fw-bold" id="openAddOfferBtn">+ Add offer</button>
@@ -44,51 +62,59 @@
 <div class="modal-backdrop-custom d-none" id="offerModalBackdrop">
   <div class="email-modal" style="max-width:700px;">
     <h5 class="fw-bold mb-3" id="offerModalTitle">Add Offer</h5>
-    <form id="offerForm">
+    <form id="offerForm" novalidate>
       <input type="hidden" id="offerId">
       <div class="row g-3">
         <div class="col-6">
           <label class="form-label">Offer Name *</label>
-          <input type="text" class="form-control" id="offerName" placeholder="Enter offer name" required>
+          <input type="text" class="form-control" id="offerName" placeholder="Enter offer name">
+          <div class="text-danger small" id="offerNameError"></div>
         </div>
         <div class="col-6">
           <label class="form-label">Apply to *</label>
-          <select class="form-select" id="offerApplyTo" required>
+          <select class="form-select" id="offerApplyTo">
             <option value="">Select apply type</option>
             <option value="Product">Product</option>
             <option value="Category">Category</option>
           </select>
+          <div class="text-danger small" id="offerApplyToError"></div>
         </div>
 
         <div class="col-6">
           <label class="form-label">Type *</label>
-          <select class="form-select" id="offerType" required>
+          <select class="form-select" id="offerType">
             <option value="">Select Type</option>
             <option value="Percentage">Percentage</option>
             <option value="Flat Amount">Flat Amount</option>
           </select>
+          <div class="text-danger small" id="offerTypeError"></div>
         </div>
         <div class="col-6" id="productSelectWrapper" style="display:none;">
           <label class="form-label">Select Product *</label>
           <select class="form-select" id="offerProduct"><option value="">Select product</option></select>
+          <div class="text-danger small" id="offerProductError"></div>
         </div>
         <div class="col-6" id="categorySelectWrapper" style="display:none;">
           <label class="form-label">Select Category *</label>
           <select class="form-select" id="offerCategory"><option value="">Select category</option></select>
+          <div class="text-danger small" id="offerCategoryError"></div>
         </div>
 
         <div class="col-6">
           <label class="form-label">Discount *</label>
-          <input type="number" class="form-control" id="offerDiscount" placeholder="Enter discount" required>
+          <input type="number" class="form-control" id="offerDiscount" placeholder="Enter discount">
+          <div class="text-danger small" id="offerDiscountError"></div>
         </div>
 
         <div class="col-6">
           <label class="form-label">Start Date *</label>
-          <input type="date" class="form-control" id="offerStartDate" required>
+          <input type="date" class="form-control" id="offerStartDate">
+          <div class="text-danger small" id="offerStartDateError"></div>
         </div>
         <div class="col-6">
           <label class="form-label">End Date *</label>
-          <input type="date" class="form-control" id="offerEndDate" required>
+          <input type="date" class="form-control" id="offerEndDate">
+          <div class="text-danger small" id="offerEndDateError"></div>
         </div>
 
         <div class="col-12 d-flex align-items-center gap-2">
@@ -107,8 +133,11 @@
     </form>
   </div>
 </div>
+</div>
+</div>
 
 <%- include('../partials/scripts') %>
+<script src="/js/main.js"></script>
 <script src="/js/adminOffers.js"></script>
 </body>
 </html>

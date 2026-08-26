@@ -5,7 +5,8 @@ const {
   updateProfile,
   changePassword,
   requestEmailChange,
-  verifyEmailChange
+  verifyEmailChange,
+  verifyPasswordForEmailChange
 } = require('../../controllers/user/profileController');
 const authMiddleware = require('../../middleware/authMiddleware');
 
@@ -14,5 +15,6 @@ router.put('/me', authMiddleware, updateProfile);
 router.put('/change-password', authMiddleware, changePassword);
 router.post('/request-email-change', authMiddleware, requestEmailChange);
 router.post('/verify-email-change', authMiddleware, verifyEmailChange);
+router.post('/verify-password-for-email-change', authMiddleware, verifyPasswordForEmailChange);
 
 module.exports = router;

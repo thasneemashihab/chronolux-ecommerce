@@ -35,6 +35,7 @@ async function loadReport(page = 1) {
   document.getElementById('statAvgOrder').textContent = data.summary.averageOrderValue.toLocaleString();
   document.getElementById('statTotalDiscounts').textContent = data.summary.totalDiscounts.toLocaleString();
   document.getElementById('statNetRevenue').textContent = data.summary.netRevenue.toLocaleString();
+  document.getElementById('statCancelledReturned').textContent = data.summary.cancelledReturnedCount.toLocaleString();
 
   renderTable(data.orders);
   renderPagination(data.totalPages, data.currentPage);
@@ -99,6 +100,12 @@ document.getElementById('exportPdfBtn').addEventListener('click', () => {
 });
 document.getElementById('exportExcelBtn').addEventListener('click', () => {
   window.location.href = `/api/admin/sales-report/export-excel?${buildQuery()}`;
+});
+
+document.getElementById('adminLogoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await fetch('/api/admin/logout', { method: 'POST' });
+  window.location.href = '/admin/login';
 });
 
 loadReport();

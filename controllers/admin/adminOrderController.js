@@ -12,6 +12,7 @@ exports.getOrders = async (req, res) => {
     const search = req.query.search || '';
     const startDate = req.query.startDate || '';
     const endDate = req.query.endDate || '';
+     const hasReturnRequest = req.query.hasReturnRequest === 'true'; 
 
     // Build filter
     const filter = {};
@@ -22,6 +23,9 @@ exports.getOrders = async (req, res) => {
       filter.$or = [
         { orderId: { $regex: search, $options: 'i' } }
       ];
+    }
+     if (hasReturnRequest) {
+      filter['items.status'] = 'Return Requested';   
     }
 
     // Date range filter

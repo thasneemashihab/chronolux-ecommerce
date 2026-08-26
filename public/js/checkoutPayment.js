@@ -287,11 +287,14 @@ async function placeOrderOnline(addressId){
 
  const rzp=new Razorpay(options);
 
- rzp.on('payment.failed',function(response){
+ rzp.on('payment.failed', async function(response){
+  await fetch('/api/users/orders/record-failed-payment', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ addressId, couponDiscount, couponCode: appliedCoupon })
+  });
   showToast('payment failed: ' + response.error.description,'error');
   window.location.href='/payment-failed';
- });
-
+  });
  rzp.open();
 
  //Reset button text since popup is now handling the wait

@@ -11,7 +11,8 @@ let colorCroppedImages = {};    // { "black": [blob1, blob2, blob3] }
 let variantCroppedImages = {};  // { "oyster": blob }
 let currentCropTarget = null;   // { type: 'color'/'variant', name, index }
 let editingProduct = null; // stores current product in edit mode
-
+let currentColors = [];   // replaces reading from a text field
+let currentVariants = [];
 
 async function loadProducts() {
   const res = await fetch(`/api/admin/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=10`);
@@ -70,6 +71,88 @@ function renderProducts(products) {
   });
 }
 
+document.getElementById('addColorBtn').addEventListener('click', addColor);
+document.getElementById('newColorInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addColor();
+  }
+});
+
+function addColor() {
+  const input = document.getElementById('newColorInput');
+  const color = input.value.trim().toLowerCase();
+
+  if (!color) return;
+  if (currentColors.includes(color)) {
+    showToast('This color is already added', 'error');
+    return;
+  }
+
+  currentColors.push(color);
+  input.value = '';
+  renderColorTags();
+  generateColorVariantInputs();
+}
+
+function removeColor(color) {
+  currentColors = currentColors.filter(c => c !== color);
+  renderColorTags();
+  generateColorVariantInputs();
+}
+
+function renderColorTags() {
+  const container = document.getElementById('colorTagsContainer');
+  container.innerHTML = currentColors.map(color => `
+    <span class="badge bg-secondary d-flex align-items-center gap-2 px-3 py-2">
+      <span class="color-dot-preview" style="background:${color}; width:12px; height:12px; border-radius:50%; display:inline-block;"></span>
+      <span class="text-capitalize">${color}</span>
+      <span style="cursor:pointer;" onclick="removeColor('${color}')">&times;</span>
+    </span>
+  `).join('');
+}
+
+
+document.getElementById('addVariantBtn').addEventListener('click', addVariant);
+document.getElementById('newVariantInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addVariant();
+  }
+});
+
+function addVariant() {
+  const input = document.getElementById('newVariantInput');
+  const variant = input.value.trim();
+
+  if (!variant) return;
+  if (currentVariants.includes(variant)) {
+    showToast('This variant is already added', 'error');
+    return;
+  }
+
+  currentVariants.push(variant);
+  input.value = '';
+  renderVariantTags();
+  generateColorVariantInputs();
+}
+
+function removeVariant(variant) {
+  currentVariants = currentVariants.filter(v => v !== variant);
+  renderVariantTags();
+  generateColorVariantInputs();
+}
+
+function renderVariantTags() {
+  const container = document.getElementById('variantTagsContainer');
+  container.innerHTML = currentVariants.map(variant => `
+    <span class="badge bg-secondary d-flex align-items-center gap-2 px-3 py-2">
+      <span class="text-capitalize">${variant}</span>
+      <span style="cursor:pointer;" onclick="removeVariant('${variant}')">&times;</span>
+    </span>
+  `).join('');
+}
+
 function renderPagination(totalPages, current) {
   const pagination = document.getElementById('productPagination');
   pagination.innerHTML = '';
@@ -119,6 +202,10 @@ document.getElementById('openAddProductBtn').addEventListener('click', async () 
   existingImagesSection.classList.add('d-none');
   productUploadBox.classList.remove('d-none');
   await loadDropdowns();
+   currentColors = [];
+  renderColorTags();
+  currentVariants = [];
+  renderVariantTags();
   productModalBackdrop.classList.remove('d-none');
 });
 
@@ -138,8 +225,10 @@ async function openEditModal(product) {
   document.getElementById('productStock').value = product.stock || '';
   document.getElementById('productDescription').value = product.description || '';
   document.getElementById('productSpecifications').value = product.specifications || '';
-  document.getElementById('productColors').value = product.colors?.join(', ') || '';
-  document.getElementById('productVariants').value = product.variants?.join(', ') || '';
+  currentColors = product.colors?.map(c => c.toLowerCase()) || [];
+  renderColorTags();
+  currentVariants = product.variants || [];
+  renderVariantTags();
   document.getElementById('productStatus').value = product.isActive ? 'true' : 'false';
 
   croppedImages = [];
@@ -200,13 +289,21 @@ fileInput.addEventListener('change', (e) => {
   }
 });
 
+function recalculateTotalStock() {
+  const colorStockInputs = document.querySelectorAll('.color-stock-input');
+  let total = 0;
+  colorStockInputs.forEach(input => {
+    total += parseInt(input.value) || 0;
+  });
+  document.getElementById('productStock').value = total;
+}
+
 //upload boxes when admin types colos/variants.
 
 function generateColorVariantInputs() {
-  const colorsRaw = document.getElementById('productColors').value.trim();
-  const variantsRaw = document.getElementById('productVariants').value.trim();
-  const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(c => c) : [];
-  const variants = variantsRaw ? variantsRaw.split(',').map(v => v.trim()).filter(v => v) : [];
+ 
+  const colors = currentColors;
+  const variants = currentVariants;
 
   const colorSection = document.getElementById('colorImagesSection');
   const variantSection = document.getElementById('variantImagesSection');
@@ -274,6 +371,11 @@ function generateColorVariantInputs() {
   colorInputs.appendChild(wrapper);
 
   // Attach file listeners
+
+  wrapper.querySelectorAll('.color-stock-input').forEach(input => {
+  input.addEventListener('input', recalculateTotalStock);
+});
+
   wrapper.querySelectorAll('.color-img-input').forEach(input => {
     input.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -392,9 +494,6 @@ function generateColorVariantInputs() {
   }
 }
 
-// Trigger when colors/variants are typed
-document.getElementById('productColors')?.addEventListener('input', generateColorVariantInputs);
-document.getElementById('productVariants')?.addEventListener('input', generateColorVariantInputs);
 
 // ----- Open crop modal -----
 function openCropModal(file, isReplace, index) {
@@ -527,6 +626,7 @@ document.getElementById('confirmCropBtn').addEventListener('click', () => {
 // ----- Form Submit (Add or Edit) -----
 document.getElementById('productForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  clearFieldErrors(['productName', 'productBrand', 'productCategory', 'productPrice', 'productDescription']); 
 
   const id = document.getElementById('productId').value;
   const name = document.getElementById('productName').value.trim();
@@ -538,23 +638,26 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   const stock = document.getElementById('productStock').value;
   const description = document.getElementById('productDescription').value.trim();
   const specifications = document.getElementById('productSpecifications').value.trim();
-  const colorsRaw = document.getElementById('productColors').value.trim();
-  const variantsRaw = document.getElementById('productVariants').value.trim();
+  const colors = currentColors;
+  const variants = currentVariants;
   const isActive = document.getElementById('productStatus').value;
 
-  if (!name || !brand || !category || !price || !stock || !description) {
-    showToast('Please fill all required fields', 'error');
-    return;
-  }
+  
+  let valid = true;
 
+  if (!name) { showFieldError('productName', 'Product name is required'); valid = false; }
+  if (!brand) { showFieldError('productBrand', 'Please select a brand'); valid = false; }
+  if (!category) { showFieldError('productCategory', 'Please select a category'); valid = false; }
+  if (!price || isNaN(price) || Number(price) <= 0) { showFieldError('productPrice', 'Please enter a valid price'); valid = false; }
+  if (!description) { showFieldError('productDescription', 'Description is required'); valid = false; }
+
+  if (!valid) return;
+  
   // Validate images
-  if (!id && croppedImages.length < 3) {
+   if (!id && croppedImages.length < 3) {
     showToast('Please upload and crop at least 3 images', 'error');
     return;
   }
-
-  const colors = colorsRaw ? colorsRaw.split(',').map(c => c.trim()).filter(c => c) : [];
-  const variants = variantsRaw ? variantsRaw.split(',').map(v => v.trim()).filter(v => v) : [];
 
   const formData = new FormData();
   formData.append('name', name);

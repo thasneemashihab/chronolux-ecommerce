@@ -4,6 +4,7 @@
   <%- include('../partials/head') %>
   <title>ChronoLux - Timeless Elegance</title>
 </head>
+<script src="/js/home.js"></script>
 <body>
 
 <%- include('../partials/navbar', { user: user }) %>
@@ -55,48 +56,11 @@
   </div> 
 </section>
 
-<!-- Featured Watches Section -->
+ <!-- Featured Watches Section -->
 <section class="py-5 text-center" style="background:#0d0d0d;">
   <div class="container">
     <h2 class="mb-4 text-white">Featured Watches</h2>
-    <div class="row g-4 justify-content-center">
-      <div class="col-6 col-md-3">
-        <div class="watch-card">
-          <img src="/images/luxury.jpg" alt="Chronolux Heritage">
-          <div class="watch-card-body">
-            <h6>Chronolux Heritage</h6>
-            <p class="price">₹ 24,999</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="watch-card">
-          <img src="/images/sports-pro.jpg" alt="Chronolux Sport Pro">
-          <div class="watch-card-body">
-            <h6>Chronolux Sport Pro</h6>
-            <p class="price">₹ 15,999</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="watch-card">
-          <img src="/images/black-edition.jpg" alt="Chronolux Black Edition">
-          <div class="watch-card-body">
-            <h6>Chronolux Black Edition</h6>
-            <p class="price">₹ 28,999</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="watch-card">
-          <img src="/images/classic.jpg" alt="Chronolux Classic">
-          <div class="watch-card-body">
-            <h6>Chronolux Classic</h6>
-            <p class="price">₹ 18,999</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="row g-4 justify-content-center" id="featuredWatchesGrid"></div>
   </div>
 </section>
 

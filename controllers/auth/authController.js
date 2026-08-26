@@ -5,7 +5,7 @@ const generateToken = require('../../utils/generateToken');
 
 const generateOtp = require('../../utils/generateOtp');
 const sendEmail = require('../../utils/sendEmail');
-const generateReferralCode = require('../../utils/generateReferralCode'); 
+const generateUniqueReferralCode = require('../../utils/generateUniqueReferralCode'); 
 
 // POST /api/auth/signup
 exports.signup = async (req, res) => {
@@ -32,7 +32,7 @@ exports.signup = async (req, res) => {
     const otpExpiry = Date.now() + 5 * 60 * 1000;
 
     // generate THIS user's own shareable referral code
-    const myReferralCode = generateReferralCode(name);
+   const myReferralCode = await generateUniqueReferralCode(name);
 
     // validate the referral code they entered (if any) actually belongs to someone
     let referredByCode = null;
@@ -47,13 +47,17 @@ exports.signup = async (req, res) => {
     if (existingUser && !existingUser.isVerified) {
       existingUser.name = name;
       existingUser.password = hashedPassword;
-      existingUser.referralCode = referralCode || '';
+      existingUser.referralCode = existingUser.referralCode || myReferralCode;   // keep their own code if they already had one generated, otherwise assign one now;
+      existingUser.referredBy = referredByCode;
       existingUser.otp = otp;
       existingUser.otpExpiry = otpExpiry;
       user = await existingUser.save();
     } else {
       user = await User.create({
-        name, email, password: hashedPassword, referralCode, otp, otpExpiry
+        name, email, password: hashedPassword,
+         referralCode: myReferralCode,
+         referredBy: referredByCode,
+          otp, otpExpiry
       });
     }
 

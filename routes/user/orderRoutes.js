@@ -5,6 +5,7 @@ const {
   getCheckoutData,
   createRazorpayOrder,
   placeOrder,
+  recordFailedPayment,
   getUserOrders,
   getOrderDetails,
   cancelOrder,
@@ -22,5 +23,6 @@ router.put('/:orderId/cancel', authMiddleware, cancelOrder);
 router.put('/:orderId/return', authMiddleware, returnOrder);
 router.put('/:orderId/cancel-item/:itemId', authMiddleware, cancelOrderItem);
 router.put('/:orderId/return-item/:itemId', authMiddleware, returnOrderItem);
+router.post('/record-failed-payment', authMiddleware, recordFailedPayment);
 
 module.exports = router;

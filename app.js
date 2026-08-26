@@ -23,6 +23,15 @@ app.use(passport.initialize());
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
 
+// NEW: prevent stale cached pages after login/logout
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+
+
 //page routes(renders EJS views)
 app.use("/",require("./routes/viewRoutes"));
 
@@ -44,6 +53,7 @@ app.use('/api/users/wallet', require('./routes/user/walletRoutes'));
 app.use('/api/admin/offers', require('./routes/admin/offerRoutes'));
 app.use('/api/admin/coupons', require('./routes/admin/couponRoutes'));
 app.use('/api/admin/sales-report', require('./routes/admin/salesReportRoutes'));
+app.use('/api/admin/dashboard', require('./routes/admin/dashboardRoutes'));
 
 // Add BEFORE the 404 handler
 app.get('/not-found', (req, res) => {

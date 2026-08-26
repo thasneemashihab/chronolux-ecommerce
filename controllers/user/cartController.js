@@ -12,7 +12,7 @@ exports.getCart = async (req, res) => {
     let cart = await Cart.findOne({ user: req.userId })
       .populate({
         path: 'items.product',
-        select: 'name images price stock isActive isDeleted discount'
+        select: 'name images price stock isActive isDeleted discount colorVariants '
       });
 
     if (!cart) {
@@ -75,19 +75,24 @@ exports.addToCart = async (req, res) => {
     if (!productId) {
       return res.status(400).json({ message: 'Product ID is required' });
     }
-
-
-    // calculate offer-adjusted price for this product
-    const { discountAmount } = await getBestOfferForProduct(product);
-    const finalPrice = Math.max(0, product.price - discountAmount);
-
-
+    
     // Stage 1: Check product exists and is available
     const product = await Product.findOne({
       _id: productId,
       isDeleted: false,
       isActive: true
     });
+
+      if (!product) {
+      return res.status(404).json({ message: 'This product is no longer available' });
+    }
+
+    // calculate offer-adjusted price for this product
+    const { discountAmount } = await getBestOfferForProduct(product);
+    const finalPrice = Math.max(0, product.price - discountAmount);
+
+
+    
 
    // Stage 1 — Add to cart stock validation
 if (selectedColor) {
@@ -143,6 +148,18 @@ if (selectedColor) {
         });
       }
 
+
+  // Check against the CORRECT stock — color-specific if a color was selected
+  const relevantStock = selectedColor
+    ? (product.colorVariants?.find(cv => cv.color === selectedColor)?.stock || 0)
+    : product.stock;
+
+  if (newQty > relevantStock) {
+    return res.status(400).json({
+      message: `Only ${relevantStock} units of "${product.name}"${selectedColor ? ' (' + selectedColor + ')' : ''} available in stock`
+    });
+  }
+
       // Stage 1: Check stock against new total quantity
       if (newQty > product.stock) {
         return res.status(400).json({
@@ -167,7 +184,8 @@ if (selectedColor) {
       cart.items.push({
         product: productId,
         quantity,
-        price: finalPrice  //now the offer-adjusted price
+        price: finalPrice,  //now the offer-adjusted price
+        selectedColor: selectedColor || '' 
       });
     }
 
@@ -214,7 +232,7 @@ exports.updateQuantity = async (req, res) => {
       _id: productId,
       isDeleted: false,
       isActive: true
-    }).select('name stock isActive isDeleted');
+    }).select('name stock isActive isDeleted colorVariants');
 
     if (!product) {
       return res.status(404).json({
@@ -222,26 +240,30 @@ exports.updateQuantity = async (req, res) => {
       });
     }
 
-    // Stage 2: Check max limit
+     const cart = await Cart.findOne({ user: req.userId });
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+    const item = cart.items.find(i => i.product.toString() === productId);
+    if (!item) return res.status(404).json({ message: 'Item not found in cart' });
+
+       // NEW: check the RIGHT stock — color-specific if this cart line has a selected color
+    const relevantStock = item.selectedColor
+      ? (product.colorVariants?.find(cv => cv.color === item.selectedColor)?.stock || 0)
+      : product.stock;
+
+      // Stage 2: Check max limit
     if (qty > MAX_QTY_PER_PRODUCT) {
       return res.status(400).json({
         message: `Maximum ${MAX_QTY_PER_PRODUCT} units of "${product.name}" allowed per order`
       });
     }
 
-    // Stage 2: Check against current stock
-    if (qty > product.stock) {
+    if (qty > relevantStock) {
       return res.status(400).json({
-        message: `Only ${product.stock} units of "${product.name}" are currently available`
+        message: `Only ${relevantStock} units of "${product.name}"${item.selectedColor ? ' (' + item.selectedColor + ')' : ''} are currently available`
       });
     }
-
-    const cart = await Cart.findOne({ user: req.userId });
-    if (!cart) return res.status(404).json({ message: 'Cart not found' });
-
-    const item = cart.items.find(i => i.product.toString() === productId);
-    if (!item) return res.status(404).json({ message: 'Item not found in cart' });
-
+    
     item.quantity = qty;
     await cart.save();
 

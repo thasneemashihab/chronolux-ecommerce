@@ -47,14 +47,26 @@ exports.addCategory = async (req, res) => {
   try {
     const { name, slug, parentCategory } = req.body;
 
-     if (!name || name.trim() === '') {
-      return res.status(400).json({ message: 'Category name is required' });
+      const errors = {};
+
+    if (!name || name.trim() === '') {
+      errors.categoryName = 'Category name is required';
+    } else if (name.trim().length < 2) {
+      errors.categoryName = 'Category name must be at least 2 characters';
     }
+
     if (!slug || slug.trim() === '') {
-      return res.status(400).json({ message: 'Slug (URL) is required' });
+      errors.categorySlug = 'Slug is required';
+    } else if (!/^[a-z0-9-]+$/.test(slug.trim())) {
+      errors.categorySlug = 'Slug can only contain lowercase letters, numbers, and hyphens (e.g. men-watches)';
     }
-    if (!/^[a-z0-9-]+$/.test(slug)) {
-      return res.status(400).json({ message: 'Slug can only contain lowercase letters, numbers and hyphens (e.g. men-watches)' });
+
+    if (!req.file) {
+      errors.categoryImage = 'Please upload a category image';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
     }
 
     const existing = await Category.findOne({ name, isDeleted: false });

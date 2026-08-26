@@ -96,20 +96,31 @@
   </div>
 </div>
 
-<!-- Email change OTP Modal -->
+
+<!-- Email change modal -->
 <div class="modal-backdrop-custom d-none" id="emailModalBackdrop">
   <div class="email-modal">
     <button class="btn-close-modal" id="closeEmailModal">×</button>
     <div class="otp-icon mx-auto"><i class="bi bi-envelope-fill"></i></div>
     <h5 class="fw-bold text-center mt-2">Verify New Email</h5>
 
-    <div id="emailStep1">
+    <!-- STEP 0: Confirm password -->
+    <div id="emailStep0">
+      <p class="text-secondary text-center small">For your security, please confirm your password</p>
+      <input type="password" class="form-control mb-2" id="emailChangePassword" placeholder="Enter your current password">
+      <div class="text-danger small mb-2" id="emailChangePasswordError"></div>
+      <button class="btn btn-warning fw-bold w-100" id="confirmPasswordBtn">Continue</button>
+    </div>
+
+    <!-- STEP 1: Enter new email -->
+    <div id="emailStep1" class="d-none">
       <p class="text-secondary text-center small">Enter your new email address</p>
       <input type="email" class="form-control mb-2" id="newEmailInput" placeholder="Enter new email">
       <div class="text-danger small mb-2" id="newEmailError"></div>
       <button class="btn btn-warning fw-bold w-100" id="sendEmailOtpBtn">Send OTP</button>
     </div>
 
+    <!-- STEP 2: OTP verification -->
     <div id="emailStep2" class="d-none">
       <p class="text-secondary text-center small mb-1">We've sent a 6-digit OTP to your new email address</p>
       <p class="text-warning text-center small fw-bold" id="pendingEmailDisplay"></p>
@@ -133,6 +144,7 @@
     </div>
   </div>
 </div>
+
 
 <%- include('../partials/footer') %>
 <%- include('../partials/scripts') %>

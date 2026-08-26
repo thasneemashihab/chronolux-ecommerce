@@ -59,6 +59,7 @@ function renderOrders(orders) {
 
       <div class="d-flex flex-column gap-2 align-items-end">
         <span class="status-badge ${statusClass}">${order.status}</span>
+        ${order.paymentStatus === 'Failed' ? '<span class="status-badge status-Cancelled">Payment Failed</span>' : ''}
         <a href="/orders/${order._id}" class="btn btn-sm btn-secondary">
           <i class="bi bi-eye me-1"></i> View Details
         </a>

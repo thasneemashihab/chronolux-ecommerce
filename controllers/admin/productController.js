@@ -21,7 +21,7 @@ exports.getProducts = async (req, res) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .lean() // .lean() — returns plain JS objects, skips virtual field errors
-      .select('name brand category price originalPrice discount images stock isActive reviews colors variants colorVariants');
+      .select('name brand category price originalPrice discount images stock isActive reviews colors variants colorVariants colorImages variantImages description specifications');
     
       const total = await Product.countDocuments(filter);
 
@@ -58,25 +58,17 @@ exports.addProduct = async (req, res) => {
     const { name, brand, category, description, specifications,
             price, originalPrice, discount, stock, isActive, colors, variants , colorStocks  } = req.body;
 
+      const errors = {};      
      // validation
-     if (!name || name.trim() === '') {
-      return res.status(400).json({ message: 'Product name is required' });
-    }
-    if (!brand) {
-      return res.status(400).json({ message: 'Please select a brand' });
-    }
-    if (!category) {
-      return res.status(400).json({ message: 'Please select a category' });
-    }
-    if (!price || isNaN(price) || Number(price) <= 0) {
-      return res.status(400).json({ message: 'Please enter a valid price greater than 0' });
-    }
-    if (!stock || isNaN(stock) || Number(stock) < 0) {
-      return res.status(400).json({ message: 'Please enter a valid stock quantity' });
-    }
-    if (!description || description.trim() === '') {
-      return res.status(400).json({ message: 'Product description is required' });
-    }
+    if (!name || name.trim() === '') errors.productName = 'Product name is required';
+if (!brand) errors.productBrand = 'Please select a brand';
+if (!category) errors.productCategory = 'Please select a category';
+if (!price || isNaN(price) || Number(price) <= 0) errors.productPrice = 'Please enter a valid price';
+if (!description || description.trim() === '') errors.productDescription = 'Description is required';
+
+if (Object.keys(errors).length > 0) {
+  return res.status(400).json({ message: 'Please fix the errors below', errors });
+}
    
     // Base images (min 3 required)
     
@@ -180,25 +172,18 @@ exports.updateProduct = async (req, res) => {
     const { name, brand, category, description, specifications,
             price, originalPrice, discount, stock, isActive, colors, variants , colorStocks  } = req.body;
     
+             const errors = {};
+
     // Validation        
-    if (!name || name.trim() === '') {
-      return res.status(400).json({ message: 'Product name is required' });
-    }
-    if (!brand) {
-      return res.status(400).json({ message: 'Please select a brand' });
-    }
-    if (!category) {
-      return res.status(400).json({ message: 'Please select a category' });
-    }
-    if (!price || isNaN(price) || Number(price) <= 0) {
-      return res.status(400).json({ message: 'Please enter a valid price greater than 0' });
-    }
-    if (!stock || isNaN(stock) || Number(stock) < 0) {
-      return res.status(400).json({ message: 'Please enter a valid stock quantity' });
-    }
-    if (!description || description.trim() === '') {
-      return res.status(400).json({ message: 'Product description is required' });
-    }        
+  if (!name || name.trim() === '') errors.productName = 'Product name is required';
+   if (!brand) errors.productBrand = 'Please select a brand';
+   if (!category) errors.productCategory = 'Please select a category';
+   if (!price || isNaN(price) || Number(price) <= 0) errors.productPrice = 'Please enter a valid price';
+   if (!description || description.trim() === '') errors.productDescription = 'Description is required';
+
+  if (Object.keys(errors).length > 0) {
+  return res.status(400).json({ message: 'Please fix the errors below', errors });
+  }      
 
   const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -396,8 +381,8 @@ exports.getInventory = async (req, res) => {
 
     // Count summaries
     const outOfStock = await Product.countDocuments({ isDeleted: false, stock: 0 });
-    const lowStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 0, $lte: 10 } });
-    const inStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 10 } });
+    const lowStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 0, $lte: 15 } });
+    const inStock = await Product.countDocuments({ isDeleted: false, stock: { $gt: 15 } });
 
     res.status(200).json({
       products,

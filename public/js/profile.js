@@ -80,25 +80,56 @@ document.getElementById('passwordForm').addEventListener('submit', async (e) => 
   if (res.ok) document.getElementById('passwordForm').reset();
 });
 
-// ----- Email change modal -----
+// ----- Email change modal (3-step: password → new email → OTP) -----
 const emailModalBackdrop = document.getElementById('emailModalBackdrop');
+const emailStep0 = document.getElementById('emailStep0');
 const emailStep1 = document.getElementById('emailStep1');
 const emailStep2 = document.getElementById('emailStep2');
 let newEmailValue = '';
 
 document.getElementById('changeEmailBtn').addEventListener('click', () => {
   emailModalBackdrop.classList.remove('d-none');
-  emailStep1.classList.remove('d-none');
+  emailStep0.classList.remove('d-none');
+  emailStep1.classList.add('d-none');
   emailStep2.classList.add('d-none');
+  document.getElementById('emailChangePassword').value = '';
+  document.getElementById('emailChangePasswordError').textContent = '';
 });
 
-document.getElementById('closeEmailModal').addEventListener('click', () => {
+document.getElementById('closeEmailModal').addEventListener('click', closeEmailModal);
+document.getElementById('cancelEmailChange').addEventListener('click', closeEmailModal);
+function closeEmailModal() {
   emailModalBackdrop.classList.add('d-none');
-});
-document.getElementById('cancelEmailChange').addEventListener('click', () => {
-  emailModalBackdrop.classList.add('d-none');
+}
+
+// STEP 0 → STEP 1: verify password first
+document.getElementById('confirmPasswordBtn').addEventListener('click', async () => {
+  const password = document.getElementById('emailChangePassword').value;
+  const errorEl = document.getElementById('emailChangePasswordError');
+  errorEl.textContent = '';
+
+  if (!password) {
+    errorEl.textContent = 'Password is required';
+    return;
+  }
+
+  const res = await fetch('/api/users/profile/verify-password-for-email-change', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password })
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    errorEl.textContent = data.errors?.emailChangePassword || data.message;
+    return;
+  }
+
+  emailStep0.classList.add('d-none');
+  emailStep1.classList.remove('d-none');
 });
 
+// STEP 1 → STEP 2: send OTP to new email
 document.getElementById('sendEmailOtpBtn').addEventListener('click', async () => {
   const newEmail = document.getElementById('newEmailInput').value.trim();
   const errorEl = document.getElementById('newEmailError');
@@ -117,7 +148,7 @@ document.getElementById('sendEmailOtpBtn').addEventListener('click', async () =>
   const data = await res.json();
 
   if (!res.ok) {
-    showToast(data.message, 'error');
+    errorEl.textContent = data.message;
     return;
   }
 
@@ -128,10 +159,17 @@ document.getElementById('sendEmailOtpBtn').addEventListener('click', async () =>
   showToast('OTP sent to your new email');
 });
 
+// STEP 2: verify OTP and finalize
 document.getElementById('verifyEmailOtpBtn').addEventListener('click', async () => {
   const boxes = document.querySelectorAll('.email-otp-box');
   const otp = Array.from(boxes).map(b => b.value).join('');
   const errorEl = document.getElementById('emailOtpError');
+  errorEl.textContent = '';
+
+  if (otp.length !== 6) {
+    errorEl.textContent = 'Please enter the complete 6-digit OTP';
+    return;
+  }
 
   const res = await fetch('/api/users/profile/verify-email-change', {
     method: 'POST',
@@ -141,12 +179,12 @@ document.getElementById('verifyEmailOtpBtn').addEventListener('click', async () 
   const data = await res.json();
 
   if (!res.ok) {
-    showToast(data.message, 'error');
+    errorEl.textContent = data.message;
     return;
   }
 
   document.getElementById('email').value = data.email;
-  emailModalBackdrop.classList.add('d-none');
+  closeEmailModal();
   showToast('Email updated successfully!');
 });
 
@@ -157,6 +195,7 @@ document.querySelectorAll('.email-otp-box').forEach((box, idx, all) => {
     if (box.value && idx < all.length - 1) all[idx + 1].focus();
   });
 });
+
 
 // ----- Sidebar logout -----
 document.getElementById('sidebarLogout').addEventListener('click', async (e) => {

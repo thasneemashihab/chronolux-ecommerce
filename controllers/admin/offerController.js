@@ -17,14 +17,26 @@ exports.addOffer = async (req, res) => {
   try {
     const { name, applyTo, product, category, discountType, discountValue, startDate, endDate } = req.body;
 
-    if (!name || !applyTo || !discountType || !discountValue || !startDate || !endDate) {
-      return res.status(400).json({ message: 'Please fill all required fields' });
+     const errors = {};
+
+    if (!name || name.trim() === '') errors.offerName = 'Offer name is required';
+    if (!applyTo) errors.offerApplyTo = 'Please select Product or Category';
+    if (!discountType) errors.offerType = 'Please select a discount type';
+    if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+      errors.offerDiscount = 'Please enter a valid discount value';
+    } else if (discountType === 'Percentage' && Number(discountValue) > 100) {
+      errors.offerDiscount = 'Percentage cannot exceed 100';
     }
-    if (applyTo === 'Product' && !product) {
-      return res.status(400).json({ message: 'Please select a product' });
+    if (applyTo === 'Product' && !product) errors.offerProduct = 'Please select a product';
+    if (applyTo === 'Category' && !category) errors.offerCategory = 'Please select a category';
+    if (!startDate) errors.offerStartDate = 'Start date is required';
+    if (!endDate) errors.offerEndDate = 'End date is required';
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      errors.offerEndDate = 'End date cannot be before start date';
     }
-    if (applyTo === 'Category' && !category) {
-      return res.status(400).json({ message: 'Please select a category' });
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
     }
 
     await Offer.create({
@@ -51,6 +63,29 @@ exports.addOffer = async (req, res) => {
 exports.updateOffer = async (req, res) => {
   try {
     const { name, applyTo, product, category, discountType, discountValue, startDate, endDate, isActive } = req.body;
+
+     const errors = {};
+
+    if (!name || name.trim() === '') errors.offerName = 'Offer name is required';
+    if (!applyTo) errors.offerApplyTo = 'Please select Product or Category';
+    if (!discountType) errors.offerType = 'Please select a discount type';
+    if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+      errors.offerDiscount = 'Please enter a valid discount value';
+    } else if (discountType === 'Percentage' && Number(discountValue) > 100) {
+      errors.offerDiscount = 'Percentage cannot exceed 100';
+    }
+    if (applyTo === 'Product' && !product) errors.offerProduct = 'Please select a product';
+    if (applyTo === 'Category' && !category) errors.offerCategory = 'Please select a category';
+    if (!startDate) errors.offerStartDate = 'Start date is required';
+    if (!endDate) errors.offerEndDate = 'End date is required';
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      errors.offerEndDate = 'End date cannot be before start date';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
+    }
+    
     const offer = await Offer.findById(req.params.id);
     if (!offer) return res.status(404).json({ message: 'Offer not found' });
 

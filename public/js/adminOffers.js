@@ -133,34 +133,57 @@ document.getElementById('closeOfferModal').addEventListener('click', () => {
 
 document.getElementById('offerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  clearFieldErrors(['offerName', 'offerApplyTo', 'offerType', 'offerDiscount', 'offerProduct', 'offerCategory', 'offerStartDate', 'offerEndDate']);
 
-  const body = {
-    name: document.getElementById('offerName').value,
-    applyTo: document.getElementById('offerApplyTo').value,
-    product: document.getElementById('offerProduct').value,
-    category: document.getElementById('offerCategory').value,
-    discountType: document.getElementById('offerType').value,
-    discountValue: document.getElementById('offerDiscount').value,
-    startDate: document.getElementById('offerStartDate').value,
-    endDate: document.getElementById('offerEndDate').value,
-    isActive: document.getElementById('offerStatus').checked
-  };
+  const name = document.getElementById('offerName').value.trim();
+  const applyTo = document.getElementById('offerApplyTo').value;
+  const discountType = document.getElementById('offerType').value;
+  const discountValue = document.getElementById('offerDiscount').value;
+  const product = document.getElementById('offerProduct').value;
+  const category = document.getElementById('offerCategory').value;
+  const startDate = document.getElementById('offerStartDate').value;
+  const endDate = document.getElementById('offerEndDate').value;
+  const isActive = document.getElementById('offerStatus').checked;
 
+  let valid = true;
+
+  if (!name) { showFieldError('offerName', 'Offer name is required'); valid = false; }
+  if (!applyTo) { showFieldError('offerApplyTo', 'Please select Product or Category'); valid = false; }
+  if (!discountType) { showFieldError('offerType', 'Please select a discount type'); valid = false; }
+  if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+    showFieldError('offerDiscount', 'Please enter a valid discount value'); valid = false;
+  } else if (discountType === 'Percentage' && Number(discountValue) > 100) {
+    showFieldError('offerDiscount', 'Percentage cannot exceed 100'); valid = false;
+  }
+  if (applyTo === 'Product' && !product) { showFieldError('offerProduct', 'Please select a product'); valid = false; }
+  if (applyTo === 'Category' && !category) { showFieldError('offerCategory', 'Please select a category'); valid = false; }
+  if (!startDate) { showFieldError('offerStartDate', 'Start date is required'); valid = false; }
+  if (!endDate) { showFieldError('offerEndDate', 'End date is required'); valid = false; }
+  else if (startDate && new Date(endDate) < new Date(startDate)) {
+    showFieldError('offerEndDate', 'End date cannot be before start date'); valid = false;
+  }
+
+  if (!valid) return;
+
+  const body = { name, applyTo, product, category, discountType, discountValue, startDate, endDate, isActive };
   const url = editingOfferId ? `/api/admin/offers/${editingOfferId}` : '/api/admin/offers';
   const method = editingOfferId ? 'PUT' : 'POST';
 
-  const res = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const data = await res.json();
 
-  showToast(data.message, res.ok ? 'success' : 'error');
-  if (res.ok) {
-    document.getElementById('offerModalBackdrop').classList.add('d-none');
-    loadOffers();
+  if (!res.ok) {
+    if (data.errors) {
+      Object.keys(data.errors).forEach(field => showFieldError(field, data.errors[field]));
+    } else {
+      showToast(data.message, 'error');
+    }
+    return;
   }
+
+  showToast(data.message);
+  document.getElementById('offerModalBackdrop').classList.add('d-none');
+  loadOffers();
 });
 
 document.getElementById('offerSearch').addEventListener('input', loadOffers);
@@ -171,6 +194,12 @@ document.getElementById('resetFiltersBtn').addEventListener('click', () => {
   document.getElementById('typeFilter').value = '';
   document.getElementById('statusFilter').value = '';
   loadOffers();
+});
+
+document.getElementById('adminLogoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await fetch('/api/admin/logout', { method: 'POST' });
+  window.location.href = '/admin/login';
 });
 
 loadOffers();

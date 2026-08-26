@@ -119,5 +119,22 @@ async function updateCartCount() {
   }
 }
 
+// Add to public/js/main.js
+function showFieldError(field, message) {
+  const errorEl = document.getElementById(field + 'Error');
+  const input = document.getElementById(field);
+  if (errorEl) errorEl.textContent = message;
+  if (input) input.classList.add('is-invalid-input');
+}
+
+function clearFieldErrors(fields) {
+  fields.forEach(field => {
+    const errorEl = document.getElementById(field + 'Error');
+    const input = document.getElementById(field);
+    if (errorEl) errorEl.textContent = '';
+    if (input) input.classList.remove('is-invalid-input');
+  });
+}
+
 updateCartCount();
 

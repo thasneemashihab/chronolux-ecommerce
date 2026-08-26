@@ -15,8 +15,36 @@ exports.addCoupon = async (req, res) => {
   try {
     const { name, code, discountType, discountValue, minOrderAmount, maxDiscount, validTill, usageLimitPerUser } = req.body;
 
-    if (!name || !code || !discountType || !discountValue || !validTill) {
-      return res.status(400).json({ message: 'Please fill all required fields' });
+    const errors = {};
+
+    if (!name || name.trim() === '') {
+      errors.couponName = 'Coupon name is required';
+    }
+    if (!code || code.trim() === '') {
+      errors.couponCode = 'Coupon code is required';
+    } else if (!/^[A-Za-z0-9]+$/.test(code.trim())) {
+      errors.couponCode = 'Coupon code can only contain letters and numbers';
+    }
+    if (!discountType) {
+      errors.couponType = 'Please select a discount type';
+    }
+    if(discountValue<maxDiscount){
+      errors.couponValue='discount value cannot exceed to maxdiscount';
+    }
+    if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+      errors.couponValue = 'Please enter a valid discount value';
+    } else if (discountType === 'percentage' && Number(discountValue) > 100) {
+      errors.couponValue = 'Percentage discount cannot exceed 100';
+    }
+    if (!minOrderAmount || isNaN(minOrderAmount) || Number(minOrderAmount) < 0) {
+      errors.couponMinOrder = 'Please enter a valid minimum purchase amount';
+    }
+    if (!validTill) {
+      errors.couponValidTill = 'End date is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
     }
 
     const existing = await Coupon.findOne({ code: code.trim().toUpperCase() });
@@ -50,7 +78,42 @@ exports.addCoupon = async (req, res) => {
 
 exports.updateCoupon = async (req, res) => {
   try {
-    const { name, code, discountType, discountValue, minOrderAmount, maxDiscount, validTill, isActive } = req.body;
+    const { name, code, discountType, discountValue, minOrderAmount, maxDiscount,validFrom, validTill, isActive } = req.body;
+
+     const errors = {};
+
+    if (!name || name.trim() === '') {
+      errors.couponName = 'Coupon name is required';
+    }
+    if (!code || code.trim() === '') {
+      errors.couponCode = 'Coupon code is required';
+    } else if (!/^[A-Za-z0-9]+$/.test(code.trim())) {
+      errors.couponCode = 'Coupon code can only contain letters and numbers';
+    }
+    if (!discountType) {
+      errors.couponType = 'Please select a discount type';
+    }
+    if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+      errors.couponValue = 'Please enter a valid discount value';
+    } else if (discountType === 'percentage' && Number(discountValue) > 100) {
+      errors.couponValue = 'Percentage discount cannot exceed 100';
+    }
+
+    if (maxDiscount && (isNaN(maxDiscount) || Number(maxDiscount) < 0)) {
+    errors.couponMaxDiscount = 'Please enter a valid amount';
+     }
+    if (!minOrderAmount || isNaN(minOrderAmount) || Number(minOrderAmount) < 0) {
+      errors.couponMinOrder = 'Please enter a valid minimum purchase amount';
+    }
+    if (!validFrom) errors.couponStartDate = 'Start date is required';
+    if (!validTill) {
+      errors.couponValidTill = 'End date is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
+    }
+    
     const coupon = await Coupon.findById(req.params.id);
     if (!coupon) return res.status(404).json({ message: 'Coupon not found' });
 
@@ -60,6 +123,7 @@ exports.updateCoupon = async (req, res) => {
     coupon.discountValue = Number(discountValue);
     coupon.minOrderAmount = Number(minOrderAmount) || 0;
     coupon.maxDiscount = maxDiscount ? Number(maxDiscount) : null;
+    coupon.validFrom = new Date(validFrom);
     coupon.validTill = new Date(validTill);
     if (isActive !== undefined) coupon.isActive = isActive;
 

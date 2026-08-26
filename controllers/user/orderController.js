@@ -500,16 +500,13 @@ exports.cancelOrderItem = async (req, res) => {
 
 
     // NEW: refund this item's amount to wallet, if it was an online payment
-    let refundIssued = false;
     if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
-      refundIssued = true;
-      await creditWallet(
-        order.user,
-        item.itemTotal,
-        `Refund for cancelled item "${item.name}" — order #${order.orderId}`,
-        order._id
-      );
-    }
+  refundIssued = true;
+  const discountRatio = order.subtotal > 0 ? order.discount / order.subtotal : 0;
+  const taxRatio = order.subtotal > 0 ? order.tax / order.subtotal : 0;
+  const refundAmount = Math.round(item.itemTotal - (item.itemTotal * discountRatio) + (item.itemTotal * taxRatio));
+  await creditWallet(order.user, refundAmount, `Refund for cancelled item "${item.name}" — order #${order.orderId}`, order._id);
+  }
 
     // Check if ALL items are now cancelled — if so cancel whole order
     const allCancelled = order.items.every(i => i.status === 'Cancelled');
@@ -618,5 +615,34 @@ exports.createRazorpayOrder=async (req,res)=>{
   } catch (err){
     console.error(err);
     res.status(500).json({ message:'Failed to create payment order'});
+  }
+};
+
+exports.recordFailedPayment = async (req, res) => {
+  try {
+    const { addressId, couponDiscount = 0, couponCode = '' } = req.body;
+    const user = await User.findById(req.userId);
+    const address = user.addresses.id(addressId);
+    const cart = await Cart.findOne({ user: req.userId }).populate('items.product');
+    if (!cart || cart.items.length === 0) return res.status(400).json({ message: 'Cart is empty' });
+
+    const subtotal = cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const orderItems = cart.items.map(item => ({
+      product: item.product._id, name: item.product.name, image: item.product.images[0],
+      price: item.price, quantity: item.quantity, itemTotal: item.price * item.quantity
+    }));
+
+    const order = await Order.create({
+      user: req.userId, items: orderItems,
+      shippingAddress: { fullName: address.fullName, phone: address.phone, fullAddress: address.fullAddress, city: address.city, state: address.state, pincode: address.pincode, label: address.label },
+      paymentMethod: 'Online', paymentStatus: 'Failed', status: 'Pending',
+      subtotal, discount: 0, couponDiscount, couponCode, shippingCharge: 0, tax: 0,
+      totalAmount: subtotal, orderId: 'ORD-' + Date.now().toString().slice(-7)
+    });
+
+    res.status(201).json({ message: 'Payment failed, order recorded', orderId: order.orderId, orderDbId: order._id });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to record order' });
   }
 };

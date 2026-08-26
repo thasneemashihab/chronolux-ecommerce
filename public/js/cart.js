@@ -38,28 +38,33 @@ function renderCartItems(items) {
   container.innerHTML = '';
 
   items.forEach(item => {
-    const p = item.product;
-    const div = document.createElement('div');
-    div.className = 'cart-item';
-    div.innerHTML = `
-      <img src="${p.images[0]}" class="cart-item-img" alt="${p.name}">
-      <div class="flex-grow-1">
-        <p class="cart-item-name">${p.name}</p>
-        <p class="cart-item-price">₹${item.price.toLocaleString()}</p>
+  const p = item.product;
+  const relevantStock = item.selectedColor
+    ? (p.colorVariants?.find(cv => cv.color === item.selectedColor)?.stock || 0)
+    : p.stock;
+
+  const div = document.createElement('div');
+  div.className = 'cart-item';
+  div.innerHTML = `
+    <img src="${p.images[0]}" class="cart-item-img" alt="${p.name}">
+    <div class="flex-grow-1">
+      <p class="cart-item-name">${p.name}</p>
+      ${item.selectedColor ? `<p class="text-secondary small mb-1">Color: ${item.selectedColor}</p>` : ''}
+      <p class="cart-item-price">₹${item.price.toLocaleString()}</p>
+    </div>
+    <div class="cart-item-actions">
+      <div class="qty-control">
+        <button class="qty-minus" data-id="${p._id}" data-qty="${item.quantity}">-</button>
+        <span>${item.quantity}</span>
+        <button class="qty-plus" data-id="${p._id}" data-qty="${item.quantity}" data-stock="${relevantStock}">+</button>
       </div>
-      <div class="cart-item-actions">
-        <div class="qty-control">
-          <button class="qty-minus" data-id="${p._id}" data-qty="${item.quantity}">-</button>
-          <span>${item.quantity}</span>
-          <button class="qty-plus" data-id="${p._id}" data-qty="${item.quantity}" data-stock="${p.stock}">+</button>
-        </div>
-        <button class="remove-btn" data-id="${p._id}">
-          <i class="bi bi-trash-fill"></i>
-        </button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
+      <button class="remove-btn" data-id="${p._id}">
+        <i class="bi bi-trash-fill"></i>
+      </button>
+    </div>
+  `;
+  container.appendChild(div);
+});
 
   // Attach listeners after rendering
   document.querySelectorAll('.qty-minus').forEach(btn => {

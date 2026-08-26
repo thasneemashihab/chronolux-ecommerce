@@ -66,6 +66,9 @@ function renderProducts(products) {
             <button class="card-wishlist-btn" data-id="${p._id}" title="Add to Wishlist">
               <i class="bi bi-heart"></i>
             </button>
+             <button class="card-addcart-btn btn btn-sm btn-warning" data-id="${p._id}" title="Add to Cart">
+      <i class="bi bi-cart-plus"></i>
+    </button> 
           </div>
         </div>
       </div>`;
@@ -76,9 +79,26 @@ function renderProducts(products) {
   document.querySelectorAll('.card-wishlist-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation(); // prevent navigating to product page
-      toggleWishlistFromCard(btn, btn.dataset.id);
-    });
+     toggleWishlistFromCard(btn, btn.dataset.id);
+
   });
+});
+
+//Attach add-to-cart listeners
+document.querySelectorAll('.card-addcart-btn').forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const res = await fetch('/api/users/cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: btn.dataset.id, quantity: 1 })
+    });
+    const data = await res.json();
+    showToast(data.message, res.ok ? 'success' : 'error');
+  });
+});
+      
+ 
 
   // Check which products are already wishlisted
   checkWishlistStatus();

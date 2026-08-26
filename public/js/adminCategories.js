@@ -146,22 +146,38 @@ fileInput.addEventListener('change', (e) => {
 // ----- Save (Add or Edit) -----
 document.getElementById('categoryForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  clearFieldErrors(['categoryName', 'categorySlug', 'categoryImage']);
 
   const id = document.getElementById('categoryId').value;
   const name = document.getElementById('categoryName').value.trim();
   const slug = document.getElementById('categorySlug').value.trim();
   const parentCategory = document.getElementById('parentCategorySelect').value;
 
-  if (!name || !slug) {
-    showToast('Category name and slug are required', 'error');
-    return;
-  }
-  if (!id && !selectedFile) {
-    showToast('Please upload an image', 'error');
-    return;
+  let valid = true;
+
+  if (!name) {
+    showFieldError('categoryName', 'Category name is required');
+    valid = false;
+  } else if (name.length < 2) {
+    showFieldError('categoryName', 'Category name must be at least 2 characters');
+    valid = false;
   }
 
-  // FormData is required when sending files, instead of JSON
+  if (!slug) {
+    showFieldError('categorySlug', 'Slug is required');
+    valid = false;
+  } else if (!/^[a-z0-9-]+$/.test(slug)) {
+    showFieldError('categorySlug', 'Slug can only contain lowercase letters, numbers, and hyphens');
+    valid = false;
+  }
+
+  if (!id && !selectedFile) {
+    showFieldError('categoryImage', 'Please upload an image');
+    valid = false;
+  }
+
+  if (!valid) return;
+
   const formData = new FormData();
   formData.append('name', name);
   formData.append('slug', slug);
@@ -175,7 +191,11 @@ document.getElementById('categoryForm').addEventListener('submit', async (e) => 
   const data = await res.json();
 
   if (!res.ok) {
-    showToast(data.message, 'error');
+    if (data.errors) {
+      Object.keys(data.errors).forEach(field => showFieldError(field, data.errors[field]));
+    } else {
+      showToast(data.message, 'error');
+    }
     return;
   }
 

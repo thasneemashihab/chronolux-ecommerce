@@ -22,14 +22,23 @@ exports.updateProfile = async (req, res) => {
   try {
     const { name, phone, gender } = req.body;
 
+    const errors = {};
+
     if (!name || name.trim() === '') {
-      return res.status(400).json({ message: 'Name cannot be empty' });
+      errors.name = 'Name is required';
+    } else if (!/^[A-Za-z\s]+$/.test(name.trim())) {
+      errors.name = 'Name can only contain letters and spaces, no numbers';
+    } else if (name.trim().length < 2) {
+      errors.name = 'Name must be at least 2 characters';
     }
-    if (name.trim().length < 2) {
-      return res.status(400).json({ message: 'Name must be at least 2 characters' });
-    }
+    
+
     if (phone && !/^\d{10}$/.test(phone)) {
       return res.status(400).json({ message: 'Phone number must be exactly 10 digits' });
+    }
+
+     if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Number is not allowed', errors });
     }
 
     const user = await User.findById(req.userId);
@@ -94,13 +103,17 @@ exports.requestEmailChange = async (req, res) => {
       return res.status(400).json({ message: 'Please enter a valid email address' });
     }
 
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'Account not found' });
+
+    if (newEmail.toLowerCase() === user.email.toLowerCase()) {
+      return res.status(400).json({ message: 'This is already your current email address', errors: { newEmailInput: 'This is already your current email address' } });
+    }
+
     const existing = await User.findOne({ email: newEmail });
     if (existing) return res.status(400).json({ message: 'This email address is already in use by another account' });
 
-    const user = await User.findById(req.userId);
-    if (newEmail === user.email) {
-      return res.status(400).json({ message: 'This is already your current email address' });
-    }
+   
     
     const otp = generateOtp();
 
@@ -157,5 +170,29 @@ exports.verifyEmailChange = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to verify email. Please try again.' });
+  }
+};
+
+// POST /api/users/profile/verify-password-for-email-change
+exports.verifyPasswordForEmailChange = async (req, res) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: 'Please enter your password', errors: { emailChangePassword: 'Password is required' } });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: 'Account not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect password', errors: { emailChangePassword: 'Incorrect password' } });
+    }
+
+    res.status(200).json({ message: 'Password verified' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Verification failed. Please try again.' });
   }
 };

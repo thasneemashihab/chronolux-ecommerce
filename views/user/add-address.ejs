@@ -27,14 +27,17 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Full Name <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="fullName" placeholder="Enter full name">
+              <div class="text-danger small mt-1" id="fullNameError"></div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Phone Number <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="phone" placeholder="Enter phone number">
+              <div class="text-danger small mt-1" id="phoneError"></div>
             </div>
             <div class="col-md-4 mb-3">
               <label class="form-label">Pincode <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="pincode" placeholder="Enter pincode">
+              <div class="text-danger small mt-1" id="pincodeError"></div>
             </div>
             <div class="col-md-4 mb-3">
               <label class="form-label">State <span class="text-danger">*</span></label>
@@ -45,14 +48,17 @@
                 <option value="Karnataka">Karnataka</option>
                 <option value="Maharashtra">Maharashtra</option>
               </select>
+              <div class="text-danger small mt-1" id="stateError"></div>
             </div>
             <div class="col-md-4 mb-3">
               <label class="form-label">City <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="city" placeholder="Enter city">
+              <div class="text-danger small mt-1" id="cityError"></div>
             </div>
             <div class="col-12 mb-3">
               <label class="form-label">Full Address <span class="text-danger">*</span></label>
               <textarea class="form-control" id="fullAddress" rows="3" placeholder="Enter full address"></textarea>
+              <div class="text-danger small mt-1" id="fullAddressError"></div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Address Type <span class="text-danger">*</span></label>
@@ -62,6 +68,7 @@
                 <option value="Work">Work</option>
                 <option value="Other">Other</option>
               </select>
+              <div class="text-danger small mt-1" id="AddressTypeError"></div>
             </div>
             <div class="col-md-6 mb-3 d-flex align-items-end">
               <div class="form-check">

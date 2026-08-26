@@ -5,10 +5,11 @@ let paymentFilter = '';
 let searchTerm = '';
 let startDate = '';
 let endDate = '';
+let hasReturnRequest = false;
 let debounceTimer;
 
 async function loadOrders() {
-  const url = `/api/admin/orders?page=${currentPage}&limit=${currentLimit}&status=${statusFilter}&payment=${paymentFilter}&search=${encodeURIComponent(searchTerm)}&startDate=${startDate}&endDate=${endDate}`;
+  const url = `/api/admin/orders?page=${currentPage}&limit=${currentLimit}&status=${statusFilter}&payment=${paymentFilter}&search=${encodeURIComponent(searchTerm)}&startDate=${startDate}&endDate=${endDate}&hasReturnRequest=${hasReturnRequest}`;
   const res = await fetch(url);
   const data = await res.json();
 
@@ -131,6 +132,12 @@ document.getElementById('limitSelect').addEventListener('change', (e) => {
   currentLimit = parseInt(e.target.value); currentPage = 1; loadOrders();
 });
 
+document.getElementById('returnRequestFilter').addEventListener('change', (e) => {
+  hasReturnRequest = e.target.checked;
+  currentPage = 1;
+  loadOrders();
+});
+
 // Search
 const searchInput = document.getElementById('orderSearch');
 const clearBtn = document.getElementById('clearSearch');
@@ -161,6 +168,7 @@ document.getElementById('clearFiltersBtn').addEventListener('click', () => {
   searchTerm = '';
   startDate = '';
   endDate = '';
+   hasReturnRequest = false; 
   currentPage = 1;
 
   // Reset all UI elements
@@ -169,6 +177,7 @@ document.getElementById('clearFiltersBtn').addEventListener('click', () => {
   document.getElementById('orderSearch').value = '';
   document.getElementById('startDate').value = '';
   document.getElementById('endDate').value = '';
+   document.getElementById('returnRequestFilter').checked = false; 
   document.getElementById('clearSearch').classList.add('d-none');
 
   // Reload with clean state

@@ -207,6 +207,15 @@ function renderActions(order) {
     container.appendChild(returnBtn);
   }
 
+   // NEW: Retry Payment — only when payment failed
+  if (order.paymentStatus === 'Failed') {
+    const retryBtn = document.createElement('button');
+    retryBtn.className = 'btn-order-action btn-return-order';
+    retryBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry Payment';
+    retryBtn.addEventListener('click', () => window.location.href = '/checkout/payment');
+    container.appendChild(retryBtn);
+  }
+
   // Need Help
   const helpBtn = document.createElement('a');
   helpBtn.href = '/contact';

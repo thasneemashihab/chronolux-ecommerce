@@ -110,33 +110,52 @@ function closeCouponModal() {
 
 document.getElementById('couponForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const errorEl = document.getElementById('couponFormError');
-  errorEl.classList.add('d-none');
+  clearFieldErrors(['couponName', 'couponCode', 'couponType', 'couponValue', 'couponMinOrder', 'couponValidTill']);
+  document.getElementById('couponFormError').classList.add('d-none');
 
-  const body = {
-    name: document.getElementById('couponName').value,
-    code: document.getElementById('couponCode').value,
-    discountType: document.getElementById('couponType').value,
-    discountValue: document.getElementById('couponValue').value,
-    maxDiscount: document.getElementById('couponMaxDiscount').value,
-    minOrderAmount: document.getElementById('couponMinOrder').value,
-    validTill: document.getElementById('couponValidTill').value,
-    isActive: document.getElementById('couponStatus').checked
-  };
+  const name = document.getElementById('couponName').value.trim();
+  const code = document.getElementById('couponCode').value.trim();
+  const discountType = document.getElementById('couponType').value;
+  const discountValue = document.getElementById('couponValue').value;
+  const maxDiscount = document.getElementById('couponMaxDiscount').value;
+  const minOrderAmount = document.getElementById('couponMinOrder').value;
+  const validFrom = document.getElementById('couponStartDate').value;
+  const validTill = document.getElementById('couponValidTill').value;
+  const isActive = document.getElementById('couponStatus').checked;
 
+  let valid = true;
+
+  if (!name) { showFieldError('couponName', 'Coupon name is required'); valid = false; }
+  if (!code) { showFieldError('couponCode', 'Coupon code is required'); valid = false; }
+  else if (!/^[A-Za-z0-9]+$/.test(code)) { showFieldError('couponCode', 'Code can only contain letters and numbers'); valid = false; }
+  if (!discountType) { showFieldError('couponType', 'Please select a discount type'); valid = false; }
+  if (!discountValue || isNaN(discountValue) || Number(discountValue) <= 0) {
+    showFieldError('couponValue', 'Please enter a valid discount value'); valid = false;
+  } else if (discountType === 'percentage' && Number(discountValue) > 100) {
+    showFieldError('couponValue', 'Percentage cannot exceed 100'); valid = false;
+  }
+  if (!minOrderAmount || isNaN(minOrderAmount) || Number(minOrderAmount) < 0) {
+    showFieldError('couponMinOrder', 'Please enter a valid minimum purchase amount'); valid = false;
+  }
+  if (!validFrom) { showFieldError('couponStartDate', 'Start date is required'); valid = false; }
+  if (!validTill) { showFieldError('couponValidTill', 'End date is required'); valid = false; }
+
+  if (!valid) return;
+
+  const body = { name, code, discountType, discountValue, maxDiscount, minOrderAmount, validFrom, validTill, isActive };
   const url = editingCouponId ? `/api/admin/coupons/${editingCouponId}` : '/api/admin/coupons';
   const method = editingCouponId ? 'PUT' : 'POST';
 
-  const res = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const data = await res.json();
 
   if (!res.ok) {
-    errorEl.textContent = data.message;
-    errorEl.classList.remove('d-none');
+    if (data.errors) {
+      Object.keys(data.errors).forEach(field => showFieldError(field, data.errors[field]));
+    } else {
+      document.getElementById('couponFormError').textContent = data.message;
+      document.getElementById('couponFormError').classList.remove('d-none');
+    }
     return;
   }
 
@@ -153,6 +172,12 @@ document.getElementById('resetFiltersBtn').addEventListener('click', () => {
   document.getElementById('statusFilter').value = '';
   document.getElementById('typeFilter').value = '';
   applyFiltersAndRender();
+});
+
+document.getElementById('adminLogoutBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await fetch('/api/admin/logout', { method: 'POST' });
+  window.location.href = '/admin/login';
 });
 
 loadCoupons();

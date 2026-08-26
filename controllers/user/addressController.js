@@ -17,26 +17,36 @@ exports.addAddress = async (req, res) => {
   try {
     const { label, fullName, phone, pincode, state, city, fullAddress, isDefault } = req.body;
 
-    if (!fullName || fullName.trim() === '') {
-      return res.status(400).json({ message: 'Full name is required' });
+    const errors = {};
+ 
+
+    if (!phone || phone.trim() === '') {
+      errors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(phone)) {
+      errors.phone = 'Phone number must be exactly 10 digits';
     }
-    if (!phone || !/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ message: 'Please enter a valid 10-digit phone number' });
+
+    if (!pincode || pincode.trim() === '') {
+      errors.pincode = 'Pincode is required';
+    } else if (!/^\d{6}$/.test(pincode)) {
+      errors.pincode = 'Pincode must be exactly 6 digits';
     }
-    if (!pincode || !/^\d{6}$/.test(pincode)) {
-      return res.status(400).json({ message: 'Please enter a valid 6-digit pincode' });
-    }
+
     if (!state) {
-      return res.status(400).json({ message: 'Please select a state' });
+      errors.state = 'Please select a state';
     }
     if (!city || city.trim() === '') {
-      return res.status(400).json({ message: 'City is required' });
+      errors.city = 'City is required';
     }
     if (!fullAddress || fullAddress.trim() === '') {
-      return res.status(400).json({ message: 'Full address is required' });
+      errors.fullAddress = 'Full address is required';
     }
     if (!label) {
-      return res.status(400).json({ message: 'Please select an address type (Home/Work/Other)' });
+      errors.label = 'Please select an address type';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
     }
 
     const user = await User.findById(req.userId);
@@ -72,27 +82,43 @@ exports.updateAddress = async (req, res) => {
 
     const { label, fullName, phone, pincode, state, city, fullAddress, isDefault } = req.body;
 
+   const errors = {};
+
     if (!fullName || fullName.trim() === '') {
-      return res.status(400).json({ message: 'Full name is required' });
+      errors.fullName = 'Full name is required';
+    } else if (!/^[A-Za-z\s]+$/.test(fullName.trim())) {
+      errors.fullName = 'Name can only contain letters, no numbers';
     }
-    if (!phone || !/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ message: 'Please enter a valid 10-digit phone number' });
+
+    if (!phone || phone.trim() === '') {
+      errors.phone = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(phone)) {
+      errors.phone = 'Phone number must be exactly 10 digits';
     }
-    if (!pincode || !/^\d{6}$/.test(pincode)) {
-      return res.status(400).json({ message: 'Please enter a valid 6-digit pincode' });
+
+    if (!pincode || pincode.trim() === '') {
+      errors.pincode = 'Pincode is required';
+    } else if (!/^\d{6}$/.test(pincode)) {
+      errors.pincode = 'Pincode must be exactly 6 digits';
     }
+
     if (!state) {
-      return res.status(400).json({ message: 'Please select a state' });
+      errors.state = 'Please select a state';
     }
     if (!city || city.trim() === '') {
-      return res.status(400).json({ message: 'City is required' });
+      errors.city = 'City is required';
     }
     if (!fullAddress || fullAddress.trim() === '') {
-      return res.status(400).json({ message: 'Full address is required' });
+      errors.fullAddress = 'Full address is required';
     }
     if (!label) {
-      return res.status(400).json({ message: 'Please select an address type (Home/Work/Other)' });
+      errors.label = 'Please select an address type';
     }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: 'Please fix the errors below', errors });
+    }
+
 
     const user = await User.findById(req.userId);
 

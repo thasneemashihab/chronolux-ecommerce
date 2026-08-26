@@ -20,7 +20,6 @@
     <a href="/admin/orders" class="sidebar-link"><i class="bi bi-bag"></i> Orders</a>
     <a href="/admin/users" class="sidebar-link"><i class="bi bi-people"></i> Users</a>
     <a href="/admin/categories" class="sidebar-link"><i class="bi bi-grid-3x3"></i> Category</a>
-    <a href="/admin/brands" class="sidebar-link"><i class="bi bi-tags"></i> Brands</a>
     <a href="/admin/coupons" class="sidebar-link"><i class="bi bi-ticket"></i> Coupon</a>
     <a href="/admin/offers" class="sidebar-link"><i class="bi bi-percent"></i> Offers</a>
     <a href="/admin/sales-report" class="sidebar-link"><i class="bi bi-bar-chart"></i> Sales Report</a>
@@ -76,47 +75,60 @@
     <div class="col-md-6">
       <label class="form-label">Product Name <span class="text-danger">*</span></label>
       <input type="text" class="form-control mb-3" id="productName" placeholder="Enter product name">
-
+      <div class="text-danger small mb-2" id="productNameError"></div>
+      
       <label class="form-label">Brand <span class="text-danger">*</span></label>
       <select class="form-select mb-3" id="productBrand">
         <option value="">Select brand</option>
       </select>
+      <div class="text-danger small mb-2" id="productBrandError"></div>
 
       <label class="form-label">Category <span class="text-danger">*</span></label>
       <select class="form-select mb-3" id="productCategory">
         <option value="">Select category</option>
       </select>
+       <div class="text-danger small mb-2" id="productCategoryError"></div>
 
       <label class="form-label">Price (₹) <span class="text-danger">*</span></label>
       <div class="input-group mb-3">
         <span class="input-group-text">₹</span>
         <input type="number" class="form-control" id="productPrice" placeholder="Enter price">
       </div>
+      <div class="text-danger small mb-2" id="productPriceError"></div>
 
       <label class="form-label">Original Price (₹) <span class="text-danger">*</span></label>
       <div class="input-group mb-3">
         <span class="input-group-text">₹</span>
         <input type="number" class="form-control" id="productOriginalPrice" placeholder="Price before discount">
       </div>
+      <div class="text-danger small mb-2" id="productOriginalPriceError"></div>
 
       <label class="form-label">Discount (%)</label>
       <input type="number" class="form-control mb-3" id="productDiscount" placeholder="e.g. 15" min="0" max="100">
-
-      <label class="form-label">Stock <span class="text-danger">*</span></label>
-      <input type="number" class="form-control mb-3" id="productStock" placeholder="Enter stock quantity">
-
-      <label class="form-label">Colors <span class="text-secondary small">(comma separated)</span></label>
-      <input type="text" class="form-control mb-3" id="productColors" placeholder="e.g. black, white, blue">
-
-      <label class="form-label">Variants <span class="text-secondary small">(comma separated)</span></label>
-      <input type="text" class="form-control mb-3" id="productVariants" placeholder="e.g. oyster, jubilee">
-
+       <div class="text-danger small mb-2" id="productDiscountError"></div>
+      
+       <input type="hidden" id="productStock">
+      
+      <label class="form-label">Colors</label>
+      <div class="d-flex gap-2 mb-2">
+      <input type="text" class="form-control" id="newColorInput" placeholder="Type a color, e.g. Black">
+      <button type="button" class="btn btn-secondary" id="addColorBtn">Add</button>
+      </div>
+     <div class="d-flex flex-wrap gap-2 mb-2" id="colorTagsContainer"></div>
+      <div class="text-danger small mb-2" id="newColorInputError"></div>
+      <label class="form-label">Variants</label>
+      <div class="d-flex gap-2 mb-2">
+      <input type="text" class="form-control" id="newVariantInput" placeholder="Type a variant, e.g. Stainless Steel">
+     <button type="button" class="btn btn-secondary" id="addVariantBtn">Add</button>
+     </div>
+      <div class="d-flex flex-wrap gap-2 mb-2" id="variantTagsContainer"></div>
+      <div class="text-danger small mb-2" id="newVariantInputError"></div>
        <label class="form-label">Description <span class="text-danger">*</span></label>
   <textarea class="form-control mb-3" id="productDescription" rows="4" placeholder="Enter product description"></textarea>
-
+   <div class="text-danger small mb-2" id="productDescriptionError"></div>
   <label class="form-label">Specifications</label>
   <textarea class="form-control mb-3" id="productSpecifications" rows="4" placeholder="e.g. Case Size: 41mm&#10;Material: Oyster Steel&#10;Water Resistance: 300m"></textarea>
-
+  <div class="text-danger small mb-2" id="productSpecificationsError"></div>
   <label class="form-label">Status</label>
   <select class="form-select mb-3" id="productStatus">
     <option value="true">Active</option>
@@ -126,7 +138,7 @@
 
     <div class="col-md-6">
   <label class="form-label">Product Images (min 3) <span class="text-danger">*</span></label>
-
+  
   <!-- Shown when ADDING new product -->
   <div class="upload-box text-center mb-2" id="productUploadBox">
     <label for="productImages" style="cursor:pointer;">
@@ -143,26 +155,11 @@
     <div class="d-flex flex-wrap gap-2" id="existingImagesGrid"></div>
   </div>
 
-  <!-- Dynamic color image upload section -->
-<div id="colorImagesSection" class="d-none mb-3">
-  <label class="form-label fw-bold text-warning">Color Images</label>
-  <p class="text-secondary small">Upload 3 images for each color</p>
-  <div id="colorImageInputs"></div>
-</div>
-
 <!-- Dynamic variant image upload section -->
 <div id="variantImagesSection" class="d-none mb-3">
   <label class="form-label fw-bold text-warning">Variant Images</label>
   <p class="text-secondary small">Upload 1 image for each variant</p>
   <div id="variantImageInputs"></div>
-</div>
-
-<!-- Color image upload slots — generated dynamically by JS -->
-<div id="colorImagesSection" class="d-none mb-3">
-  <label class="form-label fw-bold text-warning">
-    Color Images <span class="text-secondary small">(3 images per color)</span>
-  </label>
-  <div id="colorImageInputs"></div>
 </div>
 
 <!-- Color image upload + stock section -->

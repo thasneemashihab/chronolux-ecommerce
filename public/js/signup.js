@@ -12,6 +12,13 @@ document.querySelectorAll('.toggle-eye').forEach(btn => {
   });
 });
 
+// Auto-fill referral code from URL if user clicked a referral link (e.g. /signup?ref=THASNE4821)
+const urlParams = new URLSearchParams(window.location.search);
+const refFromUrl = urlParams.get('ref');
+if (refFromUrl) {
+  document.getElementById('referralCode').value = refFromUrl;
+}
+
 document.getElementById('signupForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearErrors();
@@ -64,11 +71,6 @@ function clearErrors() {
   //document.getElementById('formAlert').classList.add('d-none');
 }
 
-/*function showAlert(message) {
-  const alertEl = document.getElementById('formAlert');
-  alertEl.textContent = message;
-  alertEl.classList.remove('d-none');
-}*/
 
 document.getElementById('googleSignup').addEventListener('click', () => {
   window.location.href = '/api/auth/google'; // not wired up yet
