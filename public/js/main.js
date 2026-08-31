@@ -119,6 +119,18 @@ async function updateCartCount() {
   }
 }
 
+async function updateCartCountBadge() {
+  await updateCartCount();   // just delegate to the correct, working function
+  const res = await fetch('/api/users/cart');
+  if (!res.ok) return;
+  const data = await res.json();
+  const badge = document.querySelector('.cart-count-badge'); // adjust selector to match your navbar
+  if (badge) {
+    badge.textContent = data.itemCount;
+    badge.classList.toggle('d-none', data.itemCount === 0);
+  }
+}
+
 // Add to public/js/main.js
 function showFieldError(field, message) {
   const errorEl = document.getElementById(field + 'Error');
@@ -135,6 +147,6 @@ function clearFieldErrors(fields) {
     if (input) input.classList.remove('is-invalid-input');
   });
 }
-
+updateCartCountBadge();
 updateCartCount();
 

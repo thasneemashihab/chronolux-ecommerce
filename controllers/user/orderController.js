@@ -228,7 +228,9 @@ exports.placeOrder = async (req, res) => {
         label: address.label
       },
       paymentMethod,
-      paymentStatus:paymentMethod==='Online' ? 'Paid':'Pending',
+      paymentStatus:paymentMethod === 'Online' || paymentMethod === 'Wallet'
+    ? 'Paid'
+    : 'Pending',
       razorpayOrderId:razorpayOrderId || '',
       razorpayPaymentId:razorpayPaymentId || '',
       subtotal: Math.round(subtotal),
@@ -392,14 +394,15 @@ exports.cancelOrder = async (req, res) => {
 
     // NEW: handle refund for online payments
     //...inside cancelOrder, replace the refund block
-    if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+    let refundIssued = false;
+    if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
       order.paymentStatus = 'Refunded';
-      // In production: await razorpayInstance.payments.refund(order.razorpayPaymentId, { amount: order.totalAmount * 100 });
+      refundIssued = true;
       await creditWallet(
-      order.user,
-       order.totalAmount,
+        order.user,
+        order.totalAmount,
         `Refund for cancelled order #${order.orderId}`,
-       order._id
+        order._id
       );
     }
 
@@ -500,20 +503,26 @@ exports.cancelOrderItem = async (req, res) => {
 
 
     // NEW: refund this item's amount to wallet, if it was an online payment
-    if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
-  refundIssued = true;
-  const discountRatio = order.subtotal > 0 ? order.discount / order.subtotal : 0;
-  const taxRatio = order.subtotal > 0 ? order.tax / order.subtotal : 0;
-  const refundAmount = Math.round(item.itemTotal - (item.itemTotal * discountRatio) + (item.itemTotal * taxRatio));
-  await creditWallet(order.user, refundAmount, `Refund for cancelled item "${item.name}" — order #${order.orderId}`, order._id);
-  }
+   let refundIssued = false;
+    if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
+      refundIssued = true;
+      const discountRatio = order.subtotal > 0 ? order.discount / order.subtotal : 0;
+      const taxRatio = order.subtotal > 0 ? order.tax / order.subtotal : 0;
+      const refundAmount = Math.round(item.itemTotal - (item.itemTotal * discountRatio) + (item.itemTotal * taxRatio));
+      await creditWallet(
+        order.user,
+        refundAmount,
+        `Refund for cancelled item "${item.name}" — order #${order.orderId}`,
+        order._id
+      );
+    }
 
     // Check if ALL items are now cancelled — if so cancel whole order
     const allCancelled = order.items.every(i => i.status === 'Cancelled');
     if (allCancelled) {
       order.status = 'Cancelled';
       order.cancelReason = 'All items cancelled by customer';
-      if (order.paymentMethod === 'Online' && order.paymentStatus === 'Paid') {
+      if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
         order.paymentStatus = 'Refunded';
       }
     }

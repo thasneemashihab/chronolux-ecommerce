@@ -71,14 +71,9 @@ function renderAddresses(addresses) {
 }
 
 // Toggle add address form visibility
-document.getElementById('toggleAddForm').addEventListener('click', () => {
-  const panel = document.getElementById('addAddressPanel');
-  panel.classList.toggle('d-none');
-});
-
-// Add new address form submission
 document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  clearFieldErrors(['addrFullName', 'addrPhone', 'addrLine1', 'addrCity', 'addrPincode', 'addrState']);
 
   const fullName = document.getElementById('addrFullName').value.trim();
   const phone = document.getElementById('addrPhone').value.trim();
@@ -89,19 +84,51 @@ document.getElementById('addAddressForm').addEventListener('submit', async (e) =
   const state = document.getElementById('addrState').value;
   const label = document.getElementById('addrLabel').value;
   const isDefault = document.getElementById('addrDefault').checked;
-  const errorEl = document.getElementById('addAddrError');
 
-  errorEl.classList.add('d-none');
+  let valid = true;
 
-  // Validation
-  if (!fullName) { errorEl.textContent = 'Full name is required'; errorEl.classList.remove('d-none'); return; }
-  if (!phone || !/^\d{10}$/.test(phone)) { errorEl.textContent = 'Enter a valid 10-digit phone number'; errorEl.classList.remove('d-none'); return; }
-  if (!line1) { errorEl.textContent = 'Address Line 1 is required'; errorEl.classList.remove('d-none'); return; }
-  if (!city) { errorEl.textContent = 'City is required'; errorEl.classList.remove('d-none'); return; }
-  if (!pincode || !/^\d{6}$/.test(pincode)) { errorEl.textContent = 'Enter a valid 6-digit pincode'; errorEl.classList.remove('d-none'); return; }
-  if (!state) { errorEl.textContent = 'Please select a state'; errorEl.classList.remove('d-none'); return; }
+  if (!fullName) {
+    showFieldError('addrFullName', 'Full name is required');
+    valid = false;
+  } else if (!/^[A-Za-z\s]+$/.test(fullName)) {
+    showFieldError('addrFullName', 'Name can only contain letters');
+    valid = false;
+  }
 
-  const fullAddress = line2 ? `${line1}, ${line2}` : line1;
+  if (!phone) {
+    showFieldError('addrPhone', 'Phone number is required');
+    valid = false;
+  } else if (!/^\d{10}$/.test(phone)) {
+    showFieldError('addrPhone', 'Phone number must be exactly 10 digits');
+    valid = false;
+  }
+
+  if (!line1) {   // ✅ fixed — checking the actual input value, not the not-yet-built fullAddress
+    showFieldError('addrLine1', 'Address Line 1 is required');
+    valid = false;
+  }
+
+  if (!city) {
+    showFieldError('addrCity', 'City is required');
+    valid = false;
+  }
+
+  if (!pincode) {
+    showFieldError('addrPincode', 'Pincode is required');
+    valid = false;
+  } else if (!/^\d{6}$/.test(pincode)) {
+    showFieldError('addrPincode', 'Pincode must be exactly 6 digits');
+    valid = false;
+  }
+
+  if (!state) {
+    showFieldError('addrState', 'Please select a state');
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  const fullAddress = line2 ? `${line1}, ${line2}` : line1;   // built AFTER validation, correctly
 
   const res = await fetch('/api/users/address', {
     method: 'POST',
@@ -111,14 +138,20 @@ document.getElementById('addAddressForm').addEventListener('submit', async (e) =
   const data = await res.json();
 
   if (!res.ok) {
-    errorEl.textContent = data.message;
-    errorEl.classList.remove('d-none');
+    if (data.errors) {
+      Object.keys(data.errors).forEach(field => {
+        showFieldError(field === 'fullAddress' ? 'addrLine1' : field, data.errors[field]);
+      });
+    } else {
+      document.getElementById('addAddrError').textContent = data.message;
+      document.getElementById('addAddrError').classList.remove('d-none');
+    }
     return;
   }
 
   showToast('Address saved successfully');
   document.getElementById('addAddressForm').reset();
-  loadAddresses(); // reload address list
+  loadAddresses();
 });
 
 // Continue to payment

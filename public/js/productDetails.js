@@ -360,6 +360,7 @@ if (addToCartBtn) {
       return;
     }
     showToast('Added to cart successfully!');
+    updateCartCountBadge();
     updateCartCount();
   });
 }

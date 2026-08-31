@@ -95,6 +95,7 @@ document.querySelectorAll('.card-addcart-btn').forEach(btn => {
     });
     const data = await res.json();
     showToast(data.message, res.ok ? 'success' : 'error');
+    if (res.ok) updateCartCountBadge(); 
   });
 });
       

@@ -649,15 +649,22 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   if (!brand) { showFieldError('productBrand', 'Please select a brand'); valid = false; }
   if (!category) { showFieldError('productCategory', 'Please select a category'); valid = false; }
   if (!price || isNaN(price) || Number(price) <= 0) { showFieldError('productPrice', 'Please enter a valid price'); valid = false; }
+  if (!originalPrice || isNaN(originalPrice) || Number(originalPrice) <= 0) {
+  showFieldError('productOriginalPrice', 'Please enter a valid original price');
+  valid = false;
+  }
+  if (discount && (isNaN(discount) || Number(discount) < 0 || Number(discount) > 100)) {
+  showFieldError('productDiscount', 'Discount must be between 0 and 100');
+  valid = false;
+  }
   if (!description) { showFieldError('productDescription', 'Description is required'); valid = false; }
+  if (!id && croppedImages.length < 3) {
+  document.getElementById('productImagesError').textContent = 'Please upload and crop at least 3 images';
+  document.getElementById('productImagesError').classList.remove('d-none');
+  return;
+  }
 
   if (!valid) return;
-  
-  // Validate images
-   if (!id && croppedImages.length < 3) {
-    showToast('Please upload and crop at least 3 images', 'error');
-    return;
-  }
 
   const formData = new FormData();
   formData.append('name', name);

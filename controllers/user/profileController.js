@@ -38,7 +38,7 @@ exports.updateProfile = async (req, res) => {
     }
 
      if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ message: 'Number is not allowed', errors });
+      return res.status(400).json({ message: 'Letters are allowed in name', errors });
     }
 
     const user = await User.findById(req.userId);

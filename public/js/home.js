@@ -43,10 +43,8 @@ function attachFeaturedListeners() {
   document.querySelectorAll('.home-wishlist-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const res = await fetch('/api/users/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: btn.dataset.id })
+      const res = await fetch(`/api/users/wishlist/${btn.dataset.id}`, {
+      method: 'POST'
       });
       const data = await res.json();
       showToast(data.message, res.ok ? 'success' : 'error');
@@ -63,6 +61,7 @@ function attachFeaturedListeners() {
       });
       const data = await res.json();
       showToast(data.message, res.ok ? 'success' : 'error');
+      if (res.ok) updateCartCountBadge(); 
     });
   });
 }

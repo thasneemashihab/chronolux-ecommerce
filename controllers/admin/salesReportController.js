@@ -2,6 +2,22 @@ const Order = require('../../models/Order');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
+   function buildOrderSummary(o) {
+  const itemCount = o.items?.length || 0;
+  const itemWord = itemCount === 1 ? 'item' : 'items';
+
+  if (o.status === 'Delivered') {
+    return `Delivered - ${itemCount} ${itemWord}`;
+  }
+  if (o.status === 'Shipped' || o.status === 'Out for Delivery') {
+    return `In transit - ${itemCount} ${itemWord}`;
+  }
+  if (o.status === 'Processing') {
+    return `Processing - ${itemCount} ${itemWord}`;
+  }
+  return `${o.status} - ${itemCount} ${itemWord}`;
+}
+
 // GET /api/admin/sales-report
 exports.getSalesReport = async (req, res) => {
   try {
@@ -122,21 +138,7 @@ exports.exportSalesPDF = async (req, res) => {
       });
     }
 
-    function buildOrderSummary(o) {
-  const itemCount = o.items?.length || 0;
-  const itemWord = itemCount === 1 ? 'item' : 'items';
-
-  if (o.status === 'Delivered') {
-    return `Delivered - ${itemCount} ${itemWord}`;
-  }
-  if (o.status === 'Shipped' || o.status === 'Out for Delivery') {
-    return `In transit - ${itemCount} ${itemWord}`;
-  }
-  if (o.status === 'Processing') {
-    return `Processing - ${itemCount} ${itemWord}`;
-  }
-  return `${o.status} - ${itemCount} ${itemWord}`;
-}
+ 
 
     function drawDataRow(y, values) {
       doc.rect(tableLeft, y, tableWidth, rowHeight).stroke('#cccccc');
@@ -237,7 +239,7 @@ exports.exportSalesExcel = async (req, res) => {
         shipping: o.shippingCharge,
         tax: o.tax,
         total: o.totalAmount,
-        SalesSummary: buildOrderSummary(o)
+        status: buildOrderSummary(o)
       });
     });
 

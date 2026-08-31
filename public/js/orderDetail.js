@@ -324,7 +324,8 @@ if (cancelReasonBtn) {
   });
 }
 
-// Confirm action
+// Confirm action and Event listeners for reason model
+
 const confirmReasonBtn = document.getElementById('confirmReasonBtn');
 if (confirmReasonBtn) {
   confirmReasonBtn.addEventListener('click', async () => {
@@ -568,51 +569,5 @@ function generateInvoicePDF(order) {
   win.document.close();
   setTimeout(() => { win.print(); win.close(); }, 500);
 }
-
-//Event listeners for reason model
-
-
-document.getElementById('confirmReasonBtn').addEventListener('click', async () => {
-  const selectReason = document.getElementById('reasonSelect').value;
-  const textReason = document.getElementById('reasonText').value.trim();
-  const reason = selectReason + (textReason ? ` — ${textReason}` : '');
-  const errorEl = document.getElementById('reasonError');
-
-  errorEl.classList.add('d-none');
-
-  if (currentAction === 'return' && !selectReason) {
-    errorEl.textContent = 'Please select a reason for return';
-    errorEl.classList.remove('d-none');
-    return;
-  }
-
-  let url, body;
-  if (currentAction === 'cancelOrder') {
-    url = `/api/users/orders/${orderId}/cancel`;
-    body = { reason };
-  } else if (currentAction === 'cancelItem') {
-    url = `/api/users/orders/${orderId}/cancel-item/${currentItemId}`;
-    body = { reason };
-  } else if (currentAction === 'return') {
-    url = `/api/users/orders/${orderId}/return`;
-    body = { reason };
-  }
-
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-
-  document.getElementById('reasonModalBackdrop').classList.add('d-none');
-
-  if (res.ok) {
-    showToast(data.message);
-    setTimeout(() => loadOrderDetail(), 1000);
-  } else {
-    showToast(data.message, 'error');
-  }
-});
 
 loadOrderDetail();

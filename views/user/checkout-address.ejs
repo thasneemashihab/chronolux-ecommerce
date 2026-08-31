@@ -42,27 +42,33 @@
           <div class="mb-3">
             <label class="form-label">Full Name <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="addrFullName" placeholder="Enter full name">
+            <div class="text-danger small mt-1" id="addrFullNameError"></div>
           </div>
           <div class="mb-3">
             <label class="form-label">Phone Number <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="addrPhone" placeholder="Enter phone number">
+            <div class="text-danger small mt-1" id="addrPhoneError"></div>
           </div>
           <div class="mb-3">
             <label class="form-label">Address Line 1 <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="addrLine1" placeholder="House no., Building, Street">
+            <div class="text-danger small mt-1" id="addrLine1Error"></div>
           </div>
           <div class="mb-3">
             <label class="form-label">Address Line 2 (optional)</label>
             <input type="text" class="form-control" id="addrLine2" placeholder="Area, Landmark, etc">
+            <div class="text-danger small mt-1" id="addrLine2Error"></div>
           </div>
           <div class="row">
             <div class="col-6 mb-3">
               <label class="form-label">City <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="addrCity" placeholder="Enter city">
+              <div class="text-danger small mt-1" id="addrCityError"></div>
             </div>
             <div class="col-6 mb-3">
               <label class="form-label">Pincode <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="addrPincode" placeholder="Enter pincode">
+              <div class="text-danger small mt-1" id="addrPincodeError"></div>
             </div>
           </div>
           <div class="row">
@@ -81,6 +87,7 @@
                 <option>West Bengal</option>
                 <option>Telangana</option>
               </select>
+              <div class="text-danger small mt-1" id="addrStateError"></div>
             </div>
             <div class="col-6 mb-3">
               <label class="form-label">Address Type</label>

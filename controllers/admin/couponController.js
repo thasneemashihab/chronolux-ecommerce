@@ -36,6 +36,9 @@ exports.addCoupon = async (req, res) => {
     } else if (discountType === 'percentage' && Number(discountValue) > 100) {
       errors.couponValue = 'Percentage discount cannot exceed 100';
     }
+    if (!maxDiscount || isNaN(maxDiscount) || Number(maxDiscount) < 0) {
+      errors.couponMaxDiscount = 'Please enter a valid minimum purchase amount';
+    }
     if (!minOrderAmount || isNaN(minOrderAmount) || Number(minOrderAmount) < 0) {
       errors.couponMinOrder = 'Please enter a valid minimum purchase amount';
     }

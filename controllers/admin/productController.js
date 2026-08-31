@@ -64,8 +64,16 @@ exports.addProduct = async (req, res) => {
 if (!brand) errors.productBrand = 'Please select a brand';
 if (!category) errors.productCategory = 'Please select a category';
 if (!price || isNaN(price) || Number(price) <= 0) errors.productPrice = 'Please enter a valid price';
-if (!description || description.trim() === '') errors.productDescription = 'Description is required';
+if (!originalPrice || isNaN(originalPrice) || Number(originalPrice) <= 0) {
+      errors.productOriginalPrice= 'Please enter a valid original price';
+  valid = false;
+}
 
+if (discount && (isNaN(discount) || Number(discount) < 0 || Number(discount) > 100)) {
+      errors.productDiscount= 'Discount must be between 0 and 100';
+  valid = false;
+}
+if (!description || description.trim() === '') errors.productDescription = 'Description is required';
 if (Object.keys(errors).length > 0) {
   return res.status(400).json({ message: 'Please fix the errors below', errors });
 }

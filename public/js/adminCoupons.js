@@ -134,6 +134,10 @@ document.getElementById('couponForm').addEventListener('submit', async (e) => {
   } else if (discountType === 'percentage' && Number(discountValue) > 100) {
     showFieldError('couponValue', 'Percentage cannot exceed 100'); valid = false;
   }
+  if (maxDiscount && (isNaN(maxDiscount) || Number(maxDiscount) < 0)) {
+  showFieldError('couponMaxDiscount', 'Please enter a valid amount');
+  valid = false;
+  }
   if (!minOrderAmount || isNaN(minOrderAmount) || Number(minOrderAmount) < 0) {
     showFieldError('couponMinOrder', 'Please enter a valid minimum purchase amount'); valid = false;
   }
