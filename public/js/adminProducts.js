@@ -653,6 +653,10 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   showFieldError('productOriginalPrice', 'Please enter a valid original price');
   valid = false;
   }
+  if (price && originalPrice && !isNaN(price) && !isNaN(originalPrice) && Number(price) > Number(originalPrice)) {
+  showFieldError('productPrice', 'Sale price cannot be higher than the original price');
+  valid = false;
+  }
   if (discount && (isNaN(discount) || Number(discount) < 0 || Number(discount) > 100)) {
   showFieldError('productDiscount', 'Discount must be between 0 and 100');
   valid = false;
