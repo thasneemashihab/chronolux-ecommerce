@@ -51,26 +51,67 @@ function showToast(message, type = 'success') {
 // Custom confirm modal — returns a Promise that resolves true/false
 function showConfirm(message) {
   return new Promise((resolve) => {
-    const backdrop = document.getElementById('confirmModalBackdrop');
-    const text = document.getElementById('confirmModalText');
-    const okBtn = document.getElementById('confirmOkBtn');
-    const cancelBtn = document.getElementById('confirmCancelBtn');
+    // Remove any existing confirm
+    const old = document.getElementById('jsConfirmOverlay');
+    if (old) old.remove();
 
-    text.textContent = message;
-    backdrop.classList.remove('d-none');
+    const overlay = document.createElement('div');
+    overlay.id = 'jsConfirmOverlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999999;
+    `;
 
-    function cleanup(result) {
-      backdrop.classList.add('d-none');
-      okBtn.removeEventListener('click', onOk);
-      cancelBtn.removeEventListener('click', onCancel);
+    const box = document.createElement('div');
+    box.style.cssText = `
+      background: #1a1a1a;
+      padding: 28px 32px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+      color: white;
+    `;
+
+    box.innerHTML = `
+      <div style="font-size: 28px; margin-bottom: 12px;">⚠️</div>
+      <div style="font-size: 16px; font-weight: 500; margin-bottom: 24px; line-height: 1.5;">
+        ${message}
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button id="jsConfirmCancel" style="
+          flex: 1; padding: 11px; border: none; border-radius: 8px;
+          background: #4b5563; color: white; font-weight: 600; cursor: pointer;
+        ">Cancel</button>
+        <button id="jsConfirmOk" style="
+          flex: 1; padding: 11px; border: none; border-radius: 8px;
+          background: #fbbf24; color: black; font-weight: 600; cursor: pointer;
+        ">Yes, Continue</button>
+      </div>
+    `;
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const close = (result) => {
+      overlay.remove();
       resolve(result);
-    }
+    };
 
-    function onOk() { cleanup(true); }
-    function onCancel() { cleanup(false); }
-
-    okBtn.addEventListener('click', onOk);
-    cancelBtn.addEventListener('click', onCancel);
+    document.getElementById('jsConfirmOk').onclick = () => close(true);
+    document.getElementById('jsConfirmCancel').onclick = () => close(false);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close(false);
+    };
   });
 }
 

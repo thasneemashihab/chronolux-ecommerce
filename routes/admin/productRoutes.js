@@ -19,13 +19,13 @@ router.get('/inventory', adminAuth, getInventory);
 router.put('/inventory/:id/stock', adminAuth, updateStock);
 
 router.post('/', adminAuth, uploadProduct.fields([
-  { name: 'images', maxCount: 3 },
+  { name: 'images', maxCount: 6 },
   { name: 'colorImages', maxCount: 9 },
   { name: 'variantImages', maxCount: 5 }
 ]), addProduct);
 
 router.put('/:id', adminAuth, uploadProduct.fields([
-  { name: 'images', maxCount: 3 },
+  { name: 'images', maxCount: 6 },
   { name: 'colorImages', maxCount: 9 },
   { name: 'variantImages', maxCount: 5 },
   { name: 'replacementImages', maxCount: 9 }

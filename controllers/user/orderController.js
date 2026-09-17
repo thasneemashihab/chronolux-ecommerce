@@ -504,18 +504,23 @@ exports.cancelOrderItem = async (req, res) => {
 
     // NEW: refund this item's amount to wallet, if it was an online payment
    let refundIssued = false;
-    if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
-      refundIssued = true;
-      const discountRatio = order.subtotal > 0 ? order.discount / order.subtotal : 0;
-      const taxRatio = order.subtotal > 0 ? order.tax / order.subtotal : 0;
-      const refundAmount = Math.round(item.itemTotal - (item.itemTotal * discountRatio) + (item.itemTotal * taxRatio));
-      await creditWallet(
-        order.user,
-        refundAmount,
-        `Refund for cancelled item "${item.name}" — order #${order.orderId}`,
-        order._id
-      );
-    }
+let refundAmount = 0;
+if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Wallet') && order.paymentStatus === 'Paid') {
+  refundIssued = true;
+  const discountRatio = order.subtotal > 0 ? order.discount / order.subtotal : 0;
+  const couponRatio = order.subtotal > 0 ? (order.couponDiscount || 0) / order.subtotal : 0; 
+  const taxRatio = order.subtotal > 0 ? order.tax / order.subtotal : 0;
+  refundAmount = Math.round(item.itemTotal 
+    - (item.itemTotal * discountRatio)
+    - (item.itemTotal * couponRatio) 
+   + (item.itemTotal * taxRatio));
+  await creditWallet(
+    order.user,
+    refundAmount,
+    `Refund for cancelled item "${item.name}" — order #${order.orderId}`,
+    order._id
+  );
+}
 
     // Check if ALL items are now cancelled — if so cancel whole order
     const allCancelled = order.items.every(i => i.status === 'Cancelled');
@@ -530,11 +535,11 @@ exports.cancelOrderItem = async (req, res) => {
     await order.save();
 
     res.status(200).json({
-      message: refundIssued
-        ? `"${item.name}" has been cancelled. ₹${item.itemTotal.toLocaleString()} refunded to your wallet.`
-        : `"${item.name}" has been cancelled successfully`,
-      allOrderCancelled: allCancelled
-    });
+  message: refundIssued
+    ? `"${item.name}" has been cancelled. ₹${refundAmount.toLocaleString()} refunded to your wallet.`
+    : `"${item.name}" has been cancelled successfully`,
+  allOrderCancelled: allCancelled
+});
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to cancel item. Please try again.' });

@@ -14,6 +14,12 @@ let editingProduct = null; // stores current product in edit mode
 let currentColors = [];   // replaces reading from a text field
 let currentVariants = [];
 
+function closeAllModals() {
+  document.getElementById('productModalBackdrop')?.classList.add('d-none');
+  document.getElementById('confirmModalBackdrop')?.classList.add('d-none');
+  document.getElementById('cropModalBackdrop')?.classList.add('d-none');
+}
+
 async function loadProducts() {
   const res = await fetch(`/api/admin/products?search=${encodeURIComponent(searchTerm)}&page=${currentPage}&limit=10`);
   const data = await res.json();
@@ -57,12 +63,18 @@ function renderProducts(products) {
     tbody.appendChild(row);
   });
 
+  // ===== Attach events AFTER creating all rows =====
   document.querySelectorAll('.toggle-status-btn').forEach(btn => {
     btn.addEventListener('change', () => toggleStatus(btn.dataset.id));
   });
+
   document.querySelectorAll('.delete-product-btn').forEach(btn => {
-    btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
+    btn.addEventListener('click', () => {
+      console.log('Delete button clicked, id:', btn.dataset.id);
+      deleteProduct(btn.dataset.id);
+    });
   });
+
   document.querySelectorAll('.edit-product-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const product = JSON.parse(btn.dataset.product);
@@ -191,6 +203,7 @@ const productUploadBox = document.getElementById('productUploadBox');
 
 // ----- Open Add Modal -----
 document.getElementById('openAddProductBtn').addEventListener('click', async () => {
+   closeAllModals();   // NEW — close anything else first
   document.getElementById('productModalTitle').textContent = 'Add Product';
   document.getElementById('saveProductBtn').textContent = 'Add Product';
   document.getElementById('productForm').reset();
@@ -214,6 +227,7 @@ document.getElementById('cancelProductBtn').addEventListener('click', () => prod
 
 // ----- Open Edit Modal -----
 async function openEditModal(product) {
+   closeAllModals();   // NEW
   editingProduct = product; // store for generateColorVariantInputs to use
   document.getElementById('productModalTitle').textContent = 'Edit Product';
   document.getElementById('saveProductBtn').textContent = 'Update Product';
@@ -758,14 +772,30 @@ async function toggleStatus(id) {
 
 // ----- Delete -----
 async function deleteProduct(id) {
-  const confirmed = await showConfirm('Are you sure you want to delete this product?');
-  if (!confirmed) return;
-  const res = await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
-  const data = await res.json();
-  showToast(data.message, res.ok ? 'success' : 'error');
-  if (res.ok) loadProducts();
-}
+  const confirmed = await showConfirm('Delete this product? This cannot be undone.');
 
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'DELETE'
+    });
+
+    const data = await res.json();
+
+    showToast(
+      data.message || (res.ok ? 'Product deleted successfully' : 'Failed to delete product'),
+      res.ok ? 'success' : 'error'
+    );
+
+    if (res.ok) {
+      loadProducts();
+    }
+  } catch (error) {
+    console.error(error);
+    showToast('Something went wrong. Please try again.', 'error');
+  }
+}
 // ----- Search -----
 const searchInput = document.getElementById('productSearch');
 const clearBtn = document.getElementById('clearProductSearch');

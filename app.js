@@ -15,8 +15,14 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // Middleware
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({
+  extended: true,
+  limit: '100mb'
+}));
+
+app.use(express.json({
+  limit: '100mb'
+}));
 app.use(cookieParser());
 app.use(passport.initialize());
 

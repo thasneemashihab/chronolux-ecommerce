@@ -178,7 +178,9 @@
     <button type="button" class="btn btn-secondary w-50" id="cancelProductBtn">Cancel</button>
     <button type="submit" class="btn btn-warning fw-bold w-50" id="saveProductBtn">Add Product</button>
   </div>
-</form></div></div>
+</form>
+</div>
+</div>
 
   <!-- Image Crop Modal -->
 <div class="modal-backdrop-custom d-none" id="cropModalBackdrop">
@@ -195,12 +197,15 @@
   </div>
 </div>
 
+
 <!-- Custom Confirm Modal -->
 <div class="modal-backdrop-custom d-none" id="confirmModalBackdrop">
   <div class="email-modal text-center">
-    <div class="otp-icon mx-auto"><i class="bi bi-exclamation-triangle-fill"></i></div>
-    <h5 class="fw-bold mt-2" id="confirmModalText">Are you sure?</h5>
-    <div class="d-flex gap-2 mt-3">
+    <div class="otp-icon mx-auto">
+      <i class="bi bi-exclamation-triangle-fill text-warning fs-2"></i>
+    </div>
+    <h5 class="fw-bold mt-3" id="confirmModalText">Are you sure?</h5>
+    <div class="d-flex gap-2 mt-4">
       <button type="button" class="btn btn-secondary w-50" id="confirmCancelBtn">Cancel</button>
       <button type="button" class="btn btn-warning fw-bold w-50" id="confirmOkBtn">Yes, Continue</button>
     </div>
