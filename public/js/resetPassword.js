@@ -48,7 +48,11 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  sessionStorage.removeItem('resetToken');
-  alert('Password reset successful! Please login.');
+ sessionStorage.removeItem('resetToken');
+showToast('Password reset successful! Please login.');
+
+setTimeout(() => {
   window.location.href = '/login';
+}, 1500);
+
 });

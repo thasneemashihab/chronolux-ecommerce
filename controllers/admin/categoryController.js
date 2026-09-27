@@ -1,5 +1,9 @@
 const Category = require('../../models/Category');
 
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // GET /api/admin/categories
 exports.getCategories = async (req, res) => {
   try {
@@ -69,9 +73,15 @@ exports.addCategory = async (req, res) => {
       return res.status(400).json({ message: 'Please fix the errors below', errors });
     }
 
-    const existing = await Category.findOne({ name, isDeleted: false });
+    const existing = await Category.findOne({
+      name: { $regex: new RegExp(`^${escapeRegex(name.trim())}$`, 'i') },
+      isDeleted: false
+    });
+
     if (existing) {
-      return res.status(400).json({ message: `A category named "${name}" already exists`});
+      return res.status(400).json({
+        message: `A category named "${name}" already exists`
+      });
     }
 
     const existingSlug = await Category.findOne({ slug, isDeleted: false });
@@ -118,7 +128,7 @@ exports.updateCategory = async (req, res) => {
 
      // Check name conflict with OTHER categories (not this one)
     const nameConflict = await Category.findOne({
-      name: name.trim(),
+      name: { $regex: new RegExp(`^${escapeRegex(name.trim())}$`, 'i') },
       isDeleted: false,
       _id: { $ne: req.params.id }
     });

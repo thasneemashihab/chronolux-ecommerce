@@ -14,9 +14,9 @@ router.get('/shop', checkAuth, viewController.getShopPage);
 router.get('/signup', redirectIfLoggedIn, viewController.getSignup);
 router.get('/otp', viewController.getOtp);
 router.get('/login', redirectIfLoggedIn, viewController.getLogin);
-router.get('/forgot-password', viewController.getForgotPassword);
-router.get('/verify-reset-otp', viewController.getVerifyResetOtp);
-router.get('/reset-password', viewController.getResetPassword);
+router.get('/forgot-password',redirectIfLoggedIn, viewController.getForgotPassword);
+router.get('/verify-reset-otp',redirectIfLoggedIn, viewController.getVerifyResetOtp);
+router.get('/reset-password',redirectIfLoggedIn, viewController.getResetPassword);
 
 
 // Product details — with ObjectId validation

@@ -38,11 +38,11 @@
   <div class="d-flex gap-2 mb-4 flex-wrap align-items-end">
     <div>
       <label class="form-label text-secondary small mb-1">Start Date</label>
-      <input type="date" class="form-control" id="startDate">
+      <input type="date" class="form-control" id="startDate" max="<%= new Date().toISOString().split('T')[0] %>">
     </div>
     <div>
       <label class="form-label text-secondary small mb-1">End Date</label>
-      <input type="date" class="form-control" id="endDate">
+      <input type="date" class="form-control" id="endDate" max="<%= new Date().toISOString().split('T')[0] %>">
     </div>
     <div>
       <label class="form-label text-secondary small mb-1">Order Status</label>

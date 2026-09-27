@@ -102,7 +102,18 @@ function renderTop10(containerId, items) {
     </div>`).join('');
 }
 
-document.getElementById('dashApplyFilterBtn').addEventListener('click', loadDashboard);
+document.getElementById('dashApplyFilterBtn').addEventListener('click', () => {
+  const start = document.getElementById('dashStartDate').value;
+  const end = document.getElementById('dashEndDate').value;
+
+  if (start && end && new Date(end) < new Date(start)) {
+    showToast('End date cannot be before start date', 'error');
+    return;
+  }
+
+  loadDashboard();
+});
+
 document.getElementById('dashResetFilterBtn').addEventListener('click', () => {
   document.getElementById('dashStartDate').value = '';
   document.getElementById('dashEndDate').value = '';

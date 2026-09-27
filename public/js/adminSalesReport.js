@@ -86,7 +86,18 @@ function renderPagination(totalPages, current) {
   }
 }
 
-document.getElementById('applyFilterBtn').addEventListener('click', () => loadReport(1));
+document.getElementById('applyFilterBtn').addEventListener('click', () => {
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+
+  if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+    showToast('End date cannot be before start date', 'error');
+    return;
+  }
+
+  loadReport(1);
+});
+
 document.getElementById('resetFilterBtn').addEventListener('click', () => {
   document.getElementById('startDate').value = '';
   document.getElementById('endDate').value = '';

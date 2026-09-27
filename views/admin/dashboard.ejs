@@ -36,11 +36,11 @@
     <div class="d-flex gap-2 mb-4 flex-wrap align-items-end">
       <div>
         <label class="form-label text-secondary small mb-1">Start Date</label>
-        <input type="date" class="form-control" id="dashStartDate">
+        <input type="date" class="form-control" id="dashStartDate" max="<%= new Date().toISOString().split('T')[0] %>" >
       </div>
       <div>
         <label class="form-label text-secondary small mb-1">End Date</label>
-        <input type="date" class="form-control" id="dashEndDate">
+        <input type="date" class="form-control" id="dashEndDate" max="<%= new Date().toISOString().split('T')[0] %>">
       </div>
       <button class="btn btn-warning fw-bold" id="dashApplyFilterBtn"><i class="bi bi-funnel me-1"></i> Apply Filter</button>
       <button class="btn btn-secondary" id="dashResetFilterBtn">Reset</button>
