@@ -51,6 +51,10 @@ router.get('/refer', authMiddleware, viewController.getReferPage);
 
 //admin pages
 router.get('/admin/login', redirectIfAdminLoggedIn, viewController.getAdminLogin);
+router.get('/admin/forgot-password', redirectIfAdminLoggedIn, viewController.getAdminForgotPassword);
+router.get('/admin/verify-reset-otp', redirectIfAdminLoggedIn, viewController.getAdminVerifyResetOtp);
+router.get('/admin/reset-password', redirectIfAdminLoggedIn, viewController.getAdminResetPassword);
+
 router.get('/admin/users', adminAuth, viewController.getAdminUsers);
 router.get('/admin/categories', adminAuth, viewController.getAdminCategories);
 router.get('/admin/products', adminAuth, viewController.getAdminProducts);

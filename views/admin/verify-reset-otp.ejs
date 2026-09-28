@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <%- include('../partials/head') %>
+  <title>Verify Admin OTP - ChronoLux</title>
+  <link href="/css/auth.css" rel="stylesheet">
+</head>
+
+<body style="background:#0d0d0d;">
+
+<div class="auth-wrapper">
+
+  <div class="row auth-card-row shadow-lg rounded overflow-hidden">
+
+    <!-- LEFT: Brand panel -->
+    <div class="col-12 col-lg-5 auth-brand-panel text-center p-4">
+
+      <img
+        src="/images/logo.png"
+        class="logo mb-2"
+        alt="ChronoLux logo"
+      >
+
+      <h1 class="fw-bold">CHRONOLUX</h1>
+
+      <div class="text-warning small mb-3">
+        — TIMELESS ELEGANCE —
+      </div>
+
+      <img
+        src="/images/watch.jpg"
+        class="img-fluid rounded"
+        alt="Luxury watch"
+      >
+
+    </div>
+
+    <!-- RIGHT: OTP verification -->
+    <div class="col-12 col-lg-7 auth-form-panel p-4 p-lg-5 text-center">
+
+      <div class="otp-icon mx-auto">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+
+      <h2 class="fw-bold text-white mt-2">
+        Verify OTP
+      </h2>
+
+      <p class="text-secondary">
+        Code sent to
+        <span class="text-warning" id="emailDisplay"></span>
+      </p>
+
+      <form id="adminOtpForm" class="mt-4">
+
+        <div class="otp-boxes mb-2">
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+          <input
+            type="text"
+            maxlength="1"
+            class="otp-box"
+            inputmode="numeric"
+          >
+
+        </div>
+
+        <div
+          class="text-danger small mb-2"
+          id="otpError">
+        </div>
+
+        <p class="text-secondary small">
+          Resend OTP in
+          <span id="timer">01:00</span>
+        </p>
+
+        <a
+          href="#"
+          id="resendBtn"
+          class="resend-disabled">
+          Resend OTP
+        </a>
+
+        <button
+          type="submit"
+          class="btn btn-warning fw-bold w-100 mt-3">
+          Verify
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<%- include('../partials/scripts') %>
+
+<script src="/js/adminVerifyResetOtp.js"></script>
+<script src="/js/main.js"></script>
+
+</body>
+</html>

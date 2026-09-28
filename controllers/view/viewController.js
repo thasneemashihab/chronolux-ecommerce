@@ -122,3 +122,7 @@ exports.getAdminOffers = (req, res) => res.render('admin/offers');
 exports.getAdminCoupons = (req, res) => res.render('admin/coupons');
 exports.getAdminSalesReport = (req, res) => res.render('admin/sales-report');
 exports.getAdminDashboard = (req, res) => res.render('admin/dashboard');
+
+exports.getAdminForgotPassword = (req, res) => res.render('admin/forgot-password');
+exports.getAdminVerifyResetOtp = (req, res) => res.render('admin/verify-reset-otp');
+exports.getAdminResetPassword = (req, res) => res.render('admin/reset-password');
