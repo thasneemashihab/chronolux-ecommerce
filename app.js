@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const passport = require('./config/passport');
 
 const app = express();
+app.set('trust proxy', 1);
 
 //connect DB
 connectDB();
